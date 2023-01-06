@@ -19,6 +19,11 @@ if __name__ == "__main__":
     mainUnDonePaths, mainDonePaths = getAllToDoPaths(mainToDoText)
     doneUnDonePaths, doneDonePaths = getAllToDoPaths(doneToDoText)
 
+    # dailyDonePaths = getDoneRoutines(routinesFile, "Routine")
+    # markRoutinesAsUnDone(routinesFile)
+    # dailyDonePaths.extend(getDoneRoutines(distractionsFile, "Distraction"))
+    # markRoutinesAsUnDone(distractionsFile)
+
     unDonePaths.extend(mainUnDonePaths)
     donePaths.extend(mainDonePaths)
     donePaths.extend(doneDonePaths)
