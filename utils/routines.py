@@ -1,3 +1,6 @@
+import utils.utils as utils
+
+
 def sortRoutinesToTop(paths):
     outputPaths = []
     routines = []
@@ -13,7 +16,7 @@ def sortRoutinesToTop(paths):
 
 def getDoneRoutines(routinesFile, routineType):
     doneRoutines = []
-    routines = open(routinesFile).read().split("\n")
+    routines = utils.readFromFile(routinesFile).split("\n")
     for routine in routines:
         if not routine.strip():
             continue
@@ -26,12 +29,11 @@ def getDoneRoutines(routinesFile, routineType):
 
 
 def markRoutinesAsUnDone(routinesFile):
-    outputFile = ""
-    routines = open(routinesFile).read().split("\n")
+    outputText = ""
+    routines = utils.readFromFile(routinesFile).split("\n")
     for routine in routines:
         if not routine.strip():
             continue
         routine = routine.replace("[x]", "[ ]")
-        outputFile += routine + "\n"
-    with open(routinesFile, "w") as routinesF:
-        routinesF.write(outputFile)
+        outputText += routine + "\n"
+    utils.writeToFile(routinesFile, outputText)

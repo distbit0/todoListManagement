@@ -9,7 +9,7 @@ from utils.routines import *
 
 
 def addToDailyDoneFile(paths):
-    dailyDoneFile = getConfig()["dailyDoneFile"]
+    dailyDoneFile = getConfig()["dailyDoneFilePath"]
     tasks = [
         " < ".join(
             reversed(
@@ -23,25 +23,24 @@ def addToDailyDoneFile(paths):
     ]
     curDTObj = datetime.now()
     todaysDate = str(curDTObj.strftime("%d %b, %Y"))
-    dailyDoneSoFar = readJson(open(dailyDoneFile).read())
+    dailyDoneSoFar = readJson(readFromFile(dailyDoneFile))
     if todaysDate in dailyDoneSoFar:
         dailyDoneSoFar[todaysDate].extend(tasks)
     else:
         dailyDoneSoFar[todaysDate] = tasks
     dailyDoneSoFar[todaysDate] = dedup(dailyDoneSoFar[todaysDate])
     dailyDoneSoFar[todaysDate] = sortRoutinesToTop(dailyDoneSoFar[todaysDate])
-    with open(dailyDoneFile, "w") as dailyDoneF:
-        dailyDoneF.write(dumpJson(dailyDoneSoFar))
+    writeToFile(dailyDoneFile, dumpJson(dailyDoneSoFar))
 
 
 def addToReadableDailyDoneFile(paths):
-    readableDailyDoneFile = getConfig()["readableDailyDoneFile"]
+    readableDailyDoneFile = getConfig()["readableDailyDoneFilePath"]
     readableTasks = [
         path[-1].replace("- [x] ", "").replace("- [ ] ", "") for path in paths
     ]
     curDTObj = datetime.now()
     todaysDate = str(curDTObj.strftime("%d %b, %Y"))
-    readableDailyDoneSoFar = readJson(open(readableDailyDoneFile).read())
+    readableDailyDoneSoFar = readJson(readFromFile(readableDailyDoneFile))
     if todaysDate in readableDailyDoneSoFar:
         readableDailyDoneSoFar[todaysDate].extend(readableTasks)
     else:
@@ -50,5 +49,4 @@ def addToReadableDailyDoneFile(paths):
     readableDailyDoneSoFar[todaysDate] = sortRoutinesToTop(
         readableDailyDoneSoFar[todaysDate]
     )
-    with open(readableDailyDoneFile, "w") as readableDailyDoneF:
-        readableDailyDoneF.write(dumpJson(readableDailyDoneSoFar))
+    writeToFile(readableDailyDoneFile, dumpJson(readableDailyDoneSoFar))

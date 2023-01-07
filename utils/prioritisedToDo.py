@@ -11,6 +11,8 @@ def getChildPaths(paths, curPos, currentIndent):
     childPaths = []
     j = int(curPos) + 1
     while True:
+        if len(paths) <= j:
+            break
         path = paths[j]
         indent = len(path)
         if indent > currentIndent:
@@ -66,7 +68,7 @@ def getPrioritisedToDos(paths):
 def savePrioritisedToDos(prioritisedPaths):
     priorityTexts = {}
     finalText = ""
-    prioritisedTodoFilePath = getConfig()["prioritisedTodo"]
+    prioritisedTodoFilePath = getConfig()["prioritisedTodoFilePath"]
     for priority in sorted(prioritisedPaths, reverse=True, key=lambda x: int(x)):
         paths = prioritisedPaths[priority]
         priorityTexts[priority] = constructFileFromPaths(paths)
@@ -77,8 +79,7 @@ def savePrioritisedToDos(prioritisedPaths):
         )
 
     finalText = finalText.replace(" [ ]", "")
-    with open(prioritisedTodoFilePath, "w") as prioritisedTodoFile:
-        prioritisedTodoFile.write(finalText)
+    writeToFile(prioritisedTodoFilePath, finalText)
 
 
 def calcAndSavePrioritisedToDos(paths):

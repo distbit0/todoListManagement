@@ -1,8 +1,7 @@
 {
-    "mainToDoFile": "/home/pimania/Syncs/Obsidian/1To do.md",
-    "readableDailyDoneFile": "/home/pimania/Syncs/Obsidian/Personal/To do/4Daily Done.md",
-    "doneToDoFile": "/home/pimania/Syncs/Obsidian/Personal/To do/5Done.md",
-    "dailyDoneFile": "/home/pimania/Syncs/Obsidian/Personal/To do/.Daily Done.md",
-    "toDoConflictFileFilter": "/home/pimania/Syncs/Obsidian/Personal/To do/1To do.sync-conflict*",
-    "prioritisedTodo": "/home/pimania/Syncs/Obsidian/Personal/To do/0Prioritised Todo.md"
+    "toDoFolderPath": "/home/pimania/Syncs/Obsidian/",
+    "readableDailyDoneFilePath": "/home/pimania/Syncs/Obsidian/To do/4Daily Done.md",
+    "doneFilePath": "/home/pimania/Syncs/Obsidian/To do/5Done.md",
+    "dailyDoneFilePath": "/home/pimania/Syncs/Obsidian/To do/.Daily Done.md",
+    "prioritisedTodoFilePath": "/home/pimania/Syncs/Obsidian/To do/0Prioritised Todo.md"
 }

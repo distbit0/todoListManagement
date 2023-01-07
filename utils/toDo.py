@@ -1,7 +1,7 @@
 from utils.utils import *
 
 
-def getAllToDoPaths(totalText):
+def getAllToDoPaths(totalText, prefix=""):
     totalText = totalText.replace("**", "")
     path = {}
     donePaths = []
@@ -23,6 +23,10 @@ def getAllToDoPaths(totalText):
             unDonePaths.append(currentPath)
 
     unDonePaths = dedup(unDonePaths)
+
+    if prefix:
+        unDonePaths = prefixAllPaths(unDonePaths, prefix)
+        donePaths = prefixAllPaths(donePaths, prefix)
 
     return unDonePaths, donePaths
 
@@ -93,24 +97,3 @@ def constructFileFromPaths(paths):
             lastIndent = int(currentIndent)
 
     return "".join(outputText)
-
-
-def getAllToDos():
-    mainToDoFile, doneToDoFile = (
-        getConfig()["mainToDoFile"],
-        getConfig()["doneToDoFile"],
-    )
-    mainToDoText = open(mainToDoFile).read()
-    doneToDoText = open(doneToDoFile).read()
-    return mainToDoText, doneToDoText
-
-
-def writeOutputToDos(doneOutput, unDoneOutput):
-    mainToDoFile, doneToDoFile = (
-        getConfig()["mainToDoFile"],
-        getConfig()["doneToDoFile"],
-    )
-    with open(mainToDoFile, "w") as unDoneFile:
-        unDoneFile.write(unDoneOutput)
-    with open(doneToDoFile, "w") as doneFile:
-        doneFile.write(doneOutput)
