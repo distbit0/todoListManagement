@@ -105,11 +105,11 @@ def prefixAllPaths(paths, prefix):
 
 
 def unPrefixAllPaths(paths):
-    prefixedPaths = []
+    unPrefixedPaths = []
     for path in paths:
-        prefixedPaths.append(path[1:])
+        unPrefixedPaths.append(path[1:])
 
-    return prefixedPaths
+    return unPrefixedPaths
 
 
 def stringSplit(strng, sep, pos):
