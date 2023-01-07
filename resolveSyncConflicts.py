@@ -78,6 +78,6 @@ def resolveSyncConflicts():
 
 
 if __name__ == "__main__":
-    # for i in range(5):
-    resolveSyncConflicts()
-    # time.sleep(10)
+    for i in range(5):
+        resolveSyncConflicts()
+        time.sleep(10)
