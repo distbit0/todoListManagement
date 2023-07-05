@@ -30,9 +30,9 @@ if __name__ == "__main__":
     newDonePaths = []
     unDonePaths = []
     allDonePaths = []
-    toDoFiles, oldDoneText = utils.getAllToDosAndDoneText()[:2]
-    alreadyDonePaths = getAllToDoPaths(oldDoneText)[1]
-    allDonePaths.extend(alreadyDonePaths)
+    toDoFiles = utils.getAllToDosAndDoneText()
+    # alreadyDonePaths = getAllToDoPaths(oldDoneText)[1]
+    # allDonePaths.extend(alreadyDonePaths)
 
     for toDoId in toDoFiles:
         toDoFileContents = toDoFiles[toDoId]
@@ -50,11 +50,11 @@ if __name__ == "__main__":
 
     # generate and save various global done and undone files
 
-    doneOutput = constructFileFromPaths(allDonePaths)
+    # doneOutput = constructFileFromPaths(allDonePaths)
 
-    writeToFile(getConfig()["doneFilePath"], doneOutput)
-    calcAndSavePrioritisedToDos(unDonePaths)
+    # writeToFile(getConfig()["doneFilePath"], doneOutput)
+    # calcAndSavePrioritisedToDos(unDonePaths)
 
-    # add new done paths to daily one files
-    addToDailyDoneFile(newDonePaths)
-    addToReadableDailyDoneFile(newDonePaths)
+    # # add new done paths to daily one files
+    # addToDailyDoneFile(newDonePaths)
+    # addToReadableDailyDoneFile(newDonePaths)
