@@ -92,9 +92,9 @@ def getAllToDosAndDoneText():
         else:
             toDoFiles.setdefault(toDoId, {})["master"] = fileObj
 
-    # doneToDoText = readFromFile(doneToDoFile).replace("**", "")
+    doneToDoText = readFromFile(doneToDoFile).replace("**", "")
 
-    return toDoFiles  # , doneToDoText
+    return toDoFiles, doneToDoText
 
 
 def prefixAllPaths(paths, prefix):

@@ -42,7 +42,7 @@ def deleteFile(conflictFilePath):
 
 
 def resolveSyncConflicts():
-    toDoFiles = utils.getAllToDosAndDoneText()
+    toDoFiles, doneToDoText = utils.getAllToDosAndDoneText()
 
     for toDoId in toDoFiles:
         toDoFileContents = toDoFiles[toDoId]
