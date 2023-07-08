@@ -1,6 +1,7 @@
 import json
 from os import path
 import glob
+import re
 
 
 def getAbsPath(relPath):
@@ -124,19 +125,20 @@ def writeToFile(fileName, fileText):
     # Check if file contains markdown front matter
     if file_contents.startswith("---"):
         # Split file contents by markdown front matter delimiter
-        file_contents_split = stringSplit(file_contents, "---", 2)
-
-        # Extract front matter and rest of file
-        front_matter = file_contents_split[0] + "---\n"
-
-        # Write text to file while preserving front matter
-        with open(fileName, "w") as f:
-            f.write(front_matter)
-            f.write(fileText)
+        front_matter, file_contents = stringSplit(file_contents, "---", 2)
+        front_matter += "---\n"
     else:
-        # Write text to file without preserving front matter
-        with open(fileName, "w") as f:
-            f.write(fileText)
+        front_matter = ""
+
+    # Extract code blocks
+    code_blocks = re.findall(r"```.*?```", file_contents, re.DOTALL)
+
+    # Write text to file while preserving front matter and code blocks
+    with open(fileName, "w") as f:
+        f.write(front_matter)
+        for block in code_blocks:
+            f.write("\n" + block)
+        f.write("\n\n" + fileText)
 
 
 def readFromFile(fileName):
@@ -146,10 +148,15 @@ def readFromFile(fileName):
     # Check if file contains markdown front matter
     if file_contents.startswith("---"):
         # Split file contents by markdown front matter delimiter
-        file_contents_split = stringSplit(file_contents, "---", 2)
+        front_matter, file_contents = stringSplit(file_contents, "---", 2)
+    else:
+        front_matter = ""
 
-        # Extract front matter and rest of file
-        restOfFile = file_contents_split[1].strip()
-        return restOfFile
+    # Extract code blocks
+    code_blocks = re.findall(r"```.*?```", file_contents, re.DOTALL)
 
-    return file_contents
+    # Remove code blocks from file contents for return value
+    for block in code_blocks:
+        file_contents = file_contents.replace(block, "")
+
+    return file_contents.strip()

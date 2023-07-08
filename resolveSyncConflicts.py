@@ -74,7 +74,7 @@ def resolveSyncConflicts():
         deleteFile(conflictFilePath)
         reconciledPaths = utils.unPrefixAllPaths(reconciledPaths)
         finalConstructedFile = toDo.constructFileFromPaths(reconciledPaths)
-        utils.writeOutputToDos(finalConstructedFile, masterFilePath)
+        utils.writeToFile(masterFilePath, finalConstructedFile)
 
 
 if __name__ == "__main__":
