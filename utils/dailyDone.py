@@ -5,7 +5,8 @@ sys.path.insert(0, path.dirname(__file__))
 
 from datetime import datetime
 from utils.utils import *
-from utils.routines import *
+
+# from utils.routines import *
 
 
 def addToDailyDoneFile(paths):
@@ -29,7 +30,6 @@ def addToDailyDoneFile(paths):
     else:
         dailyDoneSoFar[todaysDate] = tasks
     dailyDoneSoFar[todaysDate] = dedup(dailyDoneSoFar[todaysDate])
-    dailyDoneSoFar[todaysDate] = sortRoutinesToTop(dailyDoneSoFar[todaysDate])
     writeToFile(dailyDoneFile, dumpJson(dailyDoneSoFar))
 
 
@@ -46,7 +46,4 @@ def addToReadableDailyDoneFile(paths):
     else:
         readableDailyDoneSoFar[todaysDate] = readableTasks
     readableDailyDoneSoFar[todaysDate] = dedup(readableDailyDoneSoFar[todaysDate])
-    readableDailyDoneSoFar[todaysDate] = sortRoutinesToTop(
-        readableDailyDoneSoFar[todaysDate]
-    )
     writeToFile(readableDailyDoneFile, dumpJson(readableDailyDoneSoFar))

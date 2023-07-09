@@ -1,7 +1,6 @@
 import sys
 from os import path
 import os
-import glob
 import time
 
 sys.path.insert(0, path.dirname(__file__))

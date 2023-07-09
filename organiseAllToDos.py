@@ -4,10 +4,8 @@ from os import path
 sys.path.insert(0, path.dirname(__file__))
 
 import utils.utils as utils
-from utils.routines import *
 from utils.toDo import *
 from utils.dailyDone import *
-from utils.prioritisedToDo import *
 
 
 def organiseAndReturnTodos(toDoFile):
@@ -53,7 +51,6 @@ if __name__ == "__main__":
     doneOutput = constructFileFromPaths(allDonePaths)
 
     writeToFile(getConfig()["doneFilePath"], doneOutput)
-    calcAndSavePrioritisedToDos(unDonePaths)
 
     # add new done paths to daily one files
     addToDailyDoneFile(newDonePaths)
