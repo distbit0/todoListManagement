@@ -68,7 +68,7 @@ def getAllToDosAndDoneText():
     )
     toDoFiles = {}
 
-    for filePath in glob.glob(toDoFolderPath + "**/1Todo*.md", recursive=True):
+    for filePath in glob.glob(toDoFolderPath + "**/*todo.md", recursive=True):
         isConflictFile = False
         filePathForSubject = str(filePath)
         if ".sync-conflict-" in filePath:
@@ -76,7 +76,7 @@ def getAllToDosAndDoneText():
             isConflictFile = True
         subject = (
             filePathForSubject.split("/")[-1]
-            .replace("1Todo", "")
+            .replace("todo", "")
             .replace(".md", "")
             .strip()
         )
