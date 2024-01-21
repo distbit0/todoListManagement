@@ -61,7 +61,6 @@ def dedup(l):
 
 
 def getAllToDosAndDoneText():
-    returnList = []
     toDoFolderPath, doneToDoFile = (
         getConfig()["toDoFolderPath"],
         getConfig()["doneFilePath"],
