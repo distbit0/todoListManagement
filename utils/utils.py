@@ -60,13 +60,9 @@ def dedup(l):
     return result
 
 
-def getAllToDosAndDoneText():
-    toDoFolderPath, doneToDoFile = (
-        getConfig()["toDoFolderPath"],
-        getConfig()["doneFilePath"],
-    )
+def getAllToDos():
+    toDoFolderPath = getConfig()["toDoFolderPath"]
     toDoFiles = {}
-
     for filePath in glob.glob(toDoFolderPath + "**/*todo.md", recursive=True):
         isConflictFile = False
         filePathForSubject = str(filePath)
@@ -91,9 +87,7 @@ def getAllToDosAndDoneText():
         else:
             toDoFiles.setdefault(toDoId, {})["master"] = fileObj
 
-    doneToDoText = readFromFile(doneToDoFile).replace("**", "")
-
-    return toDoFiles, doneToDoText
+    return toDoFiles
 
 
 def prefixAllPaths(paths, prefix):

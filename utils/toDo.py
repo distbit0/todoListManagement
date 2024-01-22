@@ -4,7 +4,6 @@ from utils.utils import *
 def getAllToDoPaths(totalText, prefix=""):
     totalText = totalText.replace("**", "")
     path = {}
-    donePaths = []
     unDonePaths = []
     totalTextLines = totalText.split("\n")
     for i, line in enumerate(totalTextLines):
@@ -15,9 +14,7 @@ def getAllToDoPaths(totalText, prefix=""):
         currentPath = [path[indent] for indent in range(currentIndent + 1)]
         if "[x]" in line:
             noUndoneSubTasks = checkForUnDoneSubtasks(i, currentIndent, totalTextLines)
-            if noUndoneSubTasks:
-                donePaths.append(currentPath)
-            else:
+            if not noUndoneSubTasks:
                 unDonePaths.append(currentPath)
         else:
             unDonePaths.append(currentPath)
@@ -26,9 +23,8 @@ def getAllToDoPaths(totalText, prefix=""):
 
     if prefix:
         unDonePaths = prefixAllPaths(unDonePaths, prefix)
-        donePaths = prefixAllPaths(donePaths, prefix)
 
-    return unDonePaths, donePaths
+    return unDonePaths
 
 
 def groupRelatedPaths(paths):
@@ -37,7 +33,6 @@ def groupRelatedPaths(paths):
     indexedPaths = {}
 
     for path in paths:
-
         constructedPath = [""]
         pathSortIndex = []
         for element in path:
