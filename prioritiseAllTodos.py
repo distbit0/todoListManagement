@@ -1,24 +1,38 @@
 import utils.utils as utils
-import random
+import sys
 import utils.toDo as toDo
 
 
 def getPriorityOfToDo(todoPath):
-    print("full path: ", todoPath)
-    potentialPriority = todoPath[-1].split("#")[-1].strip(" ")
-    if potentialPriority.isdigit() and len(potentialPriority) < 3:
-        return int(potentialPriority)
-    else:
+    try:
+        potentialPriority = float(todoPath[-1].split("#")[-1].strip(" "))
+    except:
         return False
+    else:
+        if 0 <= potentialPriority <= 99:
+            return potentialPriority
+        else:
+            return False
 
 
-def askForPriority(todoPath):
-    priority = input("Prioritise (0 - 99): \n" + " ".join(todoPath) + ": ")
-    if priority.isdigit() and len(priority) < 3:
+def askForPriority(todoPath, todoFileName, remaining):
+    priority = input(
+        "\n\n\nPrioritise (0 - 99):\nFile: "
+        + todoFileName
+        + "\nRemaining: "
+        + str(remaining)
+        + "\n"
+        + " ".join(todoPath)
+        + ": "
+    )
+    try:
+        priority = float(priority)
+    except:
+        print("Invalid input")
+        return askForPriority(todoPath, todoFileName, remaining)
+    else:
         todoPath = replacePriorityOfTodo(todoPath, priority)
         return todoPath
-    else:
-        return askForPriority(todoPath)
 
 
 def replacePriorityOfTodo(todoPath, newPriority):
@@ -30,23 +44,33 @@ def replacePriorityOfTodo(todoPath, newPriority):
     return todoPath
 
 
-def prioritiseUnprioritisedTodos(todoPaths):
-    prioritisedPaths = []
-    for i, path in enumerate(todoPaths):
-        isLastTodoInList = len(todoPaths) - 1 == i
-        if isLastTodoInList:
-            hasNoChildren = True
-        else:
-            hasNoChildren = len(todoPaths[i + 1]) <= len(todoPaths[i])
-        isNotHashTag = not (len(path) == 1 and path[0].startswith("#"))
-        hasCheckBox = (
-            "- [ ] " in path[-1] or "- [x] " in path[-1] or "- [/] " in path[-1]
-        )
+def checkIfTodoShouldBePrioritised(todoPaths, i):
+    path = todoPaths[i]
+    isLastTodoInList = len(todoPaths) - 1 == i
+    if isLastTodoInList:
+        hasNoChildren = True
+    else:
+        hasNoChildren = len(todoPaths[i + 1]) <= len(todoPaths[i])
+    isNotHashTag = not (len(path) == 1 and path[0].startswith("#"))
+    hasCheckBox = "- [ ] " in path[-1] or "- [x] " in path[-1] or "- [/] " in path[-1]
+    todoPriority = getPriorityOfToDo(path)
 
-        if hasNoChildren and isNotHashTag and hasCheckBox:
-            todoPriority = getPriorityOfToDo(path)
-            if not todoPriority:
-                path = askForPriority(path)
+    return hasNoChildren and isNotHashTag and hasCheckBox and (not todoPriority)
+
+
+def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
+    prioritisedPaths = []
+    noOfTodosToPrioritise = len(
+        [
+            path
+            for i, path in enumerate(todoPaths)
+            if checkIfTodoShouldBePrioritised(todoPaths, i)
+        ]
+    )
+    for i, path in enumerate(todoPaths):
+        if checkIfTodoShouldBePrioritised(todoPaths, i):
+            remaining = noOfTodosToPrioritise - i - 1
+            path = askForPriority(path, todoFileName, remaining)
         prioritisedPaths.append(path)
 
     return prioritisedPaths
@@ -101,6 +125,10 @@ def normalisePriorities(todoPaths):
 
 
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == "--non-interactive":
+        nonInteractive = True
+    else:
+        nonInteractive = False
     excludedFiles = utils.getConfig()["todosExcludedFromPrioritisation"]
     toDoFiles = utils.getAllToDos()
     for file in toDoFiles:
@@ -111,7 +139,8 @@ def main():
         if path in excludedFiles:
             continue
         todoPaths = toDo.getAllToDoPaths(text)
-        todoPaths = prioritiseUnprioritisedTodos(todoPaths)
+        if not nonInteractive:
+            todoPaths = prioritiseUnprioritisedTodos(todoPaths, path.split("/")[-1])
         todoPaths = normalisePriorities(todoPaths)
         fileText = toDo.constructFileFromPaths(todoPaths)
         with open(path, "w") as f:
