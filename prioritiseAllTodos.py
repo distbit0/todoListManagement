@@ -4,6 +4,7 @@ import utils.toDo as toDo
 
 
 def getPriorityOfToDo(todoPath):
+    print("full path: ", todoPath)
     potentialPriority = todoPath[-1].split("#")[-1].strip(" ")
     if potentialPriority.isdigit() and len(potentialPriority) < 3:
         return int(potentialPriority)
@@ -34,11 +35,15 @@ def prioritiseUnprioritisedTodos(todoPaths):
     for i, path in enumerate(todoPaths):
         isLastTodoInList = len(todoPaths) - 1 == i
         if isLastTodoInList:
-            todoHasNoChildren = True
+            hasNoChildren = True
         else:
-            todoHasNoChildren = len(todoPaths[i + 1]) <= len(todoPaths[i])
+            hasNoChildren = len(todoPaths[i + 1]) <= len(todoPaths[i])
+        isNotHashTag = not (len(path) == 1 and path[0].startswith("#"))
+        hasCheckBox = (
+            "- [ ] " in path[-1] or "- [x] " in path[-1] or "- [/] " in path[-1]
+        )
 
-        if todoHasNoChildren:
+        if hasNoChildren and isNotHashTag and hasCheckBox:
             todoPriority = getPriorityOfToDo(path)
             if not todoPriority:
                 path = askForPriority(path)
@@ -96,16 +101,21 @@ def normalisePriorities(todoPaths):
 
 
 def main():
+    excludedFiles = utils.getConfig()["todosExcludedFromPrioritisation"]
     toDoFiles = utils.getAllToDos()
     for file in toDoFiles:
         if "conflict" in toDoFiles[file]:
             continue
         fileObj = toDoFiles[file]["master"]
         text, path = fileObj["text"], fileObj["path"]
+        if path in excludedFiles:
+            continue
         todoPaths = toDo.getAllToDoPaths(text)
         todoPaths = prioritiseUnprioritisedTodos(todoPaths)
         todoPaths = normalisePriorities(todoPaths)
-        print("\n\n\n\n\n\n", toDo.constructFileFromPaths(todoPaths))
+        fileText = toDo.constructFileFromPaths(todoPaths)
+        with open(path, "w") as f:
+            f.write(fileText)
 
 
 if __name__ == "__main__":
