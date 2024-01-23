@@ -3,48 +3,55 @@ import sys
 import utils.toDo as toDo
 
 
-def getPriorityOfToDo(todoPath):
+def getPriorityOfTodoSegment(todoSegment):
     try:
-        potentialPriority = float(todoPath[-1].split("#")[-1].strip(" "))
-    except:
+        potentialPriorityString = todoSegment.split("#")[-1].strip()
+        return (
+            float(potentialPriorityString)
+            if 0 <= float(potentialPriorityString) <= 99
+            else False
+        )
+    except ValueError:
         return False
-    else:
-        if 0 <= potentialPriority <= 99:
-            return potentialPriority
-        else:
-            return False
 
 
-def askForPriority(todoPath, todoFileName, remaining):
-    priority = input(
-        "\n\n\nPrioritise (0 - 99):\nFile: "
-        + todoFileName
-        + "\nRemaining: "
-        + str(remaining)
-        + "\n"
-        + " ".join(todoPath)
-        + ": "
-    )
-    try:
-        priority = float(priority)
-    except:
-        print("Invalid input")
-        return askForPriority(todoPath, todoFileName, remaining)
+def getPriorityOfToDo(todo_path):
+    return getPriorityOfTodoSegment(todo_path[-1])
+
+
+def askForPriority(todo_path, todo_file, remaining):
+    while True:
+        priority_input = input(
+            f"\n\n\nPrioritise (0 - 99):\nFile: {todo_file}\nRemaining: {remaining}\n{' '.join(todo_path)}: "
+        )
+        try:
+            priority = float(priority_input)
+            return replacePriorityOfTodo(todo_path, priority)
+        except ValueError:
+            print("Invalid input")
+
+
+def replacePriorityOfTodoSegment(todoSegment, newPriority):
+    if getPriorityOfTodoSegment(todoSegment):
+        todoSegment = "#".join(todoSegment.split("#")[:-1]) + " #" + str(newPriority)
     else:
-        todoPath = replacePriorityOfTodo(todoPath, priority)
-        return todoPath
+        todoSegment = todoSegment + " #" + str(newPriority)
+    todoSegment = todoSegment.replace("  ", " ")
+    return todoSegment
+
+
+def removePriorityFromTodoSegment(todoSegment):
+    if getPriorityOfTodoSegment(todoSegment):
+        todoSegment = "#".join(todoSegment.split("#")[:-1])
+    return todoSegment
 
 
 def replacePriorityOfTodo(todoPath, newPriority):
-    if getPriorityOfToDo(todoPath):
-        todoPath[-1] = "#".join(todoPath[-1].split("#")[:-1]) + " #" + str(newPriority)
-    else:
-        todoPath[-1] = todoPath[-1] + " #" + str(newPriority)
-    todoPath[-1] = todoPath[-1].replace("  ", " ")
+    todoPath[-1] = replacePriorityOfTodoSegment(todoPath[-1], newPriority)
     return todoPath
 
 
-def checkIfTodoShouldBePrioritised(todoPaths, i):
+def shouldTodoBePrioritised(todoPaths, i, mustNotBePrioritised):
     path = todoPaths[i]
     isLastTodoInList = len(todoPaths) - 1 == i
     if isLastTodoInList:
@@ -54,9 +61,9 @@ def checkIfTodoShouldBePrioritised(todoPaths, i):
     isNotHashTag = not (len(path) == 1 and path[0].startswith("#"))
     hasCheckBox = "- [ ] " in path[-1] or "- [x] " in path[-1] or "- [/] " in path[-1]
     todoPriority = getPriorityOfToDo(path)
-    shouldBePrioritised = (
-        hasNoChildren and isNotHashTag and hasCheckBox and (not todoPriority)
-    )
+    shouldBePrioritised = hasNoChildren and isNotHashTag and hasCheckBox
+    if mustNotBePrioritised:
+        shouldBePrioritised = shouldBePrioritised and not todoPriority
     return shouldBePrioritised, hasNoChildren
 
 
@@ -66,14 +73,12 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
         [
             path
             for i, path in enumerate(todoPaths)
-            if checkIfTodoShouldBePrioritised(todoPaths, i)[0]
+            if shouldTodoBePrioritised(todoPaths, i, True)[0]
         ]
     )
     prioritisedSoFar = 0
     for i, path in enumerate(todoPaths):
-        shouldBePrioritised, hasNoChildren = checkIfTodoShouldBePrioritised(
-            todoPaths, i
-        )
+        shouldBePrioritised, hasNoChildren = shouldTodoBePrioritised(todoPaths, i, True)
         if shouldBePrioritised:
             remaining = noOfTodosToPrioritise - prioritisedSoFar - 1
             path = askForPriority(path, todoFileName, remaining)
@@ -115,18 +120,37 @@ def evenly_distribute_values(data, max_new):
     return distributed_data
 
 
+def assignPriorityOfParentsToChildren(todoPaths):
+    outputPaths = []
+    for path in todoPaths:
+        parentSegmentPriority = False
+        reconstructedPath = []
+        for i, element in enumerate(path):
+            isLastElement = i == len(path) - 1
+            hasPriority = getPriorityOfTodoSegment(element)
+            if hasPriority and not isLastElement:
+                parentSegmentPriority = hasPriority
+                element = removePriorityFromTodoSegment(element)
+            if isLastElement and parentSegmentPriority and not hasPriority:
+                element = replacePriorityOfTodoSegment(element, parentSegmentPriority)
+            reconstructedPath.append(element)
+        outputPaths.append(reconstructedPath)
+
+    return outputPaths
+
+
 def normalisePriorities(todoPaths):
     pathPriorities = {}
     for i, path in enumerate(todoPaths):
-        shouldBePrioritised, hasNoChildren = checkIfTodoShouldBePrioritised(
-            todoPaths, i
+        shouldBePrioritised, hasNoChildren = shouldTodoBePrioritised(
+            todoPaths, i, False
         )
         if not hasNoChildren:
             continue  ## to signal that it has children, and hence should be ignored
-        if not shouldBePrioritised:
-            pathPriorities[str(path)] = False
-        else:
+        if shouldBePrioritised:
             pathPriorities[str(path)] = getPriorityOfToDo(path)
+        else:
+            pathPriorities[str(path)] = False
 
     pathPriorities = evenly_distribute_values(pathPriorities, 99)
     normalisedPaths = []
@@ -155,6 +179,7 @@ def main():
         if path in excludedFiles:
             continue
         todoPaths = toDo.getAllToDoPaths(text)
+        todoPaths = assignPriorityOfParentsToChildren(todoPaths)
         if not nonInteractive:
             todoPaths = prioritiseUnprioritisedTodos(todoPaths, path.split("/")[-1])
         todoPaths = normalisePriorities(todoPaths)
