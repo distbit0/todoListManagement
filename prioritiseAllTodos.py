@@ -51,7 +51,7 @@ def replacePriorityOfTodo(todoPath, newPriority):
     return todoPath
 
 
-def shouldTodoBePrioritised(todoPaths, i, mustNotBePrioritised):
+def shouldTodoBePrioritised(todoPaths, i, mustNotBeAlreadyPrioritised):
     path = todoPaths[i]
     isLastTodoInList = len(todoPaths) - 1 == i
     if isLastTodoInList:
@@ -62,7 +62,7 @@ def shouldTodoBePrioritised(todoPaths, i, mustNotBePrioritised):
     hasCheckBox = "- [ ] " in path[-1] or "- [x] " in path[-1] or "- [/] " in path[-1]
     todoPriority = getPriorityOfToDo(path)
     shouldBePrioritised = hasNoChildren and isNotHashTag and hasCheckBox
-    if mustNotBePrioritised:
+    if mustNotBeAlreadyPrioritised:
         shouldBePrioritised = shouldBePrioritised and not todoPriority
     return shouldBePrioritised, hasNoChildren
 
