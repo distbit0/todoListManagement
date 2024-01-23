@@ -17,7 +17,7 @@ def organiseAndReturnTodos(toDoFile):
     writeToFile(toDoFilePath, unDoneOutput)
 
 
-if __name__ == "__main__" and False:
+if __name__ == "__main__":
     toDoFiles = utils.getAllToDos()
 
     for toDoId in toDoFiles:
