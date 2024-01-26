@@ -2,6 +2,7 @@ from utils.utils import *
 
 
 def getAllToDoPaths(totalText, prefix=""):
+    totalText = totalText.replace("    ", "\t")
     totalText = totalText.replace("**", "")
     path = {}
     unDonePaths = []
