@@ -78,7 +78,7 @@ def printTopNTodos(todoPaths, n):
         print("no prioritised todos to display")
         return
     sortedTodos = sorted(allTodos, key=lambda x: x[0])
-    n = min(n, len(sortedTodos) - 1)
+    n = min(n + 1, len(sortedTodos))
     for i in range(n):
         priority, path = sortedTodos[i]
         print(f"{priority} {path[-1]}")
@@ -114,6 +114,7 @@ def generateTodoListHash(todoText, todoPaths):
 
 
 def updatePathPriorities(todoPaths, indexOfPath, priority):
+    print("running updatePathPriorities")
     if priority != "n":
         prioritySubstitutions = dict(
             [(j, j + 1) for j in range(priority, tasksToAssignPriority)]
@@ -122,6 +123,11 @@ def updatePathPriorities(todoPaths, indexOfPath, priority):
         for i, task in enumerate(todoPaths):
             taskPriority = getPriorityOfTodo(task)
             if taskPriority in prioritySubstitutions:
+                print(
+                    "substituting {} with {} for task {}".format(
+                        taskPriority, prioritySubstitutions[taskPriority], task
+                    )
+                )
                 todoPaths[i] = replacePriorityOfTodo(
                     task, prioritySubstitutions[taskPriority]
                 )
@@ -156,10 +162,14 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
                     printTopNTodos(prioritisedPaths, tasksToAssignPriority)
                     priority = askForPriority(path, todoFileName, remaining)
                 prioritisedSoFar += 1
-                prioritisedPaths = updatePathPriorities(prioritisedPaths, i, priority)
             except KeyboardInterrupt:
                 receivedCtrlC = True
-                print("skipping all other todos in {}".format(todoFileName))
+                print("\n\nskipping all other todos in {}".format(todoFileName))
+            else:
+                if not receivedCtrlC:
+                    prioritisedPaths = updatePathPriorities(
+                        prioritisedPaths, i, priority
+                    )
 
     return prioritisedPaths, receivedCtrlC
 
@@ -198,11 +208,13 @@ def regularisePriorities(todoPaths):
         else:
             print("weird priority: {}".format(priority))
             regularisedTodos.append(removePriorityFromTodo(path))
+    return regularisedTodos
 
-    ### de-duplicate priorities
+
+def deduplicatePriorities(todoPaths):
     prioritiesUsedSoFar = []
     deDupedTodos = []
-    for path in regularisedTodos:
+    for path in todoPaths:
         priority = getPriorityOfTodo(path)
         if priority == "n":
             deDupedTodos.append(path)
@@ -213,21 +225,34 @@ def regularisePriorities(todoPaths):
             prioritiesUsedSoFar.append(priority)
             deDupedTodos.append(path)
 
-    return regularisedTodos
+    return deDupedTodos
 
 
-def removeParentPaths(todoPaths):
-    filteredPaths = []
-    for i, path in enumerate(todoPaths):
-        hasNoChildren = shouldTodoBePrioritised(todoPaths, i, False)[1]
-        if hasNoChildren:
-            filteredPaths.append(path)
-    return filteredPaths
+def removeGapsInPriorities(todos):
+    # Step 1: Extract todos with numeric priorities and their indices
+    indexed_prioritized_todos = [
+        (index, todo)
+        for index, todo in enumerate(todos)
+        if getPriorityOfTodo(todo) not in [False, "n"]
+    ]
+
+    # Step 2: Sort the indexed todos by their priorities
+    indexed_prioritized_todos.sort(key=lambda x: getPriorityOfTodo(x[1]))
+
+    # Step 3: Reassign priorities starting from 1
+    new_priority = 1
+    for index, todo in indexed_prioritized_todos:
+        todos[index] = replacePriorityOfTodo(todo, new_priority)
+        new_priority += 1
+
+    return todos
 
 
 def processTodoPaths(text, path, interactive):
     todoPathsOrig = toDo.getAllToDoPaths(text)
     todoPaths = regularisePriorities(todoPathsOrig)
+    todoPaths = deduplicatePriorities(todoPaths)
+    todoPaths = removeGapsInPriorities(todoPaths)
     todoPaths = assignPriorityOfParentsToChildren(todoPaths)
 
     if interactive:
@@ -245,8 +270,7 @@ def processTodoPaths(text, path, interactive):
         print("input hash: {}, output hash: {}".format(inputHash, outputHash))
         raise Exception("hashes do not match!!!!")
     print("hashes match for {}".format(path))
-    utils.writeToFile(path, fileText)
-    return interactive
+    return interactive, fileText
 
 
 def main():
@@ -266,7 +290,8 @@ def main():
         text, path = fileObj["text"], fileObj["path"]
         if path in excludedFiles:
             continue
-        interactive = processTodoPaths(text, path, interactive)
+        interactive, fileText = processTodoPaths(text, path, interactive)
+        utils.writeToFile(path, fileText)
 
 
 if __name__ == "__main__":
