@@ -19,15 +19,11 @@ def generateTodoListHash(todoText, todoPaths):
     indentHash = 0
     base = 257  # A prime number used as the base for the polynomial hash
     mod = 2489  # Modulus for keeping the hash values manageable
-
-    for idx, todo in enumerate(todoPaths):
+    for todo in todoPaths:
         indentation = len(todo)
-        # Polynomial rolling hash: hash = (hash * base + indentation) % mod
         indentHash = (indentHash * base + indentation) % mod
-
     indentSum = sum(len(todo) for todo in todoPaths)
     lineCount = len(todoText.strip().split("\n"))
-
     return (indentHash, indentSum, lineCount)
 
 
@@ -83,6 +79,27 @@ def shouldTodoBePrioritised(todoPaths, i, mustNotBeAlreadyPrioritised):
     return shouldBePrioritised, hasNoChildren
 
 
+def printRepresentativeTodos(todoPaths, n):
+    if n <= 0:
+        raise ValueError("Number of percentiles (n) must be greater than 0")
+    print(f"\n\n\nRepresentative {n} todos:")
+    allTodos = [
+        (getPriorityOfToDo(path), path) for path in todoPaths if getPriorityOfToDo(path)
+    ]
+    if len(allTodos) == 0:
+        print("no prioritised todos")
+        return
+    sortedTodos = sorted(allTodos, key=lambda x: x[0])
+    totalTodos = len(sortedTodos)
+    for i in range(n):
+        percentileIndex = int(totalTodos * (i / n))
+        percentileIndex = min(
+            percentileIndex, totalTodos - 1
+        )  # Ensure index is within bounds
+        priority, path = sortedTodos[percentileIndex]
+        print(f"{priority} {path[-1]}")
+
+
 def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
     prioritisedPaths = []
     noOfTodosToPrioritise = len(
@@ -100,6 +117,7 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
             try:
                 remaining = noOfTodosToPrioritise - prioritisedSoFar - 1
                 if not receivedCtrlC:
+                    printRepresentativeTodos(todoPaths, 8)
                     path = askForPriority(path, todoFileName, remaining)
                 prioritisedSoFar += 1
             except KeyboardInterrupt:
@@ -222,10 +240,9 @@ def main():
         fileText = toDo.constructFileFromPaths(onlyChildTodoPaths)
         inputHash = generateTodoListHash(text, todoPathsOrig)
         outputHash = generateTodoListHash(fileText, todoPaths)
-        print(f"input hash: {inputHash}")
-        print(f"output hash: {outputHash}")
         if inputHash != outputHash:
             raise Exception("hashes do not match!!!!")
+        print("hashes match for {}".format(path))
         utils.writeToFile(path, fileText)
 
 
