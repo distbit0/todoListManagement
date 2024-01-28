@@ -248,12 +248,34 @@ def removeGapsInPriorities(todos):
     return todos
 
 
+def triggerReprioritisationIfNecessary(todoPaths):
+    outputTodoPaths = []
+    highestPriorityTask = max(
+        getPriorityOfTodo(todoPath)
+        for todoPath in todoPaths
+        if getPriorityOfTodo(todoPath) and getPriorityOfTodo(todoPath) != "n"
+    )
+    if highestPriorityTask <= tasksToAssignPriority / 3:
+        print("triggering a reprioritisation")
+        outputTodoPaths = [
+            removePriorityFromTodo(todoPath)
+            if getPriorityOfTodo(todoPath) == "n"
+            else todoPath
+            for todoPath in todoPaths
+        ]
+    else:
+        outputTodoPaths = todoPaths
+
+    return outputTodoPaths
+
+
 def processTodoPaths(text, path, interactive):
     todoPathsOrig = toDo.getAllToDoPaths(text)
     todoPaths = regularisePriorities(todoPathsOrig)
     todoPaths = deduplicatePriorities(todoPaths)
     todoPaths = removeGapsInPriorities(todoPaths)
     todoPaths = assignPriorityOfParentsToChildren(todoPaths)
+    todoPaths = triggerReprioritisationIfNecessary(todoPaths)
 
     if interactive:
         fileName = path.split("/")[-1]
@@ -274,15 +296,15 @@ def processTodoPaths(text, path, interactive):
 
 
 def main():
-    interactive = True
+    interactive = False
     if len(sys.argv) > 1 and sys.argv[1] == "--non-interactive":
         interactive = False
     excludedFiles = utils.getConfig()["todosExcludedFromPrioritisation"]
-    toDoFiles = utils.getAllToDos()
-    # testFileText = utils.readFromFile("testFile.md")
-    # toDoFiles = {
-    #     "testFile": {"master": {"text": testFileText, "path": "modifiedTestFile.md"}}
-    # }
+    # toDoFiles = utils.getAllToDos()
+    testFileText = utils.readFromFile("testFile.md")
+    toDoFiles = {
+        "testFile": {"master": {"text": testFileText, "path": "modifiedTestFile.md"}}
+    }
     for file in toDoFiles:
         if "conflict" in toDoFiles[file]:
             continue
