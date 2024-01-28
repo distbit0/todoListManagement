@@ -300,11 +300,11 @@ def main():
     if len(sys.argv) > 1 and sys.argv[1] == "--non-interactive":
         interactive = False
     excludedFiles = utils.getConfig()["todosExcludedFromPrioritisation"]
-    # toDoFiles = utils.getAllToDos()
-    testFileText = utils.readFromFile("testFile.md")
-    toDoFiles = {
-        "testFile": {"master": {"text": testFileText, "path": "modifiedTestFile.md"}}
-    }
+    toDoFiles = utils.getAllToDos()
+    # testFileText = utils.readFromFile("testFile.md")
+    # toDoFiles = {
+    #     "testFile": {"master": {"text": testFileText, "path": "modifiedTestFile.md"}}
+    # }
     for file in toDoFiles:
         if "conflict" in toDoFiles[file]:
             continue
