@@ -34,7 +34,7 @@ def getPriorityOfToDo(todo_path):
 def askForPriority(todo_path, todo_file, remaining):
     while True:
         priority_input = input(
-            f"\n\n\nPrioritise (0 - 99):\nFile: {todo_file}\nRemaining: {remaining}\n{' '.join(todo_path)}: "
+            f"\n\n\nPrioritise (0 - 10):\nFile: {todo_file}\nRemaining: {remaining}\n{' '.join(todo_path)}: "
         )
         try:
             priority = float(priority_input)
@@ -128,36 +128,6 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
     return prioritisedPaths, receivedCtrlC
 
 
-def evenly_distribute_values(data, max_new):
-    if not isinstance(data, dict) or not isinstance(max_new, (int, float)):
-        raise TypeError(
-            "Invalid input types. 'data' must be a dictionary and 'max_new' must be a number."
-        )
-
-    if len(data) == 0:
-        return {}
-
-    # Sorting the values and assigning ranks
-    sorted_values = sorted((value, key) for key, value in data.items() if value)
-    ranks = {key: rank for rank, (_, key) in enumerate(sorted_values)}
-
-    # Total number of items
-    total_items = len(list(ranks.keys()))
-
-    # Assigning each value a percentile and scaling it to the new range
-    distributed_data = {}
-    for key in data:
-        if data[key]:
-            # Percentile is the rank of the value divided by the total number of items
-            percentile = (ranks[key] + 1) / total_items
-            # The new value is the percentile multiplied by the new range
-            distributed_data[key] = int(percentile * max_new)
-        else:
-            distributed_data[key] = False
-
-    return distributed_data
-
-
 def assignPriorityOfParentsToChildren(todoPaths):
     outputPaths = []
     for path in todoPaths:
@@ -175,26 +145,6 @@ def assignPriorityOfParentsToChildren(todoPaths):
         outputPaths.append(reconstructedPath)
 
     return outputPaths
-
-
-def normalisePriorities(todoPaths):
-    pathPriorities = {}
-    for i, path in enumerate(todoPaths):
-        shouldBePrioritised = shouldTodoBePrioritised(todoPaths, i, False)[0]
-        if shouldBePrioritised:
-            pathPriorities[str(path)] = getPriorityOfToDo(path)
-        else:
-            pathPriorities[str(path)] = False
-
-    pathPriorities = evenly_distribute_values(pathPriorities, 99)
-    normalisedPaths = []
-    for path in todoPaths:
-        if pathPriorities[str(path)]:
-            path = replacePriorityOfTodo(path, pathPriorities[str(path)])
-
-        normalisedPaths.append(path)
-
-    return normalisedPaths
 
 
 def removeParentPaths(todoPaths):
