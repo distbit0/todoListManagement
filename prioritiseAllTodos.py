@@ -183,6 +183,7 @@ def assignPriorityOfParentsToChildren(todoPaths):
     return outputPaths
 
 
+#
 def regularisePriorities(todoPaths):
     regularisedTodos = []
     for path in todoPaths:
