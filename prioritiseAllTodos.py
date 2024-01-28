@@ -1,48 +1,42 @@
-import utils.utils as utils
 import sys
+import utils.utils as utils
 import utils.toDo as toDo
 
+tasksToAssignPriority = utils.getConfig()["tasksToAssignPriority"]
 
+
+#################
+################# UTILS
+#################
+
+
+#### get priority of todo
 def getPriorityOfTodoSegment(todoSegment):
-    try:
-        potentialPriorityString = todoSegment.split("#")[-1].strip()
-        return (
-            float(potentialPriorityString)
-            if 0 <= float(potentialPriorityString) <= 99
-            else False
-        )
-    except ValueError:
-        return False
+    potentialPriorityString = todoSegment.split("#")[-1].strip()
+    if potentialPriorityString == "n":
+        return potentialPriorityString
+    elif potentialPriorityString.isdigit():
+        return int(potentialPriorityString)
+    return False
 
 
-def generateTodoListHash(todoText, todoPaths):
-    indentHash = 0
-    base = 257  # A prime number used as the base for the polynomial hash
-    mod = 2489  # Modulus for keeping the hash values manageable
-    for todo in todoPaths:
-        indentation = len(todo)
-        indentHash = (indentHash * base + indentation) % mod
-    indentSum = sum(len(todo) for todo in todoPaths)
-    lineCount = len(todoText.strip().split("\n"))
-    return (indentHash, indentSum, lineCount)
-
-
-def getPriorityOfToDo(todo_path):
+def getPriorityOfTodo(todo_path):
     return getPriorityOfTodoSegment(todo_path[-1])
 
 
-def askForPriority(todo_path, todo_file, remaining):
-    while True:
-        priority_input = input(
-            f"\n\n\nPrioritise (0 - 10):\nFile: {todo_file}\nRemaining: {remaining}\n{' '.join(todo_path)}: "
-        )
-        try:
-            priority = float(priority_input)
-            return replacePriorityOfTodo(todo_path, priority)
-        except ValueError:
-            print("Invalid input")
+#### remove priority from todo
+def removePriorityFromTodoSegment(todoSegment):
+    if getPriorityOfTodoSegment(todoSegment):
+        todoSegment = "#".join(todoSegment.split("#")[:-1])
+    return todoSegment
 
 
+def removePriorityFromTodo(todoPath):
+    todoPath[-1] = removePriorityFromTodoSegment(todoPath[-1])
+    return todoPath
+
+
+#### replace priority of todo
 def replacePriorityOfTodoSegment(todoSegment, newPriority):
     if getPriorityOfTodoSegment(todoSegment):
         todoSegment = "#".join(todoSegment.split("#")[:-1]) + " #" + str(newPriority)
@@ -52,17 +46,45 @@ def replacePriorityOfTodoSegment(todoSegment, newPriority):
     return todoSegment
 
 
-def removePriorityFromTodoSegment(todoSegment):
-    if getPriorityOfTodoSegment(todoSegment):
-        todoSegment = "#".join(todoSegment.split("#")[:-1])
-    return todoSegment
-
-
 def replacePriorityOfTodo(todoPath, newPriority):
     todoPath[-1] = replacePriorityOfTodoSegment(todoPath[-1], newPriority)
     return todoPath
 
 
+#### ask for priority of todo
+def askForPriority(todo_path, todo_file, remaining):
+    while True:
+        priority_input = input(
+            f"\n\n\nPrioritise (0 - {tasksToAssignPriority} OR 'n' if not in top {tasksToAssignPriority}):\nFile: {todo_file}\nRemaining: {remaining}\n{' '.join(todo_path)}: "
+        )
+        if (
+            priority_input.isdigit()
+            and 1 <= int(priority_input) <= tasksToAssignPriority
+        ):
+            priority = int(priority_input)
+            return priority
+        elif priority_input.lower() == "n":
+            return priority_input.lower()
+
+
+def printTopNTodos(todoPaths, n):
+    print(f"\n\n\nTop {n} todos:")
+    allTodos = [
+        (getPriorityOfTodo(path), path)
+        for path in todoPaths
+        if getPriorityOfTodo(path) and getPriorityOfTodo(path) != "n"
+    ]
+    if len(allTodos) == 0:
+        print("no prioritised todos to display")
+        return
+    sortedTodos = sorted(allTodos, key=lambda x: x[0])
+    n = min(n, len(sortedTodos) - 1)
+    for i in range(n):
+        priority, path = sortedTodos[i]
+        print(f"{priority} {path[-1]}")
+
+
+#### misc
 def shouldTodoBePrioritised(todoPaths, i, mustNotBeAlreadyPrioritised):
     path = todoPaths[i]
     isLastTodoInList = len(todoPaths) - 1 == i
@@ -72,32 +94,45 @@ def shouldTodoBePrioritised(todoPaths, i, mustNotBeAlreadyPrioritised):
         hasNoChildren = len(todoPaths[i + 1]) <= len(todoPaths[i])
     isNotHashTag = not (len(path) == 1 and path[0].startswith("#"))
     hasCheckBox = "- [ ] " in path[-1] or "- [x] " in path[-1] or "- [/] " in path[-1]
-    todoPriority = getPriorityOfToDo(path)
+    todoPriority = getPriorityOfTodo(path)
     shouldBePrioritised = hasNoChildren and isNotHashTag and hasCheckBox
     if mustNotBeAlreadyPrioritised:
         shouldBePrioritised = shouldBePrioritised and not todoPriority
     return shouldBePrioritised, hasNoChildren
 
 
-def printRepresentativeTodos(todoPaths, n):
-    if n <= 0:
-        raise ValueError("Number of percentiles (n) must be greater than 0")
-    print(f"\n\n\nRepresentative {n} todos:")
-    allTodos = [
-        (getPriorityOfToDo(path), path) for path in todoPaths if getPriorityOfToDo(path)
-    ]
-    if len(allTodos) == 0:
-        print("no prioritised todos")
-        return
-    sortedTodos = sorted(allTodos, key=lambda x: x[0])
-    totalTodos = len(sortedTodos)
-    for i in range(n):
-        percentileIndex = int(totalTodos * (i / n))
-        percentileIndex = min(
-            percentileIndex, totalTodos - 1
-        )  # Ensure index is within bounds
-        priority, path = sortedTodos[percentileIndex]
-        print(f"{priority} {path[-1]}")
+def generateTodoListHash(todoText, todoPaths):
+    indentHash = 0
+    base = 257  # A prime number used as the base for the polynomial hash
+    mod = 248900  # Modulus for keeping the hash values manageable
+    for todo in todoPaths:
+        indentation = len(todo)
+        indentHash = (indentHash * base + indentation) % mod
+    indentSum = sum(len(todo) for todo in todoPaths)
+    lineCount = len(todoText.strip().split("\n"))
+    return (indentHash, indentSum, lineCount)
+
+
+def updatePathPriorities(todoPaths, indexOfPath, priority):
+    if priority != "n":
+        prioritySubstitutions = dict(
+            [(j, j + 1) for j in range(priority, tasksToAssignPriority)]
+        )
+        prioritySubstitutions[tasksToAssignPriority] = "n"
+        for i, task in enumerate(todoPaths):
+            taskPriority = getPriorityOfTodo(task)
+            if taskPriority in prioritySubstitutions:
+                todoPaths[i] = replacePriorityOfTodo(
+                    task, prioritySubstitutions[taskPriority]
+                )
+    todoPaths[indexOfPath] = replacePriorityOfTodo(todoPaths[indexOfPath], priority)
+
+    return todoPaths
+
+
+#################
+################# END UTILS
+#################
 
 
 def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
@@ -111,19 +146,20 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
     )
     prioritisedSoFar = 0
     receivedCtrlC = False
+    prioritisedPaths = list(todoPaths)
     for i, path in enumerate(todoPaths):
         shouldBePrioritised = shouldTodoBePrioritised(todoPaths, i, True)[0]
         if shouldBePrioritised:
             try:
                 remaining = noOfTodosToPrioritise - prioritisedSoFar - 1
                 if not receivedCtrlC:
-                    printRepresentativeTodos(todoPaths, 8)
-                    path = askForPriority(path, todoFileName, remaining)
+                    printTopNTodos(prioritisedPaths, tasksToAssignPriority)
+                    priority = askForPriority(path, todoFileName, remaining)
                 prioritisedSoFar += 1
+                prioritisedPaths = updatePathPriorities(prioritisedPaths, i, priority)
             except KeyboardInterrupt:
                 receivedCtrlC = True
                 print("skipping all other todos in {}".format(todoFileName))
-        prioritisedPaths.append(path)
 
     return prioritisedPaths, receivedCtrlC
 
@@ -147,6 +183,39 @@ def assignPriorityOfParentsToChildren(todoPaths):
     return outputPaths
 
 
+def regularisePriorities(todoPaths):
+    regularisedTodos = []
+    for path in todoPaths:
+        priority = getPriorityOfTodo(path)
+        if not priority or priority == "n":
+            regularisedTodos.append(path)
+            continue
+        elif type(priority) is int:
+            if priority > tasksToAssignPriority or priority < 1:
+                regularisedTodos.append(removePriorityFromTodo(path))
+            else:
+                regularisedTodos.append(path)
+        else:
+            print("weird priority: {}".format(priority))
+            regularisedTodos.append(removePriorityFromTodo(path))
+
+    ### de-duplicate priorities
+    prioritiesUsedSoFar = []
+    deDupedTodos = []
+    for path in regularisedTodos:
+        priority = getPriorityOfTodo(path)
+        if priority == "n":
+            deDupedTodos.append(path)
+        elif priority in prioritiesUsedSoFar:
+            path = removePriorityFromTodo(path)
+            deDupedTodos.append(path)
+        else:
+            prioritiesUsedSoFar.append(priority)
+            deDupedTodos.append(path)
+
+    return regularisedTodos
+
+
 def removeParentPaths(todoPaths):
     filteredPaths = []
     for i, path in enumerate(todoPaths):
@@ -156,16 +225,40 @@ def removeParentPaths(todoPaths):
     return filteredPaths
 
 
+def processTodoPaths(text, path, interactive):
+    todoPathsOrig = toDo.getAllToDoPaths(text)
+    todoPaths = regularisePriorities(todoPathsOrig)
+    todoPaths = assignPriorityOfParentsToChildren(todoPaths)
+
+    if interactive:
+        fileName = path.split("/")[-1]
+        todoPaths, receivedCtrlC = prioritiseUnprioritisedTodos(todoPaths, fileName)
+        if receivedCtrlC:
+            interactive = False
+            print("disabling interactive mode for all following files..")
+
+    onlyChildTodoPaths = todoPaths
+    fileText = toDo.constructFileFromPaths(onlyChildTodoPaths)
+    inputHash = generateTodoListHash(text, todoPathsOrig)
+    outputHash = generateTodoListHash(fileText, todoPaths)
+    if inputHash != outputHash:
+        print("input hash: {}, output hash: {}".format(inputHash, outputHash))
+        raise Exception("hashes do not match!!!!")
+    print("hashes match for {}".format(path))
+    utils.writeToFile(path, fileText)
+    return interactive
+
+
 def main():
     interactive = True
     if len(sys.argv) > 1 and sys.argv[1] == "--non-interactive":
         interactive = False
     excludedFiles = utils.getConfig()["todosExcludedFromPrioritisation"]
-    toDoFiles = utils.getAllToDos()
-    # testFileText = utils.readFromFile("testFile.md")
-    # toDoFiles = {
-    #     "testFile": {"master": {"text": testFileText, "path": "modifiedTestFile.md"}}
-    # }
+    # toDoFiles = utils.getAllToDos()
+    testFileText = utils.readFromFile("testFile.md")
+    toDoFiles = {
+        "testFile": {"master": {"text": testFileText, "path": "modifiedTestFile.md"}}
+    }
     for file in toDoFiles:
         if "conflict" in toDoFiles[file]:
             continue
@@ -173,27 +266,7 @@ def main():
         text, path = fileObj["text"], fileObj["path"]
         if path in excludedFiles:
             continue
-        todoPathsOrig = toDo.getAllToDoPaths(text)
-        todoPaths = assignPriorityOfParentsToChildren(todoPathsOrig)
-        if interactive:
-            todoPaths, receivedCtrlC = prioritiseUnprioritisedTodos(
-                todoPaths, path.split("/")[-1]
-            )
-            if receivedCtrlC:
-                interactive = False
-                print("disabling interactive mode for all following files..")
-
-        todoPaths = normalisePriorities(todoPaths)
-        onlyChildTodoPaths = removeParentPaths(
-            todoPaths
-        )  ## this is not idempotent so very important to run it only once. otherwise will delete paths
-        fileText = toDo.constructFileFromPaths(onlyChildTodoPaths)
-        inputHash = generateTodoListHash(text, todoPathsOrig)
-        outputHash = generateTodoListHash(fileText, todoPaths)
-        if inputHash != outputHash:
-            raise Exception("hashes do not match!!!!")
-        print("hashes match for {}".format(path))
-        utils.writeToFile(path, fileText)
+        interactive = processTodoPaths(text, path, interactive)
 
 
 if __name__ == "__main__":
