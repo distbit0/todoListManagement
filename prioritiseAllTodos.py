@@ -289,8 +289,7 @@ def processTodoPaths(text, path, interactive):
             interactive = False
             print("disabling interactive mode for all following files..")
 
-    onlyChildTodoPaths = todoPaths
-    fileText = toDo.constructFileFromPaths(onlyChildTodoPaths)
+    fileText = toDo.constructFileFromPaths(todoPaths)
     inputHash = generateTodoListHash(text, todoPathsOrig)
     outputHash = generateTodoListHash(fileText, todoPaths)
     if inputHash != outputHash:
