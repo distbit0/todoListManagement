@@ -170,6 +170,7 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
                     prioritisedPaths = updatePathPriorities(
                         prioritisedPaths, i, priority
                     )
+                    prioritisedPaths = removeGapsInPriorities(prioritisedPaths)
 
     return prioritisedPaths, receivedCtrlC
 
@@ -300,7 +301,7 @@ def processTodoPaths(text, path, interactive):
 
 
 def main():
-    interactive = False
+    interactive = True
     if len(sys.argv) > 1 and sys.argv[1] == "--non-interactive":
         interactive = False
     excludedFiles = utils.getConfig()["todosExcludedFromPrioritisation"]
