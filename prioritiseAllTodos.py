@@ -250,11 +250,15 @@ def removeGapsInPriorities(todos):
 
 def triggerReprioritisationIfNecessary(todoPaths):
     outputTodoPaths = []
-    highestPriorityTask = max(
-        getPriorityOfTodo(todoPath)
-        for todoPath in todoPaths
-        if getPriorityOfTodo(todoPath) and getPriorityOfTodo(todoPath) != "n"
-    )
+    try:
+        highestPriorityTask = max(
+            getPriorityOfTodo(todoPath)
+            for todoPath in todoPaths
+            if getPriorityOfTodo(todoPath) and getPriorityOfTodo(todoPath) != "n"
+        )
+    except ValueError:
+        highestPriorityTask = 0
+
     if highestPriorityTask <= tasksToAssignPriority / 3:
         print("triggering a reprioritisation")
         outputTodoPaths = [
