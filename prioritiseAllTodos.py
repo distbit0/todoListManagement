@@ -1,4 +1,5 @@
 import sys
+import re
 import utils.utils as utils
 import utils.toDo as toDo
 
@@ -51,11 +52,23 @@ def replacePriorityOfTodo(todoPath, newPriority):
     return todoPath
 
 
+#### mark todo as done
+def markTodoSegmentAsDone(todoSegment):
+    todoSegment = todoSegment.replace("- [ ] ", "- [x] ")
+    todoSegment = todoSegment.replace("- [/] ", "- [x] ")
+    return todoSegment
+
+
+def markTodoAsDone(todoPath):
+    todoPath[-1] = markTodoSegmentAsDone(todoPath[-1])
+    return todoPath
+
+
 #### ask for priority of todo
 def askForPriority(todo_path, todo_file, remaining):
     while True:
         priority_input = input(
-            f"\n\n\nPrioritise (0 - {tasksToAssignPriority} OR 'n' if not in top {tasksToAssignPriority}):\nFile: {todo_file}\nRemaining: {remaining}\n{' '.join(todo_path)}: "
+            f"\n\n\nPrioritise (0 - {tasksToAssignPriority} OR 'n' if not in top {tasksToAssignPriority} or 3-4 to swap priorities 3 and 4 or d to 'delete'):\nFile: {todo_file}\nRemaining: {remaining}\n{' '.join(todo_path)}: "
         )
         if (
             priority_input.isdigit()
@@ -65,23 +78,42 @@ def askForPriority(todo_path, todo_file, remaining):
             return priority
         elif priority_input.lower() == "n":
             return priority_input.lower()
+        elif "-" in priority_input:
+            priority = priority_input.split("-")
+            return priority
+        elif priority_input.lower() == "d":
+            return "d"
+        else:
+            print("invalid input")
 
 
-def printTopNTodos(todoPaths, n):
-    print(f"\n\n\nTop {n} todos:")
+def getTopNTodosAsText(todoPaths, n):
+    textOutput = []
+    textOutput.append(f"Top {n} todos:")
     allTodos = [
         (getPriorityOfTodo(path), path)
         for path in todoPaths
         if getPriorityOfTodo(path) and getPriorityOfTodo(path) != "n"
     ]
     if len(allTodos) == 0:
-        print("no prioritised todos to display")
-        return
+        textOutput.append("no prioritised todos to display")
+        return "\n".join(textOutput)
     sortedTodos = sorted(allTodos, key=lambda x: x[0])
     n = min(n + 1, len(sortedTodos))
     for i in range(n):
         priority, path = sortedTodos[i]
-        print(f"{priority} {path[-1]}")
+        todoName = (
+            path[-1].replace("- [x] ", "").replace("- [/] ", "").replace("- [ ] ", "")
+        )
+        textOutput.append(f"{priority}) {todoName}")
+
+    textOutput = "\n".join(textOutput)
+    return textOutput
+
+
+def printTopNTodos(todoPaths, n):
+    print(f"\n\n\n\n\n\n\n\n\n\n")
+    print(getTopNTodosAsText(todoPaths, n))
 
 
 #### misc
@@ -93,7 +125,7 @@ def shouldTodoBePrioritised(todoPaths, i, mustNotBeAlreadyPrioritised):
     else:
         hasNoChildren = len(todoPaths[i + 1]) <= len(todoPaths[i])
     isNotHashTag = not (len(path) == 1 and path[0].startswith("#"))
-    hasCheckBox = "- [ ] " in path[-1] or "- [x] " in path[-1] or "- [/] " in path[-1]
+    hasCheckBox = "- [ ] " in path[-1] or "- [/] " in path[-1]
     todoPriority = getPriorityOfTodo(path)
     shouldBePrioritised = hasNoChildren and isNotHashTag and hasCheckBox
     if mustNotBeAlreadyPrioritised:
@@ -101,38 +133,55 @@ def shouldTodoBePrioritised(todoPaths, i, mustNotBeAlreadyPrioritised):
     return shouldBePrioritised, hasNoChildren
 
 
-def generateTodoListHash(todoText, todoPaths):
+def generateTodoListHash(todoPaths):
     indentHash = 0
     base = 257  # A prime number used as the base for the polynomial hash
     mod = 248900  # Modulus for keeping the hash values manageable
     for todo in todoPaths:
         indentation = len(todo)
         indentHash = (indentHash * base + indentation) % mod
+    pathCount = len(todoPaths)
     indentSum = sum(len(todo) for todo in todoPaths)
-    lineCount = len(todoText.strip().split("\n"))
-    return (indentHash, indentSum, lineCount)
+    return (indentHash, indentSum, pathCount)
+
+
+def substitePriority(prioritySubstitutions, todoPaths):
+    for i, task in enumerate(todoPaths):
+        taskPriority = getPriorityOfTodo(task)
+        if taskPriority in prioritySubstitutions:
+            todoPaths[i] = replacePriorityOfTodo(
+                task, prioritySubstitutions[taskPriority]
+            )
+    return todoPaths
 
 
 def updatePathPriorities(todoPaths, indexOfPath, priority):
     print("running updatePathPriorities")
-    if priority != "n":
-        prioritySubstitutions = dict(
-            [(j, j + 1) for j in range(priority, tasksToAssignPriority)]
-        )
-        prioritySubstitutions[tasksToAssignPriority] = "n"
-        for i, task in enumerate(todoPaths):
-            taskPriority = getPriorityOfTodo(task)
-            if taskPriority in prioritySubstitutions:
-                print(
-                    "substituting {} with {} for task {}".format(
-                        taskPriority, prioritySubstitutions[taskPriority], task
-                    )
-                )
-                todoPaths[i] = replacePriorityOfTodo(
-                    task, prioritySubstitutions[taskPriority]
-                )
-    todoPaths[indexOfPath] = replacePriorityOfTodo(todoPaths[indexOfPath], priority)
+    print(priority)
+    if priority == "d":
+        todoMarkedAsDone = markTodoAsDone(todoPaths[indexOfPath])
+        print("marked todo as done: ", todoMarkedAsDone)
+        todoPaths[indexOfPath] = todoMarkedAsDone
+    else:
+        if priority != "n":
+            prioritySubstitutions = dict(
+                [(j, j + 1) for j in range(priority, tasksToAssignPriority)]
+            )
+            prioritySubstitutions[tasksToAssignPriority] = "n"
+            todoPaths = substitePriority(prioritySubstitutions, todoPaths)
+        todoPaths[indexOfPath] = replacePriorityOfTodo(todoPaths[indexOfPath], priority)
 
+    return todoPaths
+
+
+def swapPriorities(todoPaths, priority1, priority2):
+    if priority2 == "n" or priority2 > tasksToAssignPriority:
+        todoPaths = substitePriority({priority1: "n"}, todoPaths)
+    else:
+        todoPaths = substitePriority({priority1: 1000000}, todoPaths)
+        todoPaths = substitePriority({priority2: 5000000}, todoPaths)
+        todoPaths = substitePriority({1000000: priority2}, todoPaths)
+        todoPaths = substitePriority({5000000: priority1}, todoPaths)
     return todoPaths
 
 
@@ -159,8 +208,26 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
             try:
                 remaining = noOfTodosToPrioritise - prioritisedSoFar - 1
                 if not receivedCtrlC:
-                    printTopNTodos(prioritisedPaths, tasksToAssignPriority)
-                    priority = askForPriority(path, todoFileName, remaining)
+                    while True:
+                        printTopNTodos(prioritisedPaths, tasksToAssignPriority)
+                        priority = askForPriority(path, todoFileName, remaining)
+                        if type(priority) == list:
+                            priority1 = (
+                                int(priority[0])
+                                if priority[0].isdigit()
+                                else priority[0]
+                            )
+                            priority2 = (
+                                int(priority[1])
+                                if priority[1].isdigit()
+                                else priority[1]
+                            )
+                            prioritisedPaths = swapPriorities(
+                                prioritisedPaths, priority1, priority2
+                            )
+                            prioritisedPaths = removeGapsInPriorities(prioritisedPaths)
+                        else:
+                            break
                 prioritisedSoFar += 1
             except KeyboardInterrupt:
                 receivedCtrlC = True
@@ -274,6 +341,19 @@ def triggerReprioritisationIfNecessary(todoPaths):
     return outputTodoPaths
 
 
+def saveErrorData(newText, oldText):
+    with open(utils.getAbsPath("errorNewText.txt"), "w") as f:
+        f.write(newText)
+    with open(utils.getAbsPath("errorOldText.txt"), "w") as f:
+        f.write(oldText)
+
+
+def addTopTodosToText(text, todoPaths):
+    topNTodos = getTopNTodosAsText(todoPaths, tasksToAssignPriority)
+    text = "+++++\n" + topNTodos + "\n+++++\n\n" + text
+    return text
+
+
 def processTodoPaths(text, path, interactive):
     todoPathsOrig = toDo.getAllToDoPaths(text)
     todoPaths = regularisePriorities(todoPathsOrig)
@@ -290,13 +370,22 @@ def processTodoPaths(text, path, interactive):
             print("disabling interactive mode for all following files..")
 
     fileText = toDo.constructFileFromPaths(todoPaths)
-    inputHash = generateTodoListHash(text, todoPathsOrig)
-    outputHash = generateTodoListHash(fileText, todoPaths)
+    inputHash = generateTodoListHash(todoPathsOrig)
+    outputHash = generateTodoListHash(todoPaths)
     if inputHash != outputHash:
         print("input hash: {}, output hash: {}".format(inputHash, outputHash))
+        saveErrorData(fileText, text)
         raise Exception("hashes do not match!!!!")
     print("hashes match for {}".format(path))
+
+    fileText = addTopTodosToText(fileText, todoPaths)
     return interactive, fileText
+
+
+def removeTopTodosFromText(text):
+    pattern = r"^\+{5}\n(.|\n)*?\+{5}$"
+    text = re.sub(pattern, "", text, flags=re.MULTILINE)
+    return text
 
 
 def main():
@@ -314,6 +403,8 @@ def main():
             continue
         fileObj = toDoFiles[file]["master"]
         text, path = fileObj["text"], fileObj["path"]
+        text = removeTopTodosFromText(text).lstrip("\n")
+
         if path in excludedFiles:
             continue
         interactive, fileText = processTodoPaths(text, path, interactive)
