@@ -96,7 +96,6 @@ def getTopNTodosAsText(todoPaths, n):
         if getPriorityOfTodo(path) and getPriorityOfTodo(path) != "n"
     ]
     if len(allTodos) == 0:
-        textOutput.append("no prioritised todos to display")
         return "\n".join(textOutput)
     sortedTodos = sorted(allTodos, key=lambda x: x[0])
     n = min(n + 1, len(sortedTodos))
@@ -357,8 +356,8 @@ def addTopTodosToText(text, todoPaths):
 def processTodoPaths(text, path, interactive):
     todoPathsOrig = toDo.getAllToDoPaths(text)
     todoPaths = regularisePriorities(todoPathsOrig)
-    todoPaths = deduplicatePriorities(todoPaths)
     todoPaths = removeGapsInPriorities(todoPaths)
+    todoPaths = deduplicatePriorities(todoPaths)
     todoPaths = assignPriorityOfParentsToChildren(todoPaths)
     todoPaths = triggerReprioritisationIfNecessary(todoPaths)
 
