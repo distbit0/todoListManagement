@@ -18,7 +18,11 @@ def getSegmentRecurrenceInfo(todoSegment):
     # Regular expression for the number after '@'
     match_period = re.search(r"@(\d+)", todoSegment)
     if match_period:
-        periodInDays = int(match_period.group(1))
+        periodInDays = match_period.group(1)
+        if periodInDays.isdigit():
+            periodInDays = int(periodInDays)
+        else:
+            return "noPeriod"
     else:
         return "noPeriod"
 
