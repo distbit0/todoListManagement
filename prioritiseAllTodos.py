@@ -7,8 +7,6 @@ tasksToAssignPriority = utils.getConfig()["tasksToAssignPriority"]
 
 
 def updatePathPriorities(todoPaths, indexOfPath, priority):
-    print("running updatePathPriorities")
-    print(priority)
     if priority == "d":
         todoMarkedAsDone = priorityLib.markTodoAsDone(todoPaths[indexOfPath])
         print("marked todo as done: ", todoMarkedAsDone)
@@ -112,7 +110,6 @@ def regularisePriorities(todoPaths):
             regularisedTodos.append(path)
             continue
         elif type(priority) is int:
-            print("priority: {}".format(priority), priority > tasksToAssignPriority)
             if priority > tasksToAssignPriority:
                 regularisedTodos.append(priorityLib.replacePriorityOfTodo(path, "n"))
             elif priority < 1:
@@ -133,10 +130,6 @@ def deduplicatePriorities(todoPaths):
         if priority == "n" or not priority:
             deDupedTodos.append(path)
         elif priority in prioritiesUsedSoFar:
-            print(
-                "removing priority of todo: {}".format(path)
-                + "in deduplicate priorities"
-            )
             path = priorityLib.removePriorityFromTodo(path)
             deDupedTodos.append(path)
         else:
