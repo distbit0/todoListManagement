@@ -1,5 +1,5 @@
 from utils.general import *
-from utils.recurrence import getSegmentRecurrenceInfo
+from utils.recurrence import getTodoSegmentDaysToNextOccurrence
 
 
 def getAllToDoPaths(totalText, prefix=""):
@@ -14,7 +14,7 @@ def getAllToDoPaths(totalText, prefix=""):
         currentIndent = line.count("\t")
         path[currentIndent] = line.strip("\t")
         currentPath = [path[indent] for indent in range(currentIndent + 1)]
-        if "[x]" in line and getSegmentRecurrenceInfo(line) == "noPeriod":
+        if "[x]" in line and getTodoSegmentDaysToNextOccurrence(line) == "noPeriod":
             noUndoneSubTasks = checkForUnDoneSubtasks(i, currentIndent, totalTextLines)
             if not noUndoneSubTasks:
                 unDonePaths.append(currentPath)

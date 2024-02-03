@@ -6,7 +6,7 @@ from datetime import datetime
 
 
 ## GET RECURRENCE INFO
-def getTodoSegmentDaysToTextOccurence(todoSegment):
+def getTodoSegmentDaysToNextOccurrence(todoSegment):
     # Initialize values as None
     periodInDays = None
     lastOccurrence = None
@@ -30,15 +30,15 @@ def getTodoSegmentDaysToTextOccurence(todoSegment):
         date = datetime.strptime(date_str, "%d/%m")
         lastOccurrence = (date - datetime(date.year, 1, 1)).days + 1
     else:
-        return "noLastOccurence"
+        return "noLastOccurrence"
 
     daysUntilNextOccurrence = (lastOccurrence + periodInDays) - currentDaysInYear
 
     return daysUntilNextOccurrence
 
 
-def getTodoDaysToTextOccurence(todoPath):
-    return getTodoSegmentDaysToTextOccurence(todoPath[-1])
+def getTodoDaysToNextOccurrence(todoPath):
+    return getTodoSegmentDaysToNextOccurrence(todoPath[-1])
 
 
 ## MODIFY RECURRENCE INFO
@@ -59,6 +59,6 @@ def updateTodoSegmentLastOccurrence(todoSegment):
     return updated_task
 
 
-def updateTodoLastOccurence(todoPath):
+def updateTodoLastOccurrence(todoPath):
     todoPath[-1] = updateTodoSegmentLastOccurrence(todoPath[-1])
     return todoPath
