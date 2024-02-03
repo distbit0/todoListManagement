@@ -1,26 +1,26 @@
 import gkeepapi
+import utils.general as general
 
 
-def fetch_notes_text(email, password):
-    # Initialize the Keep API
+def fetch_notes_text():
     keep = gkeepapi.Keep()
-    success = keep.login(email, password)
+    keep.resume(
+        general.getConfig()["username"],
+        general.getConfig()["masterKey"],
+    )
 
-    if not success:
-        return "Failed to log in to Google Keep"
-
-    # Fetch all notes
-    gnotes = keep.all()
-
+    gnotes = keep.find(archived=False, trashed=False)
     # Extract text from each note and compile into a newline-separated string
-    notes_text = "\n".join(note.text for note in gnotes if note.text)
+    notes_text = "\n\n" + "\n\n".join(note.text for note in gnotes if note.text)
+    if notes_text.strip():
+        with open(general.getConfig()["tempNotesPath"], "a") as f:
+            f.write(notes_text)
 
-    return notes_text
+    for gnote in gnotes:
+        gnote.archived = True
+        gnote._archived = True
+
+    keep.sync()
 
 
-email = ""
-password = ""
-
-# Fetch and print the notes text
-notes_text = fetch_notes_text(email, password)
-print(notes_text)
+fetch_notes_text()
