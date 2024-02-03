@@ -6,7 +6,7 @@ from datetime import datetime
 
 
 ## GET RECURRENCE INFO
-def getSegmentRecurrenceInfo(todoSegment):
+def getTodoSegmentDaysToTextOccurence(todoSegment):
     # Initialize values as None
     periodInDays = None
     lastOccurrence = None
@@ -37,8 +37,8 @@ def getSegmentRecurrenceInfo(todoSegment):
     return daysUntilNextOccurrence
 
 
-def getTodoRecurrenceInfo(todoPath):
-    return getSegmentRecurrenceInfo(todoPath[-1])
+def getTodoDaysToTextOccurence(todoPath):
+    return getTodoSegmentDaysToTextOccurence(todoPath[-1])
 
 
 ## MODIFY RECURRENCE INFO

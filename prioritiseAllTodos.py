@@ -164,7 +164,7 @@ def removeGapsInPriorities(todos):
 def manageRecurringTasks(todoPaths):
     updatedTasks = []
     for todo in todoPaths:
-        daysUntilNextOccurrence = recurrence.getTodoRecurrenceInfo(todo)
+        daysUntilNextOccurrence = recurrence.getTodoDaysToTextOccurence(todo)
         if daysUntilNextOccurrence == "noPeriod":
             pass
         elif daysUntilNextOccurrence == "noLastOccurence":
