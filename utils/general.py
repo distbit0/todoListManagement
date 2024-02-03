@@ -153,3 +153,15 @@ def readFromFile(fileName):
         file_contents = file_contents.replace(block, "")
 
     return file_contents.strip()
+
+
+def generateTodoListHash(todoPaths):
+    indentHash = 0
+    base = 257  # A prime number used as the base for the polynomial hash
+    mod = 248900  # Modulus for keeping the hash values manageable
+    for todo in todoPaths:
+        indentation = len(todo)
+        indentHash = (indentHash * base + indentation) % mod
+    pathCount = len(todoPaths)
+    indentSum = sum(len(todo) for todo in todoPaths)
+    return (indentHash, indentSum, pathCount)

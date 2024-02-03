@@ -1,71 +1,9 @@
 import re
 from datetime import datetime
-from utils.utils import *
+from utils.general import *
 
 
 tasksToAssignPriority = getConfig()["tasksToAssignPriority"]
-
-
-#### RECURRENCE
-
-
-## GET RECURRENCE INFO
-def getSegmentRecurrenceInfo(todoSegment):
-    # Initialize values as None
-    periodInDays = None
-    lastOccurrence = None
-
-    # Regular expression for the number after '@'
-    match_period = re.search(r"@(\d+)", todoSegment)
-    if match_period:
-        periodInDays = match_period.group(1)
-        if periodInDays.isdigit():
-            periodInDays = int(periodInDays)
-        else:
-            return "noPeriod"
-    else:
-        return "noPeriod"
-
-    currentDaysInYear = (datetime.now() - datetime(datetime.now().year, 1, 1)).days + 1
-    # Regular expression for the date in 'dd/mm' format
-    match_date = re.search(r"\^(\d{1,2}/\d{1,2})", todoSegment)
-    if match_date:
-        date_str = match_date.group(1)
-        date = datetime.strptime(date_str, "%d/%m")
-        lastOccurrence = (date - datetime(date.year, 1, 1)).days + 1
-    else:
-        return "noLastOccurence"
-
-    daysUntilNextOccurrence = (lastOccurrence + periodInDays) - currentDaysInYear
-
-    return daysUntilNextOccurrence
-
-
-def getTodoRecurrenceInfo(todoPath):
-    return getSegmentRecurrenceInfo(todoPath[-1])
-
-
-## MODIFY RECURRENCE INFO
-
-
-def updateTodoSegmentLastOccurrence(todoSegment):
-    # Get current date in 'dd/mm' format
-    current_date = datetime.now().strftime("%d/%m")
-
-    # Regular expression to check if the date specifier exists
-    if re.search(r"\^\d{1,2}/\d{1,2}", todoSegment):
-        # If exists, update it
-        updated_task = re.sub(r"\^\d{1,2}/\d{1,2}", f"^{current_date}", todoSegment)
-    else:
-        # If not, add it
-        updated_task = f"{todoSegment} ^{current_date}"
-
-    return updated_task
-
-
-def updateTodoLastOccurence(todoPath):
-    todoPath[-1] = updateTodoSegmentLastOccurrence(todoPath[-1])
-    return todoPath
 
 
 #### PRIORITISATION
@@ -107,41 +45,6 @@ def replacePriorityOfTodoSegment(todoSegment, newPriority):
 
 def replacePriorityOfTodo(todoPath, newPriority):
     todoPath[-1] = replacePriorityOfTodoSegment(todoPath[-1], newPriority)
-    return todoPath
-
-
-#### COMPLETION
-
-
-## GET COMPLETION INFO
-def isTodoSegmentDone(todoSegment):
-    return "- [x] " in todoSegment
-
-
-def isTodoDone(todoPath):
-    return isTodoSegmentDone(todoPath[-1])
-
-
-## MODIFY COMPLETION INFO
-def markTodoSegmentAsDone(todoSegment):
-    todoSegment = todoSegment.replace("- [ ] ", "- [x] ")
-    todoSegment = todoSegment.replace("- [/] ", "- [x] ")
-    return todoSegment
-
-
-def markTodoAsDone(todoPath):
-    todoPath[-1] = markTodoSegmentAsDone(todoPath[-1])
-    return todoPath
-
-
-def markTodoSegmentAsUnDone(todoSegment):
-    todoSegment = todoSegment.replace("- [x] ", "- [ ] ")
-    todoSegment = todoSegment.replace("- [/] ", "- [ ] ")
-    return todoSegment
-
-
-def markTodoAsUnDone(todoPath):
-    todoPath[-1] = markTodoSegmentAsUnDone(todoPath[-1])
     return todoPath
 
 
@@ -229,19 +132,6 @@ def shouldTodoBePrioritised(todoPaths, i, mustNotBeAlreadyPrioritised):
     if mustNotBeAlreadyPrioritised:
         shouldBePrioritised = shouldBePrioritised and not todoPriority
     return shouldBePrioritised, hasNoChildren
-
-
-#### ERROR CHECKING
-def generateTodoListHash(todoPaths):
-    indentHash = 0
-    base = 257  # A prime number used as the base for the polynomial hash
-    mod = 248900  # Modulus for keeping the hash values manageable
-    for todo in todoPaths:
-        indentation = len(todo)
-        indentHash = (indentHash * base + indentation) % mod
-    pathCount = len(todoPaths)
-    indentSum = sum(len(todo) for todo in todoPaths)
-    return (indentHash, indentSum, pathCount)
 
 
 #### ABSTRACT PRIORITY MODIFICATION

@@ -1,5 +1,5 @@
-from utils.utils import *
-from utils.priority import getSegmentRecurrenceInfo
+from utils.general import *
+from utils.recurrence import getSegmentRecurrenceInfo
 
 
 def getAllToDoPaths(totalText, prefix=""):

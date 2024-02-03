@@ -1,14 +1,16 @@
 import sys
-import utils.utils as utils
+import utils.general as general
 import utils.priority as priorityLib
-import utils.toDo as toDo
+import utils.parseLists as parseLists
+import utils.recurrence as recurrence
+import utils.completion as completion
 
-tasksToAssignPriority = utils.getConfig()["tasksToAssignPriority"]
+tasksToAssignPriority = general.getConfig()["tasksToAssignPriority"]
 
 
 def updatePathPriorities(todoPaths, indexOfPath, priority):
     if priority == "d":
-        todoMarkedAsDone = priorityLib.markTodoAsDone(todoPaths[indexOfPath])
+        todoMarkedAsDone = completion.markTodoAsDone(todoPaths[indexOfPath])
         print("marked todo as done: ", todoMarkedAsDone)
         todoPaths[indexOfPath] = todoMarkedAsDone
     else:
@@ -36,7 +38,7 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
     )
     prioritisedSoFar = 0
     receivedCtrlC = False
-    prioritisedPaths = list(todoPaths)
+    prioritisedPaths = parseLists(todoPaths)
     for i, path in enumerate(todoPaths):
         shouldBePrioritised = priorityLib.shouldTodoBePrioritised(todoPaths, i, True)[0]
         if shouldBePrioritised:
@@ -162,16 +164,16 @@ def removeGapsInPriorities(todos):
 def manageRecurringTasks(todoPaths):
     updatedTasks = []
     for todo in todoPaths:
-        daysUntilNextOccurrence = priorityLib.getTodoRecurrenceInfo(todo)
+        daysUntilNextOccurrence = recurrence.getTodoRecurrenceInfo(todo)
         if daysUntilNextOccurrence == "noPeriod":
             pass
         elif daysUntilNextOccurrence == "noLastOccurence":
-            todo = priorityLib.updateTodoLastOccurence(todo)
+            todo = recurrence.updateTodoLastOccurence(todo)
         elif daysUntilNextOccurrence <= 0:
-            todo = priorityLib.updateTodoLastOccurence(todo)
+            todo = recurrence.updateTodoLastOccurence(todo)
             todo = priorityLib.replacePriorityOfTodo(todo, 1)
-        elif priorityLib.isTodoDone(todo):
-            todo = priorityLib.markTodoAsUnDone(todo)
+        elif completion.isTodoDone(todo):
+            todo = completion.markTodoAsUnDone(todo)
             todo = priorityLib.replacePriorityOfTodo(todo, "n")
         updatedTasks.append(todo)
 
@@ -207,9 +209,9 @@ def triggerReprioritisationIfNecessary(todoPaths):
 
 
 def saveErrorData(newText, oldText):
-    with open(utils.getAbsPath("errorNewText.txt"), "w") as f:
+    with open(general.getAbsPath("errorNewText.txt"), "w") as f:
         f.write(newText)
-    with open(utils.getAbsPath("errorOldText.txt"), "w") as f:
+    with open(general.getAbsPath("errorOldText.txt"), "w") as f:
         f.write(oldText)
 
 
@@ -223,7 +225,7 @@ def addTopTodosToText(text, todoPaths):
 
 
 def processTodoPaths(text, path, interactive):
-    todoPathsOrig = toDo.getAllToDoPaths(text)
+    todoPathsOrig = parseLists.getAllToDoPaths(text)
     todoPaths = regularisePriorities(todoPathsOrig)
     todoPaths = manageRecurringTasks(todoPaths)
     todoPaths = removeGapsInPriorities(todoPaths)
@@ -241,9 +243,9 @@ def processTodoPaths(text, path, interactive):
             interactive = False
             print("disabling interactive mode for all following files..")
 
-    fileText = toDo.constructFileFromPaths(todoPaths)
-    inputHash = priorityLib.generateTodoListHash(todoPathsOrig)
-    outputHash = priorityLib.generateTodoListHash(todoPaths)
+    fileText = parseLists.constructFileFromPaths(todoPaths)
+    inputHash = general.generateTodoListHash(todoPathsOrig)
+    outputHash = general.generateTodoListHash(todoPaths)
     if inputHash != outputHash:
         print("input hash: {}, output hash: {}".format(inputHash, outputHash))
         saveErrorData(fileText, text)
@@ -258,8 +260,8 @@ def main():
     interactive = False
     if len(sys.argv) > 1 and sys.argv[1] == "--non-interactive":
         interactive = False
-    excludedFiles = utils.getConfig()["todosExcludedFromPrioritisation"]
-    toDoFiles = utils.getAllToDos()
+    excludedFiles = general.getConfig()["todosExcludedFromPrioritisation"]
+    toDoFiles = general.getAllToDos()
     # testFileText = utils.readFromFile("testFile.md")
     # toDoFiles = {
     #     "testFile": {"master": {"text": testFileText, "path": "modifiedTestFile.md"}}
@@ -274,7 +276,7 @@ def main():
         if path in excludedFiles:
             continue
         interactive, fileText = processTodoPaths(text, path, interactive)
-        utils.writeToFile(path, fileText)
+        general.writeToFile(path, fileText)
 
 
 if __name__ == "__main__":
