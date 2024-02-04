@@ -38,7 +38,7 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
     )
     prioritisedSoFar = 0
     receivedCtrlC = False
-    prioritisedPaths = parseLists(todoPaths)
+    prioritisedPaths = list(todoPaths)
     for i, path in enumerate(todoPaths):
         shouldBePrioritised = priorityLib.shouldTodoBePrioritised(todoPaths, i, True)[0]
         if shouldBePrioritised:
@@ -257,7 +257,7 @@ def processTodoPaths(text, path, interactive):
 
 
 def main():
-    interactive = False
+    interactive = True
     if len(sys.argv) > 1 and sys.argv[1] == "--non-interactive":
         interactive = False
     excludedFiles = general.getConfig()["todosExcludedFromPrioritisation"]
