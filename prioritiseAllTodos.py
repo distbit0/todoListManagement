@@ -91,21 +91,17 @@ def removePriorityFromParentTodos(todoPaths):
         hasPriority = priorityLib.getPriorityOfTodo(path)
         hasChild = False if isLastPath else len(todoPaths[i + 1]) > len(todoPaths[i])
         if hasChild and hasPriority:
-            print("before", path)
             path = priorityLib.removePriorityFromTodo(path)
-            print("removed priority from", path)
         revisedPaths.append(path)
+        
     outputPaths = []
-
     for path in revisedPaths:
         reconstructedPath = []
         for i, element in enumerate(path):
             hasChild = i != len(path) - 1
             hasPriority = priorityLib.getPriorityOfTodoSegment(element)
             if hasChild and hasPriority:
-                print("removing priority from {}".format(element))
                 element = priorityLib.removePriorityFromTodoSegment(element)
-                print("with result {}".format(element))
             reconstructedPath.append(element)
         outputPaths.append(reconstructedPath)
 
