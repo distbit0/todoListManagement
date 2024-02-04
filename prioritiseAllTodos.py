@@ -83,21 +83,29 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
     return prioritisedPaths, receivedCtrlC
 
 
-def assignPriorityOfParentsToChildren(todoPaths):
+def removePriorityFromParentTodos(todoPaths):
+    revisedPaths = []
+    # purpose is to prevent ambiguity surrounding priority of a given todo
+    for i, path in enumerate(todoPaths):
+        isLastPath = i == len(todoPaths) - 1
+        hasPriority = priorityLib.getPriorityOfTodo(path)
+        hasChild = False if isLastPath else len(todoPaths[i + 1]) > len(todoPaths[i])
+        if hasChild and hasPriority:
+            print("before", path)
+            path = priorityLib.removePriorityFromTodo(path)
+            print("removed priority from", path)
+        revisedPaths.append(path)
     outputPaths = []
-    for path in todoPaths:
-        parentSegmentPriority = False
+
+    for path in revisedPaths:
         reconstructedPath = []
         for i, element in enumerate(path):
-            isLastElement = i == len(path) - 1
+            hasChild = i != len(path) - 1
             hasPriority = priorityLib.getPriorityOfTodoSegment(element)
-            if hasPriority and not isLastElement:
-                parentSegmentPriority = hasPriority
+            if hasChild and hasPriority:
+                print("removing priority from {}".format(element))
                 element = priorityLib.removePriorityFromTodoSegment(element)
-            if isLastElement and parentSegmentPriority and not hasPriority:
-                element = priorityLib.replacePriorityOfTodoSegment(
-                    element, parentSegmentPriority
-                )
+                print("with result {}".format(element))
             reconstructedPath.append(element)
         outputPaths.append(reconstructedPath)
 
@@ -233,7 +241,7 @@ def processTodoPaths(text, path, interactive):
         todoPathsOrig
     )  # to account for impact of removeGaps after adding priorities for recurring tasks
     todoPaths = deduplicatePriorities(todoPaths)
-    todoPaths = assignPriorityOfParentsToChildren(todoPaths)
+    todoPaths = removePriorityFromParentTodos(todoPaths)
     todoPaths = triggerReprioritisationIfNecessary(todoPaths)
 
     if interactive:
