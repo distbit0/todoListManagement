@@ -81,7 +81,6 @@ def saveNotesFromMp3s():
     for fileName in filesToDelete:
         ## for the time being lets not delete any files but instead simply mark them as processed, to minimise risk of data loss
         processedMp3s.append(fileName)
-        # tryDeleteFile(file)
 
     json.dump(processedMp3s, open(general.getAbsPath("../processedMp3s.json"), "w"))
 
