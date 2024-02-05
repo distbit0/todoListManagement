@@ -93,7 +93,7 @@ def removePriorityFromParentTodos(todoPaths):
         if hasChild and hasPriority:
             path = priorityLib.removePriorityFromTodo(path)
         revisedPaths.append(path)
-        
+
     outputPaths = []
     for path in revisedPaths:
         reconstructedPath = []
