@@ -40,14 +40,14 @@ def tryDeleteFile(path):
         pass
 
 
-def processMp3File(mp3FileName, context=None):
+def processMp3File(mp3FileName):
     apiKey = general.getConfig()["openaiApiKey"]
     client = OpenAI(api_key=apiKey)
     api_response = client.audio.transcriptions.create(
-        model="whisper-1",  # IS THERE A BETTER MODEL? latency doesn't really matter.
+        model="whisper-1",
         file=open(mp3FileName, "rb"),
-        language=None,  ## SHOULD THIS BE SET?
-        prompt=context,  #### WHAT SHOULD THIS BE??
+        language="en",
+        prompt=None,
     )
     return api_response.text
 
