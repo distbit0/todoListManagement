@@ -64,11 +64,11 @@ def saveNotesFromMp3s():
         glob.glob(mp3FolderPath + "*.m4a")
     )
     for mp3File in musicFiles:
-        print(mp3File)
         fileName = mp3File.split("/")[-1]
         if fileName in processedMp3s:
             pass  # tryDeleteFile(mp3File)
         else:
+            print("processing {}".format(fileName))
             textFromMp3 = processMp3File(mp3File)
             textToAddToFile += textFromMp3 + "\n\n" if textFromMp3 else ""
             filesToDelete.append(fileName)
@@ -85,5 +85,5 @@ def saveNotesFromMp3s():
     json.dump(processedMp3s, open(general.getAbsPath("../processedMp3s.json"), "w"))
 
 
-# saveNotesFromKeep()
+saveNotesFromKeep()
 saveNotesFromMp3s()
