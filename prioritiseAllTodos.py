@@ -262,8 +262,14 @@ def processTodoPaths(text, path, interactive):
 
 def main():
     interactive = True
-    if len(sys.argv) > 1 and sys.argv[1] == "--non-interactive":
-        interactive = False
+    onlyInteractiveTodo = None
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "--non-interactive":
+            interactive = False
+        else:
+            onlyInteractiveTodo = sys.argv[1]
+            interactive = False
+
     excludedFiles = general.getConfig()["todosExcludedFromPrioritisation"]
     toDoFiles = general.getAllToDos()
     # testFileText = utils.readFromFile("testFile.md")
@@ -279,7 +285,9 @@ def main():
 
         if path in excludedFiles:
             continue
-        interactive, fileText = processTodoPaths(text, path, interactive)
+        interactive, fileText = processTodoPaths(
+            text, path, interactive or str(onlyInteractiveTodo).lower() in path.lower()
+        )
         general.writeToFile(path, fileText)
 
 
