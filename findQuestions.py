@@ -37,8 +37,8 @@ file_list = general.getConfig()["questionFiles"]
 num_matches = 5
 
 # Call the function to find random matches from the files
-questions = find_random_matches(file_list, r".+?\?", 7)
-statements = find_random_matches(file_list, r".*", 7)
+questions = find_random_matches(file_list, r".+?\?", 10)
+statements = find_random_matches(file_list, r".*", 10)
 
 # Print the selected random matches
 questionString = ""
