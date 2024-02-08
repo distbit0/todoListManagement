@@ -22,7 +22,7 @@ def find_random_matches(file_list, pattern, num_matches):
                 previous_paragraph = paragraphs[i - 1]
                 match = re.search(pattern, current_paragraph)
                 if match:
-                    matches.append(previous_paragraph + match.group())
+                    matches.append(previous_paragraph + "  " + match.group())
 
     # Select random matches
     random_matches = random.sample(matches, min(num_matches, len(matches)))

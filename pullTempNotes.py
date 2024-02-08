@@ -16,10 +16,12 @@ def saveNotesFromKeep():
     gnotes = list(keep.find(archived=False, trashed=False))
     # Extract text from each note and compile into a newline-separated string
     notes_text = "\n\n"
-    for note in gnotes:
-        if note.text or note.title and note.title != "Questions":
-            notes_text += note.title + "\n" if note.title else ""
-            notes_text += note.text if note.text else ""
+    for gnote in gnotes:
+        if (gnote.text or gnote.title) and (
+            gnote.title not in ["Questions", "Statements"]
+        ):
+            notes_text += gnote.title + "\n" if gnote.title else ""
+            notes_text += gnote.text if gnote.text else ""
             notes_text += "\n\n"
 
     notes_text = notes_text.replace("\n\n\n", "\n\n")
@@ -28,7 +30,7 @@ def saveNotesFromKeep():
             f.write(notes_text)
 
     for gnote in gnotes:
-        if gnote.title != "Questions":
+        if not (gnote.title in ["Questions", "Statements"]):
             gnote.archived = True
 
     keep.sync()
