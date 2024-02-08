@@ -16,6 +16,8 @@ def find_random_matches(file_list, pattern, num_matches):
         else:
             paragraphs = re.split(r"\n{2,}", text.strip())
             for i in range(1, len(paragraphs)):
+                if "])" in paragraphs[i] or "http" in paragraphs[i]:
+                    continue
                 current_paragraph = paragraphs[i]
                 previous_paragraph = paragraphs[i - 1]
                 match = re.search(pattern, current_paragraph)
@@ -31,19 +33,22 @@ def find_random_matches(file_list, pattern, num_matches):
 # List of files to search through
 file_list = general.getConfig()["questionFiles"]
 
-# Regular expression pattern
-pattern = r".+?\?"
-
 # Number of random matches to choose
 num_matches = 5
 
 # Call the function to find random matches from the files
-random_matches = find_random_matches(file_list, pattern, num_matches)
+questions = find_random_matches(file_list, r".+?\?", 7)
+statements = find_random_matches(file_list, r".*", 7)
 
 # Print the selected random matches
-outputString = ""
-for match in random_matches:
-    outputString += match.strip() + "\n\n"
+questionString = ""
+for match in questions:
+    questionString += match.strip() + "\n\n"
+
+
+statementString = ""
+for match in statements:
+    statementString += match.strip() + "\n\n"
 
 
 keep = gkeepapi.Keep()
@@ -55,7 +60,12 @@ keep.resume(
 gnotes = list(keep.find(archived=False, trashed=False))
 
 questionsNote = next((note for note in gnotes if note.title == "Questions"), None)
+statementsNote = next((note for note in gnotes if note.title == "Statements"), None)
 
 if questionsNote:
-    questionsNote.text = outputString
+    questionsNote.text = questionString
+    keep.sync()
+
+if statementsNote:
+    statementsNote.text = statementString
     keep.sync()
