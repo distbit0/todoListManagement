@@ -34,11 +34,11 @@ def find_random_matches(file_list, pattern, num_matches):
 file_list = general.getConfig()["questionFiles"]
 
 # Number of random matches to choose
-num_matches = 5
+num_matches = 10
 
 # Call the function to find random matches from the files
-questions = find_random_matches(file_list, r".+?\?", 10)
-statements = find_random_matches(file_list, r".*", 10)
+questions = find_random_matches(file_list, r".+?\?", num_matches)
+statements = find_random_matches(file_list, r".*", num_matches)
 
 # Print the selected random matches
 questionString = ""
@@ -64,8 +64,9 @@ statementsNote = next((note for note in gnotes if note.title == "Statements"), N
 
 if questionsNote:
     questionsNote.text = questionString
-    keep.sync()
 
 if statementsNote:
     statementsNote.text = statementString
-    keep.sync()
+
+
+keep.sync()
