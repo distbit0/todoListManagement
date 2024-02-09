@@ -22,7 +22,7 @@ def find_random_matches(file_list, pattern, num_matches):
                 previous_paragraph = paragraphs[i - 1]
                 match = re.search(pattern, current_paragraph)
                 if match:
-                    matches.append(previous_paragraph + "  " + match.group())
+                    matches.append("1) " + previous_paragraph + "2) " + match.group())
 
     # Select random matches
     random_matches = random.sample(matches, min(num_matches, len(matches)))
@@ -43,12 +43,12 @@ statements = find_random_matches(file_list, r".*", num_matches)
 # Print the selected random matches
 questionString = ""
 for match in questions:
-    questionString += match.strip() + "\n\n"
+    questionString += match.strip() + "\n\n\n\n\n"
 
 
 statementString = ""
 for match in statements:
-    statementString += match.strip() + "\n\n"
+    statementString += match.strip() + "\n\n\n\n\n"
 
 
 keep = gkeepapi.Keep()
