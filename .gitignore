@@ -6,3 +6,4 @@ utils/errorOldText.txt
 config.json
 seenNotes.json
 questions.md
+excludedQuestions.py
