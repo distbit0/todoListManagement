@@ -5,6 +5,42 @@ import glob
 import json
 import utils.general as general
 from openai import OpenAI
+import hashlib
+from send2trash import send2trash
+
+
+def calculate_file_hash(file_path, hash_algo="sha256"):
+    """Calculate the hash of a chunk from the middle of a file."""
+    hash_func = getattr(hashlib, hash_algo)()
+    file_size = os.path.getsize(file_path)
+    chunk_size = min(8192, file_size)
+    middle_pos = file_size // 2
+
+    with open(file_path, "rb") as file:
+        file.seek(middle_pos - chunk_size // 2)
+        chunk = file.read(chunk_size)
+        hash_func.update(chunk)
+
+    return hash_func.hexdigest()
+
+
+def delete_duplicate_files(directory):
+    """Delete files with matching hashes in a directory, sending them to trash."""
+    if not os.path.isdir(directory):
+        raise ValueError(f"The provided path {directory} is not a directory.")
+
+    hashes = {}
+    for root, _, files in os.walk(directory):
+        for filename in files:
+            file_path = os.path.join(root, filename)
+            file_hash = calculate_file_hash(file_path)
+            if file_hash in hashes:
+                # This file is a duplicate; send it to the trash
+                send2trash(file_path)
+                print(f"Moved to trash: {file_path}")
+            else:
+                # Record the hash of this unique file
+                hashes[file_hash] = file_path
 
 
 def saveNotesFromKeep():
@@ -99,5 +135,6 @@ def saveNotesFromMp3s():
     json.dump(processedMp3s, open(general.getAbsPath("../processedMp3s.json"), "w"))
 
 
+delete_duplicate_files(general.getConfig()["mp3CaptureFolder"])
 saveNotesFromKeep()
 saveNotesFromMp3s()
