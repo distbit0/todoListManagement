@@ -1,5 +1,6 @@
 import gkeepapi
 import os
+import re
 import glob
 import json
 import utils.general as general
@@ -14,6 +15,7 @@ def saveNotesFromKeep():
     )
 
     gnotes = list(keep.find(archived=False, trashed=False))
+    gnotes = sorted(gnotes, key=lambda x: x.timestamps.edited.timestamp())
     # Extract text from each note and compile into a newline-separated string
     notes_text = "\n\n"
     for gnote in gnotes:
@@ -50,9 +52,16 @@ def processMp3File(mp3FileName):
         model="whisper-1",
         file=open(mp3FileName, "rb"),
         language="en",
-        prompt=None,
+        prompt="the transcription of my idea is as follows:",
     )
     return api_response.text
+
+
+def sort_key(filename):
+    match = re.search(r"(\d+)", os.path.basename(filename))
+    if match:
+        return int(match.group(1))
+    return 0
 
 
 def saveNotesFromMp3s():
@@ -63,8 +72,10 @@ def saveNotesFromMp3s():
     processedMp3s = json.load(open(general.getAbsPath("../processedMp3s.json")))
     textToAddToFile = "\n\n"
     filesToDelete = []
-    musicFiles = list(glob.glob(mp3FolderPath + "*.mp3")) + list(
-        glob.glob(mp3FolderPath + "*.m4a")
+
+    musicFiles = sorted(
+        glob.glob(mp3FolderPath + "/*.mp3") + glob.glob(mp3FolderPath + "/*.m4a"),
+        key=sort_key,
     )
     for mp3File in musicFiles:
         fileName = mp3File.split("/")[-1]
