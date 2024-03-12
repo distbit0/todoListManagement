@@ -96,8 +96,14 @@ def getTopNTodosAsText(todoPaths, n):
     n = min(n + 1, len(sortedTodos))
     for i in range(n):
         priority, path = sortedTodos[i]
+        isInProgress = "[/] " in path[-1] or "[-] " in path[-1]
+        inProgressText = "[IN PROGRESS]" if isInProgress else ""
         todoName = (
-            path[-1].replace("- [x] ", "").replace("- [/] ", "").replace("- [ ] ", "")
+            path[-1]
+            .replace("- [x] ", "")
+            .replace("- [/] ", "")
+            .replace("- [ ] ", "")
+            .replace("- [-] ", "")
         )
         todoName = " ".join(
             [
@@ -106,7 +112,7 @@ def getTopNTodosAsText(todoPaths, n):
                 if "@" not in segment and "^" not in segment and "#" not in segment
             ]
         )
-        textOutput.append(f"{priority}) {todoName}")
+        textOutput.append(f"{priority}) {inProgressText} {todoName}")
 
     textOutput = "\n".join(textOutput)
     return textOutput
