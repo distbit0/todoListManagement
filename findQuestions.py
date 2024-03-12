@@ -19,19 +19,22 @@ def find_random_matches(file_list, matchingWords, num_matches):
         else:
             paragraphs = re.split(r"\n{2,}", text.strip())
             for i in range(1, len(paragraphs)):
-                if "])" in paragraphs[i] or "http" in paragraphs[i]:
-                    continue
-                current_paragraph = paragraphs[i]
-                previous_paragraph = paragraphs[i - 1]
-                if not matchingWords or any(
-                    word.lower() + " " in current_paragraph.lower()
-                    for word in matchingWords
-                ):
-                    question = "1) " + previous_paragraph + "\n2) " + current_paragraph
-                    if question not in excludedQuestions:
-                        matches.append(question)
+                currentParagraph = paragraphs[i].strip()
+                validParagraph = not (
+                    "])" in paragraphs[i]
+                    or "http" in paragraphs[i]
+                    or currentParagraph.lower() in excludedQuestions
+                )
+                containsMatchingWords = (
+                    any(
+                        word.lower() + " " in currentParagraph.lower()
+                        for word in matchingWords
+                    )
+                    or not matchingWords
+                )
+                if containsMatchingWords and validParagraph:
+                    matches.append(currentParagraph)
 
-    # Select random matches
     print("number of total matches: " + str(len(matches)))
 
     # Randomize order of the matches list
