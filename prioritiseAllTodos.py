@@ -285,9 +285,16 @@ def main():
 
         if path in excludedFiles:
             continue
+        print(
+            str(onlyInteractiveTodo).lower() in path.lower(),
+            path.lower(),
+            str(onlyInteractiveTodo).lower(),
+        )
+        prevInteractiveState = bool(interactive)
         interactive, fileText = processTodoPaths(
             text, path, interactive or str(onlyInteractiveTodo).lower() in path.lower()
         )
+        interactive = prevInteractiveState and interactive
         general.writeToFile(path, fileText)
 
 
