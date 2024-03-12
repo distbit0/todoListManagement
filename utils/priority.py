@@ -97,7 +97,7 @@ def getTopNTodosAsText(todoPaths, n):
     for i in range(n):
         priority, path = sortedTodos[i]
         isInProgress = "[/] " in path[-1] or "[-] " in path[-1]
-        inProgressText = "[IN PROGRESS]" if isInProgress else ""
+        inProgressText = "[[WIP]]" if isInProgress else ""
         todoName = (
             path[-1]
             .replace("- [x] ", "")
