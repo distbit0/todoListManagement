@@ -84,14 +84,13 @@ def getFileList():
     file_list = general.getConfig()["questionFiles"]
     fileFilters = ["*tmp.md", "*[?].md"]
     for fileFilter in fileFilters:
-        questionFiles += [
+        file_list += [
             path
             for path in glob.glob(
                 general.getConfig()["toDoFolderPath"] + "**/" + fileFilter,
                 recursive=True,
             )
         ]
-    file_list += questionFiles
     return file_list
 
 
