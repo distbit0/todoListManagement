@@ -6,7 +6,10 @@ import json
 import utils.general as general
 from openai import OpenAI
 import hashlib
+from dotenv import load_dotenv
 from send2trash import send2trash
+
+load_dotenv()
 
 
 def calculate_file_hash(file_path, hash_algo="sha256"):
@@ -46,8 +49,8 @@ def delete_duplicate_files(directory):
 def saveNotesFromKeep():
     keep = gkeepapi.Keep()
     keep.resume(
-        general.getConfig()["username"],
-        general.getConfig()["masterKey"],
+        os.environ["username"],
+        os.environ["masterKey"],
     )
 
     gnotes = list(keep.find(archived=False, trashed=False))
@@ -82,7 +85,7 @@ def tryDeleteFile(path):
 
 
 def processMp3File(mp3FileName):
-    apiKey = general.getConfig()["openaiApiKey"]
+    apiKey = os.environ["openaiApiKey"]
     client = OpenAI(api_key=apiKey)
     api_response = client.audio.transcriptions.create(
         model="whisper-1",

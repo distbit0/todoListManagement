@@ -3,7 +3,10 @@ import random
 import gkeepapi
 import glob
 import utils.general as general
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 markAsReadString = "[[read]]"
 
 
@@ -108,22 +111,22 @@ def main():
 
     keep = gkeepapi.Keep()
     keep.resume(
-        general.getConfig()["username"],
-        general.getConfig()["masterKey"],
+        os.environ["username"],
+        os.environ["masterKey"],
     )
     gnotes = list(keep.find(archived=False, trashed=False))
     for noteName in ["Questions", "Statements"]:
         note = next((note for note in gnotes if note.title == noteName), None)
-        if note:
+        if not note:
             note = keep.createList(noteName, [])
         checked_sentences = []
-        for item in note.items:
-            if item.checked:
-                checked_sentences.append(item.text)
-        mark_as_read(file_list, list(set(checked_sentences)))
+        if note.items:
+            for item in note.items:
+                if item.checked:
+                    checked_sentences.append(item.text)
+                item.delete()
+            mark_as_read(file_list, list(set(checked_sentences)))
 
-        for item in note.items:
-            item.delete()
         for paragraph in paragraphs[noteName]:
             note.add(paragraph, False)
 

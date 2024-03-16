@@ -1,0 +1,33 @@
+{
+    "toDoFolderPath": "/home/pimania/notes/",
+    "todosExcludedFromPrioritisation": [
+        "/home/pimania/notes/Misc/App feature reqs/voice features todo.md"
+    ],
+    "tasksToAssignPriority": 10,
+    "tempNotesPath": "/home/pimania/notes/zk/Temp.md",
+    "mp3CaptureFolder": "/home/pimania/memos/",
+    "questionFiles": [
+        "zk/attention questions.md",
+        "zk/blacklist defection wrapper.md",
+        "zk/curve v2 questions.md",
+        "zk/language modelling questions.md",
+        "zk/oracle minimised stablecoin.md",
+        "zk/OTK ECG.md",
+        "zk/say's law notes.md",
+        "zk/assasination markets work even if target can hide.md",
+        "**/*tmp.md",
+        "**/*[?].md"
+    ],
+    "questionWords": [
+        "when",
+        "why",
+        "how",
+        "does",
+        "what",
+        "is",
+        "where",
+        "which",
+        "could",
+        "couldn't"
+    ]
+}
