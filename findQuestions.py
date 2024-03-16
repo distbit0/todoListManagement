@@ -32,7 +32,8 @@ def find_random_matches(file_list, matchingWords, num_matches):
                     )
                     or not matchingWords
                 )
-                if containsMatchingWords and validParagraph:
+                hasSufficientWords = len(currentParagraph.split()) >= 6
+                if containsMatchingWords and validParagraph and hasSufficientWords:
                     matches.append(currentParagraph)
     print("number of total matches: " + str(len(matches)))
     # Randomize order of the matches list
