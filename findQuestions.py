@@ -81,13 +81,13 @@ def mark_as_read(file_list, sentences):
 
 def getFileList():
     # List of files to search through
-    file_list = general.getConfig()["questionFiles"]
-    fileFilters = ["*tmp.md", "*[?].md"]
-    for fileFilter in fileFilters:
+    filterList = general.getConfig()["questionFiles"]
+    file_list = []
+    for fileFilter in filterList:
         file_list += [
             path
             for path in glob.glob(
-                general.getConfig()["toDoFolderPath"] + "**/" + fileFilter,
+                general.getConfig()["toDoFolderPath"] + fileFilter,
                 recursive=True,
             )
         ]
