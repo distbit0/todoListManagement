@@ -3,6 +3,8 @@ import random
 import gkeepapi
 import utils.general as general
 
+markAsReadString = "[[read]]"
+
 
 def find_random_matches(file_list, matchingWords, num_matches):
     matches = []
@@ -21,7 +23,7 @@ def find_random_matches(file_list, matchingWords, num_matches):
                 validParagraph = not (
                     "])" in paragraphs[i]
                     or "http" in paragraphs[i]
-                    or currentParagraph.endswith("[[read]]")
+                    or currentParagraph.endswith(markAsReadString)
                 )
                 containsMatchingWords = (
                     any(
@@ -56,15 +58,17 @@ def mark_as_read(file_list, sentences):
             with open(file, "r") as f:
                 modified_text = f.read()
             for sentence in sentences:
-                if "[[read]]" in sentence:
+                if markAsReadString in sentence:
                     continue
                 textOfLineContainingSubstring = getTextOfLineContainingSubtring(
                     file, sentence
                 )
                 if textOfLineContainingSubstring:
-                    if "[[read]]" in textOfLineContainingSubstring:
+                    if markAsReadString in textOfLineContainingSubstring:
                         continue
-                modified_text = modified_text.replace(sentence, sentence + " [[read]]")
+                modified_text = modified_text.replace(
+                    sentence, sentence + " " + markAsReadString
+                )
             with open(file, "w") as f:
                 f.write(modified_text)
         except:
