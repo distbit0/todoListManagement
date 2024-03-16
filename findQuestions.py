@@ -17,7 +17,7 @@ def checkParagraphSatisfiesConstraints(paragraph, matchingWords):
     )
     paragraphSansLinks = re.sub(r"\[\[[^\]]*\]\]|#\w+", "", paragraph).strip()
     paragraphSansLinks = paragraphSansLinks.replace("  ", " ").replace("  ", " ")
-    hasSufficientWords = len(paragraphSansLinks.split()) >= 6
+    hasSufficientWords = len(paragraphSansLinks.split()) >= 7
 
     return validParagraph and containsMatchingWords and hasSufficientWords
 
