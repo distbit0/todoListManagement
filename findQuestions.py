@@ -99,12 +99,12 @@ def main():
     num_matches = 15
     # Call the function to find random matches from the files
     file_list = getFileList()
-    questions = find_random_matches(
-        file_list,
-        general.getConfig()["questionWords"],
-        num_matches,
-    )
-    statements = find_random_matches(file_list, [], num_matches)
+    paragraphs = {
+        "Questions": find_random_matches(
+            file_list, general.getConfig()["questionWords"], num_matches
+        ),
+        "Statements": find_random_matches(file_list, [], num_matches),
+    }
 
     keep = gkeepapi.Keep()
     keep.resume(
@@ -112,35 +112,20 @@ def main():
         general.getConfig()["masterKey"],
     )
     gnotes = list(keep.find(archived=False, trashed=False))
-    questionsNote = next((note for note in gnotes if note.title == "Questions"), None)
-    statementsNote = next((note for note in gnotes if note.title == "Statements"), None)
+    for noteName in ["Questions", "Statements"]:
+        note = next((note for note in gnotes if note.title == noteName), None)
+        if note:
+            note = keep.createList(noteName, [])
+        checked_sentences = []
+        for item in note.items:
+            if item.checked:
+                checked_sentences.append(item.text)
+        mark_as_read(file_list, list(set(checked_sentences)))
 
-    # Create notes if they don't exist
-    if not questionsNote:
-        questionsNote = keep.createList("Questions", [])
-    if not statementsNote:
-        statementsNote = keep.createList("Statements", [])
-
-    # Get checked questions and mark them as read in the source files
-    checked_sentences = []
-    for item in questionsNote.items:
-        if item.checked:
-            checked_sentences.append(item.text)
-    for item in statementsNote.items:
-        if item.checked:
-            checked_sentences.append(item.text)
-    mark_as_read(file_list, checked_sentences)
-
-    for item in questionsNote.items:
-        item.delete()
-    for item in statementsNote.items:
-        item.delete()
-
-    # Add new items to the list
-    for question in questions:
-        questionsNote.add(question, False)
-    for statement in statements:
-        statementsNote.add(statement, False)
+        for item in note.items:
+            item.delete()
+        for paragraph in paragraphs[noteName]:
+            note.add(paragraph, False)
 
     keep.sync()
 
