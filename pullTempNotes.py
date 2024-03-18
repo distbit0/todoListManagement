@@ -109,6 +109,7 @@ def saveNotesFromMp3s():
     # 3. if it has not already been, then process it and save its text to the file first, then delete the mp3 and mark it as processed in processedMp3s.json
     mp3FolderPath = general.getConfig()["mp3CaptureFolder"]
     processedMp3s = json.load(open(general.getAbsPath("../processedMp3s.json")))
+    previousTempText = open(general.getConfig()["tempNotesPath"]).read()
     textToAddToFile = "\n\n"
     filesToDelete = []
 
@@ -123,7 +124,8 @@ def saveNotesFromMp3s():
         else:
             print("processing {}".format(fileName))
             textFromMp3 = processMp3File(mp3File)
-            textToAddToFile += textFromMp3 + "\n\n" if textFromMp3 else ""
+            if textFromMp3.lower() not in previousTempText.lower():
+                textToAddToFile += textFromMp3 + "\n\n" if textFromMp3 else ""
             filesToDelete.append(fileName)
 
     notes_text = textToAddToFile.replace("\n\n\n", "\n\n")
