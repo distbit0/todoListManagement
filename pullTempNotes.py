@@ -52,7 +52,7 @@ def saveNotesFromKeep():
         os.environ["username"],
         os.environ["masterKey"],
     )
-
+    previousTempText = open(general.getConfig()["tempNotesPath"]).read()
     gnotes = list(keep.find(archived=False, trashed=False))
     gnotes = sorted(gnotes, key=lambda x: x.timestamps.edited.timestamp())
     # Extract text from each note and compile into a newline-separated string
@@ -61,9 +61,11 @@ def saveNotesFromKeep():
         if (gnote.text or gnote.title) and (
             gnote.title not in ["Questions", "Statements"]
         ):
-            notes_text += gnote.title + "\n" if gnote.title else ""
-            notes_text += gnote.text if gnote.text else ""
-            notes_text += "\n\n"
+            stringToAdd = gnote.title + "\n" if gnote.title else ""
+            stringToAdd += gnote.text if gnote.text else ""
+            stringToAdd += "\n\n"
+            if stringToAdd.lower().strip() not in previousTempText.lower():
+                notes_text += stringToAdd
 
     notes_text = notes_text.replace("\n\n\n", "\n\n")
     if notes_text.strip():
@@ -124,7 +126,7 @@ def saveNotesFromMp3s():
         else:
             print("processing {}".format(fileName))
             textFromMp3 = processMp3File(mp3File)
-            if textFromMp3.lower() not in previousTempText.lower():
+            if textFromMp3.lower().strip() not in previousTempText.lower():
                 textToAddToFile += textFromMp3 + "\n\n" if textFromMp3 else ""
             filesToDelete.append(fileName)
 
