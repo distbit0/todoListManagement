@@ -141,7 +141,7 @@ def shouldTodoBePrioritised(todoPaths, i, mustNotBeAlreadyPrioritised):
 
 
 #### ABSTRACT PRIORITY MODIFICATION
-def substitePriority(prioritySubstitutions, todoPaths):
+def substitutePriority(prioritySubstitutions, todoPaths):
     for i, task in enumerate(todoPaths):
         taskPriority = getPriorityOfTodo(task)
         if taskPriority in prioritySubstitutions:
@@ -152,11 +152,12 @@ def substitePriority(prioritySubstitutions, todoPaths):
 
 
 def swapPriorities(todoPaths, priority1, priority2):
-    if priority2 == "n" or priority2 > tasksToAssignPriority:
-        todoPaths = substitePriority({priority1: "n"}, todoPaths)
+    # if priority2 == "n" or priority2 > tasksToAssignPriority: (commented this out so that we can recover these prioritisations even if they are for now not in top n
+    if priority2 == "n":
+        todoPaths = substitutePriority({priority1: "n"}, todoPaths)
     else:
-        todoPaths = substitePriority({priority1: 1000000}, todoPaths)
-        todoPaths = substitePriority({priority2: 5000000}, todoPaths)
-        todoPaths = substitePriority({1000000: priority2}, todoPaths)
-        todoPaths = substitePriority({5000000: priority1}, todoPaths)
+        todoPaths = substitutePriority({priority1: 1000000}, todoPaths)
+        todoPaths = substitutePriority({priority2: 5000000}, todoPaths)
+        todoPaths = substitutePriority({1000000: priority2}, todoPaths)
+        todoPaths = substitutePriority({5000000: priority1}, todoPaths)
     return todoPaths

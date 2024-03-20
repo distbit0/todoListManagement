@@ -16,10 +16,11 @@ def updatePathPriorities(todoPaths, indexOfPath, priority):
     else:
         if priority != "n":
             prioritySubstitutions = dict(
-                [(j, j + 1) for j in range(priority, tasksToAssignPriority)]
+                [(j, j + 1) for j in range(priority, tasksToAssignPriority + 1)]
             )
-            prioritySubstitutions[tasksToAssignPriority] = "n"
-            todoPaths = priorityLib.substitePriority(prioritySubstitutions, todoPaths)
+            ## added +1 to tasksToAssignPriority so that we do not erase the info re: the priority of a task just because it is no longer in top n
+            # prioritySubstitutions[tasksToAssignPriority] = "n" ##commented out this for the same reason as above
+            todoPaths = priorityLib.substitutePriority(prioritySubstitutions, todoPaths)
         todoPaths[indexOfPath] = priorityLib.replacePriorityOfTodo(
             todoPaths[indexOfPath], priority
         )
@@ -117,7 +118,8 @@ def regularisePriorities(todoPaths):
             continue
         elif type(priority) is int:
             if priority > tasksToAssignPriority:
-                regularisedTodos.append(priorityLib.replacePriorityOfTodo(path, "n"))
+                pass  ##so that we can later recover these prioritisations even if they are for now not in top n
+                # regularisedTodos.append(priorityLib.replacePriorityOfTodo(path, "n"))
             elif priority < 1:
                 regularisedTodos.append(priorityLib.replacePriorityOfTodo(path, 1))
             else:
