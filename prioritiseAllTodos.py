@@ -216,7 +216,7 @@ def triggerReprioritisationIfNecessary(todoPaths):
 
 def saveErrorData(newText, oldText):
     with open(general.getAbsPath("errorNewText.txt"), "w") as f:
-        f.write(newText.replace("**", ""))
+        f.write(newText)
     with open(general.getAbsPath("errorOldText.txt"), "w") as f:
         f.write(oldText)
 
