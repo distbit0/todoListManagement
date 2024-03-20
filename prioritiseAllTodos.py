@@ -118,7 +118,7 @@ def regularisePriorities(todoPaths):
             continue
         elif type(priority) is int:
             if priority > tasksToAssignPriority:
-                pass  ##so that we can later recover these prioritisations even if they are for now not in top n
+                regularisedTodos.append(path)
                 # regularisedTodos.append(priorityLib.replacePriorityOfTodo(path, "n"))
             elif priority < 1:
                 regularisedTodos.append(priorityLib.replacePriorityOfTodo(path, 1))
@@ -216,7 +216,7 @@ def triggerReprioritisationIfNecessary(todoPaths):
 
 def saveErrorData(newText, oldText):
     with open(general.getAbsPath("errorNewText.txt"), "w") as f:
-        f.write(newText)
+        f.write(newText.replace("**", ""))
     with open(general.getAbsPath("errorOldText.txt"), "w") as f:
         f.write(oldText)
 
@@ -227,37 +227,54 @@ def addTopTodosToText(text, todoPaths):
     return text
 
 
+def checkThatHashesMatch(todoPaths, todoPathsOrig, path, operation):
+    inputHash = general.generateTodoListHash(todoPathsOrig)
+    outputHash = general.generateTodoListHash(todoPaths)
+    if inputHash != outputHash:
+        print("input hash: {}, output hash: {}".format(inputHash, outputHash))
+        fileText = parseLists.constructFileFromPaths(todoPaths)
+        text = parseLists.constructFileFromPaths(todoPathsOrig)
+        saveErrorData(fileText, text)
+        raise Exception(
+            "hashes do not match!!!! for file: {} due to operation {}".format(
+                path, operation
+            )
+        )
+
+
 # check that priority logic does not assume that hashtag is at the end of the line
 
 
 def processTodoPaths(text, path, interactive):
+    print("processing: {}".format(path))
     todoPathsOrig = parseLists.getAllToDoPaths(text)
-    todoPaths = regularisePriorities(todoPathsOrig)
-    todoPaths = manageRecurringTasks(todoPaths)
-    todoPaths = removeGapsInPriorities(todoPaths)
-    todoPaths = regularisePriorities(
-        todoPathsOrig
-    )  # to account for impact of removeGaps after adding priorities for recurring tasks
-    todoPaths = deduplicatePriorities(todoPaths)
-    todoPaths = removePriorityFromParentTodos(todoPaths)
-    todoPaths = triggerReprioritisationIfNecessary(todoPaths)
+    todoPaths = list(todoPathsOrig)
+    functionsToExecute = [
+        regularisePriorities,
+        manageRecurringTasks,
+        removeGapsInPriorities,
+        regularisePriorities,  # to account for impact of removeGaps after adding priorities for recurring tasks
+        deduplicatePriorities,
+        removePriorityFromParentTodos,
+        triggerReprioritisationIfNecessary,
+    ]
+    for i, functionToExecute in enumerate(functionsToExecute):
+        todoPaths = functionToExecute(todoPaths)
+        checkThatHashesMatch(
+            todoPaths, todoPathsOrig, path, functionToExecute.__name__ + str(i)
+        )
 
     if interactive:
         fileName = path.split("/")[-1]
         todoPaths, receivedCtrlC = prioritiseUnprioritisedTodos(todoPaths, fileName)
+        checkThatHashesMatch(
+            todoPaths, todoPathsOrig, path, "prioritiseUnprioritisedTodos"
+        )
         if receivedCtrlC:
             interactive = False
             print("disabling interactive mode for all following files..")
 
     fileText = parseLists.constructFileFromPaths(todoPaths)
-    inputHash = general.generateTodoListHash(todoPathsOrig)
-    outputHash = general.generateTodoListHash(todoPaths)
-    if inputHash != outputHash:
-        print("input hash: {}, output hash: {}".format(inputHash, outputHash))
-        saveErrorData(fileText, text)
-        raise Exception("hashes do not match!!!!")
-    print("hashes match for {}".format(path))
-
     fileText = addTopTodosToText(fileText, todoPaths)
     return interactive, fileText
 
@@ -274,7 +291,7 @@ def main():
 
     excludedFiles = general.getConfig()["todosExcludedFromPrioritisation"]
     toDoFiles = general.getAllToDos()
-    # testFileText = utils.readFromFile("testFile.md")
+    # testFileText = general.readFromFile("testFile.md")
     # toDoFiles = {
     #     "testFile": {"master": {"text": testFileText, "path": "modifiedTestFile.md"}}
     # }
