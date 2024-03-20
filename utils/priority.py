@@ -93,7 +93,7 @@ def getTopNTodosAsText(todoPaths, n):
     if len(allTodos) == 0:
         return "\n".join(textOutput)
     sortedTodos = sorted(allTodos, key=lambda x: x[0])
-    n = min(n + 1, len(sortedTodos))
+    n = min(n, len(sortedTodos))
     for i in range(n):
         priority, path = sortedTodos[i]
         isInProgress = "[/] " in path[-1] or "[-] " in path[-1]
