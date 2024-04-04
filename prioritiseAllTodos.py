@@ -109,7 +109,7 @@ def removePriorityFromParentTodos(todoPaths):
     return outputPaths
 
 
-def regularisePriorities(todoPaths):
+def regularisePriorities(todoPaths, setToN=False):
     regularisedTodos = []
     for path in todoPaths:
         priority = priorityLib.getPriorityOfTodo(path)
@@ -117,9 +117,8 @@ def regularisePriorities(todoPaths):
             regularisedTodos.append(path)
             continue
         elif type(priority) is int:
-            if priority > tasksToAssignPriority:
-                regularisedTodos.append(path)
-                # regularisedTodos.append(priorityLib.replacePriorityOfTodo(path, "n"))
+            if priority > tasksToAssignPriority and setToN:
+                regularisedTodos.append(priorityLib.replacePriorityOfTodo(path, "n"))
             elif priority < 1:
                 regularisedTodos.append(priorityLib.replacePriorityOfTodo(path, 1))
             else:
@@ -266,6 +265,10 @@ def processTodoPaths(text, path, interactive):
 
     if interactive:
         fileName = path.split("/")[-1]
+        todoPaths = regularisePriorities(todoPaths, setToN=True)
+        checkThatHashesMatch(
+            todoPaths, todoPathsOrig, path, "regularisePriorities (setToN)"
+        )
         todoPaths, receivedCtrlC = prioritiseUnprioritisedTodos(todoPaths, fileName)
         checkThatHashesMatch(
             todoPaths, todoPathsOrig, path, "prioritiseUnprioritisedTodos"
