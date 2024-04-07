@@ -56,18 +56,16 @@ def saveNotesFromKeep():
     gnotes = list(keep.find(archived=False, trashed=False))
     gnotes = sorted(gnotes, key=lambda x: x.timestamps.edited.timestamp())
     # Extract text from each note and compile into a newline-separated string
-    notes_text = "\n\n"
+    notes_text = "\n"
     for gnote in gnotes:
         if (gnote.text or gnote.title) and (
             gnote.title not in ["Questions", "Statements"]
         ):
             stringToAdd = gnote.title + "\n" if gnote.title else ""
-            stringToAdd += gnote.text if gnote.text else ""
-            stringToAdd += "\n\n"
+            stringToAdd += gnote.text + "\n" if gnote.text else ""
             if stringToAdd.lower().strip() not in previousTempText.lower():
                 notes_text += stringToAdd
 
-    notes_text = notes_text.replace("\n\n\n", "\n\n")
     if notes_text.strip():
         with open(general.getConfig()["tempNotesPath"], "a") as f:
             f.write(notes_text)
@@ -112,7 +110,7 @@ def saveNotesFromMp3s():
     mp3FolderPath = general.getConfig()["mp3CaptureFolder"]
     processedMp3s = json.load(open(general.getAbsPath("../processedMp3s.json")))
     previousTempText = open(general.getConfig()["tempNotesPath"]).read()
-    textToAddToFile = "\n\n"
+    textToAddToFile = "\n"
     filesToDelete = []
 
     musicFiles = sorted(
@@ -127,13 +125,12 @@ def saveNotesFromMp3s():
             print("processing {}".format(fileName))
             textFromMp3 = processMp3File(mp3File)
             if textFromMp3.lower().strip() not in previousTempText.lower():
-                textToAddToFile += textFromMp3 + "\n\n" if textFromMp3 else ""
+                textToAddToFile += textFromMp3 + "\n" if textFromMp3 else ""
             filesToDelete.append(fileName)
 
-    notes_text = textToAddToFile.replace("\n\n\n", "\n\n")
-    if notes_text.strip():
+    if textToAddToFile.strip():
         with open(general.getConfig()["tempNotesPath"], "a") as f:
-            f.write(notes_text)
+            f.write(textToAddToFile)
 
     for fileName in filesToDelete:
         ## for the time being lets not delete any files but instead simply mark them as processed, to minimise risk of data loss
