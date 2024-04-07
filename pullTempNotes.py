@@ -139,6 +139,14 @@ def saveNotesFromMp3s():
     json.dump(processedMp3s, open(general.getAbsPath("../processedMp3s.json"), "w"))
 
 
+def deleteNewLines():
+    with open(general.getConfig()["tempNotesPath"], "r") as f:
+        text = f.read()
+    with open(general.getConfig()["tempNotesPath"], "w") as f:
+        f.write(text.replace("\n\n", "\n"))
+
+
 delete_duplicate_files(general.getConfig()["mp3CaptureFolder"])
 saveNotesFromKeep()
 saveNotesFromMp3s()
+deleteNewLines()
