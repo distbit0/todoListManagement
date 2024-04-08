@@ -56,27 +56,25 @@ def saveNotesFromKeep():
     gnotes = list(keep.find(archived=False, trashed=False))
     gnotes = sorted(gnotes, key=lambda x: x.timestamps.edited.timestamp())
     # Extract text from each note and compile into a newline-separated string
-    notes_text = "\n"
+    textToAddToFile = ""
     for gnote in gnotes:
         if (gnote.text or gnote.title) and (
             gnote.title not in ["Questions", "Statements"]
         ):
-            stringToAdd = gnote.title if gnote.title else ""
+            stringToAdd = ""
+            stringToAdd += "\n" if gnote.title or gnote.text else ""
+            stringToAdd += gnote.title if gnote.title else ""
             stringToAdd += " | " if gnote.text and gnote.title else ""
             stringToAdd += gnote.text if gnote.text else ""
-            stringToAdd += "\n" if gnote.title or gnote.text else ""
             if stringToAdd.lower().strip() not in previousTempText.lower():
-                notes_text += stringToAdd
-
-    if notes_text.strip():
-        with open(general.getConfig()["tempNotesPath"], "a") as f:
-            f.write(notes_text)
+                textToAddToFile += stringToAdd
 
     for gnote in gnotes:
         if not (gnote.title in ["Questions", "Statements"]):
             gnote.archived = True
 
     keep.sync()
+    return textToAddToFile
 
 
 def tryDeleteFile(path):
@@ -112,7 +110,7 @@ def saveNotesFromMp3s():
     mp3FolderPath = general.getConfig()["mp3CaptureFolder"]
     processedMp3s = json.load(open(general.getAbsPath("../processedMp3s.json")))
     previousTempText = open(general.getConfig()["tempNotesPath"]).read()
-    textToAddToFile = "\n"
+    textToAddToFile = ""
     filesToDelete = []
 
     musicFiles = sorted(
@@ -127,18 +125,15 @@ def saveNotesFromMp3s():
             print("processing {}".format(fileName))
             textFromMp3 = processMp3File(mp3File)
             if textFromMp3.lower().strip() not in previousTempText.lower():
-                textToAddToFile += textFromMp3 + "\n" if textFromMp3 else ""
+                textToAddToFile += "\n" + textFromMp3 if textFromMp3 else ""
             filesToDelete.append(fileName)
-
-    if textToAddToFile.strip():
-        with open(general.getConfig()["tempNotesPath"], "a") as f:
-            f.write(textToAddToFile)
 
     for fileName in filesToDelete:
         ## for the time being lets not delete any files but instead simply mark them as processed, to minimise risk of data loss
         processedMp3s.append(fileName)
 
     json.dump(processedMp3s, open(general.getAbsPath("../processedMp3s.json"), "w"))
+    return textToAddToFile
 
 
 def stripNewLines(filePath, appendSingle=False):
@@ -153,8 +148,11 @@ def stripNewLines(filePath, appendSingle=False):
 
 tempFilePath = general.getConfig()["tempNotesPath"]
 mp3FolderPath = general.getConfig()["mp3CaptureFolder"]
-stripNewLines(tempFilePath)
 delete_duplicate_files(mp3FolderPath)
-saveNotesFromKeep()
-saveNotesFromMp3s()
+textToAddToFile = saveNotesFromKeep()
+textToAddToFile += saveNotesFromMp3s()
+
+stripNewLines(tempFilePath)
+with open(general.getConfig()["tempNotesPath"], "a") as f:
+    f.write(textToAddToFile)
 stripNewLines(tempFilePath, appendSingle=True)
