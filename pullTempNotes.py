@@ -62,10 +62,9 @@ def saveNotesFromKeep():
             gnote.title not in ["Questions", "Statements"]
         ):
             stringToAdd = ""
-            stringToAdd += "\n" if gnote.title or gnote.text else ""
-            stringToAdd += gnote.title if gnote.title else ""
-            stringToAdd += " | " if gnote.text and gnote.title else ""
-            stringToAdd += gnote.text if gnote.text else ""
+            stringToAdd += "\n" + gnote.title if gnote.title else ""
+            stringToAdd += ":" if gnote.text and gnote.title else ""
+            stringToAdd += "\n" + gnote.text if gnote.text else ""
             if stringToAdd.lower().strip() not in previousTempText.lower():
                 textToAddToFile += stringToAdd
 
