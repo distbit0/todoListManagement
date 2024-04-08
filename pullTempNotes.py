@@ -1,4 +1,5 @@
 import gkeepapi
+import time
 import os
 import re
 import glob
@@ -58,6 +59,8 @@ def saveNotesFromKeep():
     # Extract text from each note and compile into a newline-separated string
     textToAddToFile = ""
     for gnote in gnotes:
+        if time.time() - gnote.timestamps.edited.timestamp() < 30:
+            continue
         if (gnote.text or gnote.title) and (
             gnote.title not in ["Questions", "Statements"]
         ):
