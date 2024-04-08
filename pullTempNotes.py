@@ -141,7 +141,11 @@ def writeToFile(filePath, textToAddToFile):
         text = f.read()
     text = text.strip()
     text += textToAddToFile
-    text = text.strip() + "\n"
+    text = text.strip()
+    if text.split("\n")[-1][0] == "#":
+        text += "\n\n"
+    else:
+        text += "\n"
     with open(filePath, "w") as f:
         f.write(text)
 
