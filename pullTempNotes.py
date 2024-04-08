@@ -144,6 +144,8 @@ def writeToFile(filePath, textToAddToFile):
     text += textToAddToFile
     if text[-1] != "\n":
         text += "\n"
+    if text.strip().split("\n")[-1][0] == "#":
+        text += "\n"
     with open(filePath, "w") as f:
         f.write(text)
 
