@@ -139,11 +139,11 @@ def writeToFile(filePath, textToAddToFile):
     with open(filePath, "r") as f:
         text = f.read()
     text = text.strip()
-    text += textToAddToFile
-    text = text.strip()
     if text.split("\n")[-1][0] == "#":
         text += "\n"
-    text += "\n"
+    text += textToAddToFile
+    if text[-1] != "\n":
+        text += "\n"
     with open(filePath, "w") as f:
         f.write(text)
 
