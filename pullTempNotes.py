@@ -136,21 +136,20 @@ def saveNotesFromMp3s():
     return textToAddToFile
 
 
-def stripNewLines(filePath, appendSingle=False):
+def writeToFile(filePath, textToAddToFile):
     with open(filePath, "r") as f:
         text = f.read()
     text = text.strip()
-    if appendSingle:
-        text += "\n"
+    text += textToAddToFile
+    text = text.strip() + "\n"
     with open(filePath, "w") as f:
         f.write(text)
 
 
-tempFilePath = general.getConfig()["tempNotesPath"]
-mp3FolderPath = general.getConfig()["mp3CaptureFolder"]
+tempFilePath, mp3FolderPath = (
+    general.getConfig()["tempNotesPath"],
+    general.getConfig()["mp3CaptureFolder"],
+)
 delete_duplicate_files(mp3FolderPath)
 textToAddToFile = saveNotesFromKeep() + saveNotesFromMp3s()
-stripNewLines(tempFilePath)
-with open(general.getConfig()["tempNotesPath"], "a") as f:
-    f.write(textToAddToFile)
-stripNewLines(tempFilePath, appendSingle=True)
+writeToFile(tempFilePath, textToAddToFile)
