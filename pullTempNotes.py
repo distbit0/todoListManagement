@@ -61,8 +61,10 @@ def saveNotesFromKeep():
         if (gnote.text or gnote.title) and (
             gnote.title not in ["Questions", "Statements"]
         ):
-            stringToAdd = gnote.title + "\n" if gnote.title else ""
-            stringToAdd += gnote.text + "\n" if gnote.text else ""
+            stringToAdd = gnote.title if gnote.title else ""
+            stringToAdd += " | " if gnote.text and gnote.title else ""
+            stringToAdd += gnote.text if gnote.text else ""
+            stringToAdd += "\n" if gnote.title or gnote.text else ""
             if stringToAdd.lower().strip() not in previousTempText.lower():
                 notes_text += stringToAdd
 
@@ -139,14 +141,18 @@ def saveNotesFromMp3s():
     json.dump(processedMp3s, open(general.getAbsPath("../processedMp3s.json"), "w"))
 
 
-def deleteNewLines():
+def stripNewLines(appendSingle=False):
     with open(general.getConfig()["tempNotesPath"], "r") as f:
         text = f.read()
+    text = text.strip()
+    if appendSingle:
+        text += "\n"
     with open(general.getConfig()["tempNotesPath"], "w") as f:
-        f.write(text.replace("\n\n", "\n") + "\n")
+        f.write(text)
 
 
+stripNewLines()
 delete_duplicate_files(general.getConfig()["mp3CaptureFolder"])
 saveNotesFromKeep()
 saveNotesFromMp3s()
-deleteNewLines()
+stripNewLines(appendSingle=True)
