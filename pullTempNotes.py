@@ -149,9 +149,7 @@ def stripNewLines(filePath, appendSingle=False):
 tempFilePath = general.getConfig()["tempNotesPath"]
 mp3FolderPath = general.getConfig()["mp3CaptureFolder"]
 delete_duplicate_files(mp3FolderPath)
-textToAddToFile = saveNotesFromKeep()
-textToAddToFile += saveNotesFromMp3s()
-
+textToAddToFile = saveNotesFromKeep() + saveNotesFromMp3s()
 stripNewLines(tempFilePath)
 with open(general.getConfig()["tempNotesPath"], "a") as f:
     f.write(textToAddToFile)
