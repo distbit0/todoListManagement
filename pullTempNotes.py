@@ -48,24 +48,23 @@ def delete_duplicate_files(directory):
 
 
 def saveNotesFromKeep(keep):
-    previousTempText = open(general.getConfig()["tempNotesPath"]).read()
+    # previousTempText = open(general.getConfig()["tempNotesPath"]).read()
     gnotes = list(keep.find(archived=False, trashed=False))
     gnotes = sorted(gnotes, key=lambda x: x.timestamps.edited.timestamp())
     textToAddToFile = ""
 
     for gnote in gnotes:
-        tooRecent = time.time() - gnote.timestamps.edited.timestamp() < 12
         isWatchNote = gnote.title in ["Questions", "Statements"]
         isEmpty = (gnote.text + gnote.title).strip() == ""
-        if isEmpty or isWatchNote or tooRecent:
+        if isEmpty or isWatchNote:
             continue
         stringToAdd = ""
         if "http" not in gnote.text:
             stringToAdd += "\n" + gnote.title if gnote.title else ""
             stringToAdd += ":" if gnote.text and gnote.title else ""
         stringToAdd += "\n" + gnote.text if gnote.text else ""
-        if stringToAdd.lower().strip() not in previousTempText.lower():
-            textToAddToFile += stringToAdd
+        # if stringToAdd.lower().strip() not in previousTempText.lower():
+        textToAddToFile += stringToAdd
         gnote.archived = True
 
     return textToAddToFile
@@ -103,7 +102,7 @@ def saveNotesFromMp3s():
     # 3. if it has not already been, then process it and save its text to the file first, then delete the mp3 and mark it as processed in processedMp3s.json
     mp3FolderPath = general.getConfig()["mp3CaptureFolder"]
     processedMp3s = json.load(open(general.getAbsPath("../processedMp3s.json")))
-    previousTempText = open(general.getConfig()["tempNotesPath"]).read()
+    # previousTempText = open(general.getConfig()["tempNotesPath"]).read()
     textToAddToFile = ""
 
     musicFiles = sorted(
@@ -117,8 +116,8 @@ def saveNotesFromMp3s():
         else:
             print("processing {}".format(fileName))
             textFromMp3 = processMp3File(mp3File)
-            if textFromMp3.lower().strip() not in previousTempText.lower():
-                textToAddToFile += "\n" + textFromMp3 if textFromMp3 else ""
+            # if textFromMp3.lower().strip() not in previousTempText.lower():
+            textToAddToFile += "\n" + textFromMp3 if textFromMp3 else ""
             processedMp3s.append(fileName)
 
     return textToAddToFile, processedMp3s
@@ -129,16 +128,26 @@ def writeToFile(filePath, textToAddToFile):
         return
     with open(filePath, "r") as f:
         text = f.read()
-    text = text.strip()
-    if text.split("\n")[-1][0] == "#":
-        text += "\n"
-    text += textToAddToFile
-    if text[-1] != "\n":
-        text += "\n"
-    if text.strip().split("\n")[-1][0] == "#":
-        text += "\n"
+    existingText = text.strip()
+    if existingText.split("\n")[-1][0] == "#":
+        existingText += "\n"
+
+    ### remove lines in existing text which are contained in lines that are being added. this sometimes happens if a line is added while it is still being edited in the keep app
+    existingLines = [line.strip() for line in existingText.split("\n")]
+    existingLines = [
+        line
+        for line in existingLines
+        if line not in textToAddToFile or line.strip() == ""
+    ]
+    existingText = "\n".join(existingLines)
+
+    existingText += textToAddToFile
+    if existingText[-1] != "\n":
+        existingText += "\n"
+    if existingText.strip().split("\n")[-1][0] == "#":
+        existingText += "\n"
     with open(filePath, "w") as f:
-        f.write(text)
+        f.write(existingText)
 
 
 keep = gkeepapi.Keep()
