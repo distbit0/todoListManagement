@@ -57,12 +57,11 @@ def saveNotesFromKeep(keep):
         isEmpty = (gnote.text + gnote.title).strip() == ""
         if isEmpty or isWatchNote:
             continue
-        stringToAdd = ""
+        print("text from keep: {}".format(gnote.title + "\n" + gnote.text))
         if "http" not in gnote.text:
-            stringToAdd += "\n" + gnote.title if gnote.title else ""
-            stringToAdd += ":" if gnote.text and gnote.title else ""
-        stringToAdd += "\n" + gnote.text if gnote.text else ""
-        textToAddToFile += stringToAdd
+            textToAddToFile += "\n" + gnote.title if gnote.title else ""
+            textToAddToFile += ":" if gnote.text and gnote.title else ""
+        textToAddToFile += "\n" + gnote.text if gnote.text else ""
         gnote.archived = True
 
     return textToAddToFile
@@ -113,7 +112,9 @@ def saveNotesFromMp3s():
         else:
             print("processing {}".format(fileName))
             textFromMp3 = processMp3File(mp3File)
-            textToAddToFile += "\n" + textFromMp3 if textFromMp3 else ""
+            if textFromMp3:
+                textToAddToFile += "\n" + textFromMp3
+                print("text from mp3: {}".format(textFromMp3))
             processedMp3s.append(fileName)
 
     return textToAddToFile, processedMp3s
@@ -131,7 +132,7 @@ def remove_duplicate_beginnings(text):
                 is_duplicate = True
                 break
 
-        if not is_duplicate or line.strip() == "":
+        if not is_duplicate or line.strip() == "" or line.strip() == "---":
             result_lines.append(line)
 
     return "\n".join(result_lines)
