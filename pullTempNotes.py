@@ -122,13 +122,13 @@ def saveNotesFromMp3s():
 
 def remove_duplicate_beginnings(text):
     lines = text.split("\n")
-    stripped_lines = [line.strip().lower() for line in lines]
+    stripped_lines = [line.strip() for line in lines]
     result_lines = []
 
     for i, line in enumerate(lines):
         is_duplicate = False
         for j, other_line in enumerate(stripped_lines):
-            if i != j and other_line.startswith(line.strip().lower()):
+            if i != j and other_line.startswith(line.strip()):
                 is_duplicate = True
                 break
 
