@@ -47,12 +47,7 @@ def delete_duplicate_files(directory):
                 hashes[file_hash] = file_path
 
 
-def saveNotesFromKeep():
-    keep = gkeepapi.Keep()
-    keep.resume(
-        os.environ["username"],
-        os.environ["masterKey"],
-    )
+def saveNotesFromKeep(keep):
     previousTempText = open(general.getConfig()["tempNotesPath"]).read()
     gnotes = list(keep.find(archived=False, trashed=False))
     gnotes = sorted(gnotes, key=lambda x: x.timestamps.edited.timestamp())
@@ -73,7 +68,6 @@ def saveNotesFromKeep():
             textToAddToFile += stringToAdd
         gnote.archived = True
 
-    keep.sync()
     return textToAddToFile
 
 
@@ -111,7 +105,6 @@ def saveNotesFromMp3s():
     processedMp3s = json.load(open(general.getAbsPath("../processedMp3s.json")))
     previousTempText = open(general.getConfig()["tempNotesPath"]).read()
     textToAddToFile = ""
-    filesToDelete = []
 
     musicFiles = sorted(
         glob.glob(mp3FolderPath + "/*.mp3") + glob.glob(mp3FolderPath + "/*.m4a"),
@@ -126,14 +119,9 @@ def saveNotesFromMp3s():
             textFromMp3 = processMp3File(mp3File)
             if textFromMp3.lower().strip() not in previousTempText.lower():
                 textToAddToFile += "\n" + textFromMp3 if textFromMp3 else ""
-            filesToDelete.append(fileName)
+            processedMp3s.append(fileName)
 
-    for fileName in filesToDelete:
-        ## for the time being lets not delete any files but instead simply mark them as processed, to minimise risk of data loss
-        processedMp3s.append(fileName)
-
-    json.dump(processedMp3s, open(general.getAbsPath("../processedMp3s.json"), "w"))
-    return textToAddToFile
+    return textToAddToFile, processedMp3s
 
 
 def writeToFile(filePath, textToAddToFile):
@@ -153,10 +141,22 @@ def writeToFile(filePath, textToAddToFile):
         f.write(text)
 
 
+keep = gkeepapi.Keep()
+keep.resume(
+    os.environ["username"],
+    os.environ["masterKey"],
+)
+
 tempFilePath, mp3FolderPath = (
     general.getConfig()["tempNotesPath"],
     general.getConfig()["mp3CaptureFolder"],
 )
 delete_duplicate_files(mp3FolderPath)
-textToAddToFile = saveNotesFromKeep() + saveNotesFromMp3s()
+
+textToAddToFile, processedMp3s = saveNotesFromMp3s()
+textToAddToFile += saveNotesFromKeep(keep)
 writeToFile(tempFilePath, textToAddToFile)
+
+## only now do we delete/archive synced notes and mp3s
+keep.sync()
+json.dump(processedMp3s, open(general.getAbsPath("../processedMp3s.json"), "w"))
