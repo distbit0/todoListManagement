@@ -59,7 +59,7 @@ def saveNotesFromKeep():
     textToAddToFile = ""
 
     for gnote in gnotes:
-        tooRecent = time.time() - gnote.timestamps.edited.timestamp() < 30
+        tooRecent = time.time() - gnote.timestamps.edited.timestamp() < 12
         isWatchNote = gnote.title in ["Questions", "Statements"]
         isEmpty = gnote.text or gnote.title
         if isEmpty or isWatchNote or tooRecent:
@@ -137,6 +137,8 @@ def saveNotesFromMp3s():
 
 
 def writeToFile(filePath, textToAddToFile):
+    if not textToAddToFile.strip():
+        return
     with open(filePath, "r") as f:
         text = f.read()
     text = text.strip()
