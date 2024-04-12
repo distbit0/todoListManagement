@@ -61,7 +61,7 @@ def saveNotesFromKeep():
     for gnote in gnotes:
         tooRecent = time.time() - gnote.timestamps.edited.timestamp() < 12
         isWatchNote = gnote.title in ["Questions", "Statements"]
-        isEmpty = gnote.text or gnote.title
+        isEmpty = (gnote.text + gnote.title).strip() == ""
         if isEmpty or isWatchNote or tooRecent:
             continue
         stringToAdd = ""
