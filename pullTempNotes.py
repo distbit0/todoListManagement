@@ -56,25 +56,22 @@ def saveNotesFromKeep():
     previousTempText = open(general.getConfig()["tempNotesPath"]).read()
     gnotes = list(keep.find(archived=False, trashed=False))
     gnotes = sorted(gnotes, key=lambda x: x.timestamps.edited.timestamp())
-    # Extract text from each note and compile into a newline-separated string
     textToAddToFile = ""
-    for gnote in gnotes:
-        if time.time() - gnote.timestamps.edited.timestamp() < 30:
-            continue
-        if (gnote.text or gnote.title) and (
-            gnote.title not in ["Questions", "Statements"]
-        ):
-            stringToAdd = ""
-            if "http" not in gnote.text:
-                stringToAdd += "\n" + gnote.title if gnote.title else ""
-                stringToAdd += ":" if gnote.text and gnote.title else ""
-            stringToAdd += "\n" + gnote.text if gnote.text else ""
-            if stringToAdd.lower().strip() not in previousTempText.lower():
-                textToAddToFile += stringToAdd
 
     for gnote in gnotes:
-        if not (gnote.title in ["Questions", "Statements"]):
-            gnote.archived = True
+        tooRecent = time.time() - gnote.timestamps.edited.timestamp() < 30
+        isWatchNote = gnote.title in ["Questions", "Statements"]
+        isEmpty = gnote.text or gnote.title
+        if isEmpty or isWatchNote or tooRecent:
+            continue
+        stringToAdd = ""
+        if "http" not in gnote.text:
+            stringToAdd += "\n" + gnote.title if gnote.title else ""
+            stringToAdd += ":" if gnote.text and gnote.title else ""
+        stringToAdd += "\n" + gnote.text if gnote.text else ""
+        if stringToAdd.lower().strip() not in previousTempText.lower():
+            textToAddToFile += stringToAdd
+        gnote.archived = True
 
     keep.sync()
     return textToAddToFile
