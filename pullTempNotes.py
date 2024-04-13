@@ -1,5 +1,5 @@
 import gkeepapi
-import time
+import shutil
 import os
 import re
 import glob
@@ -69,8 +69,9 @@ def saveNotesFromKeep(keep):
 
 def tryDeleteFile(path):
     try:
-        os.remove(path)
-    except:
+        send2trash(path)
+    except Exception as e:
+        print(f"Error moving {path} to trash: {e}")
         pass
 
 
@@ -94,9 +95,6 @@ def sort_key(filename):
 
 
 def saveNotesFromMp3s():
-    # 1. Get list of mp3 files
-    # 2. for each mp3, check if it has been already processed by seeing if it is in processedMp3s.json
-    # 3. if it has not already been, then process it and save its text to the file first, then delete the mp3 and mark it as processed in processedMp3s.json
     mp3FolderPath = general.getConfig()["mp3CaptureFolder"]
     processedMp3s = json.load(open(general.getAbsPath("../processedMp3s.json")))
     textToAddToFile = ""
@@ -107,9 +105,7 @@ def saveNotesFromMp3s():
     )
     for mp3File in musicFiles:
         fileName = mp3File.split("/")[-1]
-        if fileName in processedMp3s:
-            pass  # tryDeleteFile(mp3File)
-        else:
+        if fileName not in processedMp3s:
             print("processing {}".format(fileName))
             textFromMp3 = processMp3File(mp3File)
             if textFromMp3:
@@ -175,3 +171,6 @@ writeToFile(tempFilePath, textToAddToFile)
 ## only now do we delete/archive synced notes and mp3s
 keep.sync()
 json.dump(processedMp3s, open(general.getAbsPath("../processedMp3s.json"), "w"))
+for mp3File in processedMp3s:
+    print(f"Deleting {mp3File}")
+    tryDeleteFile(os.path.join(mp3FolderPath, mp3File))
