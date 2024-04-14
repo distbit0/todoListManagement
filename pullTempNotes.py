@@ -148,8 +148,8 @@ def writeToFile(filePath, textToAddToFile):
         existingText += "\n"
     existingText += textToAddToFile
     existingText = remove_duplicate_beginnings(existingText)
-    if existingText[-1] != "\n":
-        existingText += "\n"
+    # if existingText[-1] != "\n":
+    #     existingText += "\n"
     if existingText.strip().split("\n")[-1][0] == "#":
         existingText += "\n"
     with open(filePath, "w") as f:
