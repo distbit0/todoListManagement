@@ -157,10 +157,8 @@ def substitutePriority(prioritySubstitutions, todoPaths):
 
 def swapPriorities(todoPaths, priority1, priority2):
     # if priority2 == "n" or priority2 > tasksToAssignPriority: (commented this out so that we can recover these prioritisations even if they are for now not in top n
-    if priority2 == "n":
-        todoPaths = substitutePriority({priority1: "n"}, todoPaths)
-    elif priority2 == "d":
-        todoPaths = substitutePriority({priority1: "d"}, todoPaths)
+    if priority2 in ["n", "d"]:
+        todoPaths = substitutePriority({priority1: priority2}, todoPaths)
     else:
         todoPaths = substitutePriority({priority1: 1000000}, todoPaths)
         todoPaths = substitutePriority({priority2: 5000000}, todoPaths)
