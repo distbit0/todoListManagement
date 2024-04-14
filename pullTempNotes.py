@@ -62,7 +62,7 @@ def saveNotesFromKeep(keep):
             textToAddToFile += "\n" + gnote.title if gnote.title else ""
             textToAddToFile += ":" if gnote.text and gnote.title else ""
         textToAddToFile += "\n" + gnote.text if gnote.text else ""
-        gnote.archived = True
+        gnote.trash()
 
     return textToAddToFile
 
@@ -119,15 +119,20 @@ def remove_duplicate_beginnings(text):
     lines = text.split("\n")
     stripped_lines = [line.strip() for line in lines]
     result_lines = []
+    allowedDuplicates = ["---", ""]
 
     for i, line in enumerate(lines):
         is_duplicate = False
         for j, other_line in enumerate(stripped_lines):
-            if i != j and other_line.startswith(line.strip()):
+            differentIndex = i != j
+            sharedPrefix = other_line.startswith(line.strip())
+            # only check earlier lines for exact matches, to avoid deleting all instances of a string present on multiple lines:
+            exactMatchOnLaterLine = other_line.lower() == line.lower() and j > i
+            if differentIndex and sharedPrefix and not exactMatchOnLaterLine:
                 is_duplicate = True
                 break
 
-        if not is_duplicate or line.strip() == "" or line.strip() == "---":
+        if not is_duplicate or line.strip() in allowedDuplicates:
             result_lines.append(line)
 
     return "\n".join(result_lines)
