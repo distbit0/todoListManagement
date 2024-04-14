@@ -96,8 +96,8 @@ def sort_key(filename):
 
 def saveNotesFromMp3s():
     mp3FolderPath = general.getConfig()["mp3CaptureFolder"]
-    processedMp3s = json.load(open(general.getAbsPath("../processedMp3s.json")))
     textToAddToFile = ""
+    processedMp3s = []
 
     musicFiles = sorted(
         glob.glob(mp3FolderPath + "/*.mp3") + glob.glob(mp3FolderPath + "/*.m4a"),
@@ -105,13 +105,12 @@ def saveNotesFromMp3s():
     )
     for mp3File in musicFiles:
         fileName = mp3File.split("/")[-1]
-        if fileName not in processedMp3s:
-            print("processing {}".format(fileName))
-            textFromMp3 = processMp3File(mp3File)
-            if textFromMp3:
-                textToAddToFile += "\n" + textFromMp3
-                print("text from mp3: {}".format(textFromMp3))
-            processedMp3s.append(fileName)
+        print("processing {}".format(fileName))
+        textFromMp3 = processMp3File(mp3File)
+        if textFromMp3:
+            textToAddToFile += "\n" + textFromMp3
+            print("text from mp3: {}".format(textFromMp3))
+        processedMp3s.append(fileName)
 
     return textToAddToFile, processedMp3s
 
@@ -170,7 +169,6 @@ writeToFile(tempFilePath, textToAddToFile)
 
 ## only now do we delete/archive synced notes and mp3s
 keep.sync()
-json.dump(processedMp3s, open(general.getAbsPath("../processedMp3s.json"), "w"))
 for mp3File in processedMp3s:
     print(f"Deleting {mp3File}")
     tryDeleteFile(os.path.join(mp3FolderPath, mp3File))
