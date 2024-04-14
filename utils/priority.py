@@ -1,6 +1,7 @@
 import re
 from datetime import datetime
 from utils.general import *
+import utils.completion as completion
 
 
 tasksToAssignPriority = getConfig()["tasksToAssignPriority"]
@@ -145,6 +146,9 @@ def substitutePriority(prioritySubstitutions, todoPaths):
     for i, task in enumerate(todoPaths):
         taskPriority = getPriorityOfTodo(task)
         if taskPriority in prioritySubstitutions:
+            if prioritySubstitutions[taskPriority] == "d":
+                todoPaths[i] = completion.markTodoAsDone(task)
+                prioritySubstitutions[taskPriority] = "n"
             todoPaths[i] = replacePriorityOfTodo(
                 task, prioritySubstitutions[taskPriority]
             )
@@ -155,6 +159,8 @@ def swapPriorities(todoPaths, priority1, priority2):
     # if priority2 == "n" or priority2 > tasksToAssignPriority: (commented this out so that we can recover these prioritisations even if they are for now not in top n
     if priority2 == "n":
         todoPaths = substitutePriority({priority1: "n"}, todoPaths)
+    elif priority2 == "d":
+        todoPaths = substitutePriority({priority1: "d"}, todoPaths)
     else:
         todoPaths = substitutePriority({priority1: 1000000}, todoPaths)
         todoPaths = substitutePriority({priority2: 5000000}, todoPaths)
