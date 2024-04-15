@@ -57,13 +57,14 @@ def saveNotesFromKeep(keep):
         isEmpty = (gnote.text + gnote.title).strip() == ""
         if isEmpty or isWatchNote:
             continue
-        print("text from keep: {}".format(gnote.title + "\n" + gnote.text))
-        if gnote.text or gnote.title:
+        noteText, noteTitle = gnote.text.strip(), gnote.title.strip()
+        print("text from keep: {}".format(noteTitle + "\n" + noteText))
+        if noteText or noteTitle:
             textToAddToFile += "\n"
-        if "http" not in gnote.text:
-            textToAddToFile += "\n" + gnote.title if gnote.title else ""
-            textToAddToFile += ":" if gnote.text and gnote.title else ""
-        textToAddToFile += "\n" + gnote.text if gnote.text else ""
+        if "http" not in noteText:
+            textToAddToFile += "\n" + noteTitle if noteTitle else ""
+            textToAddToFile += ":" if noteText and noteTitle else ""
+        textToAddToFile += "\n" + noteText if noteText else ""
         gnote.trash()
 
     return textToAddToFile
