@@ -58,6 +58,8 @@ def saveNotesFromKeep(keep):
         if isEmpty or isWatchNote:
             continue
         print("text from keep: {}".format(gnote.title + "\n" + gnote.text))
+        if gnote.text or gnote.title:
+            textToAddToFile += "\n"
         if "http" not in gnote.text:
             textToAddToFile += "\n" + gnote.title if gnote.title else ""
             textToAddToFile += ":" if gnote.text and gnote.title else ""
@@ -108,7 +110,7 @@ def saveNotesFromMp3s():
         print("processing {}".format(fileName))
         textFromMp3 = processMp3File(mp3File)
         if textFromMp3:
-            textToAddToFile += "\n" + textFromMp3
+            textToAddToFile += "\n\n" + textFromMp3
             print("text from mp3: {}".format(textFromMp3))
         processedMp3s.append(fileName)
 
@@ -148,8 +150,8 @@ def writeToFile(filePath, textToAddToFile):
         existingText += "\n"
     existingText += textToAddToFile
     existingText = remove_duplicate_beginnings(existingText)
-    # if existingText[-1] != "\n":
-    #     existingText += "\n"
+    if existingText[-1] != "\n":
+        existingText += "\n"
     if existingText.strip().split("\n")[-1][0] == "#":
         existingText += "\n"
     with open(filePath, "w") as f:
