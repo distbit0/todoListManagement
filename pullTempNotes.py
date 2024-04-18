@@ -13,6 +13,18 @@ from send2trash import send2trash
 load_dotenv()
 
 
+def formatIncommingText(text):
+    pattern = re.compile(r"(^\d+\.\s*)http")
+    modified_lines = []
+
+    for line in text.split("\n"):
+        modified_line = pattern.sub("http", line)
+        modified_lines.append(modified_line)
+
+    modified_text = "\n".join(modified_lines)
+    return modified_text
+
+
 def calculate_file_hash(file_path, hash_algo="sha256"):
     """Calculate the hash of a chunk from the middle of a file."""
     hash_func = getattr(hashlib, hash_algo)()
@@ -57,7 +69,10 @@ def saveNotesFromKeep(keep):
         isEmpty = (gnote.text + gnote.title).strip() == ""
         if isEmpty or isWatchNote:
             continue
-        noteText, noteTitle = gnote.text.strip(), gnote.title.strip()
+        noteText, noteTitle = (
+            formatIncommingText(gnote.text.strip()),
+            gnote.title.strip(),
+        )
         print("text from keep: {}".format(noteTitle + "\n" + noteText))
         if noteText or noteTitle:
             textToAddToFile += "\n"
