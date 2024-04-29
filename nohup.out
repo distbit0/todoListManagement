@@ -1,0 +1,252 @@
+[33m[2mSource path:... [22m/home/pimania/dev/displayCurrentEvent/main.py[0m
+[32m[2mStarting var:.. [22mset_event_flag = 'paul'[0m
+[32m[2mStarting var:.. [22mevent_title = 'PAUL'[0m
+[2m15:03:18.742482 call       244[0m def should_open_tabs(set_event_flag, event_title):
+[2m15:03:18.742734 line       245[0m     data = load_event_data()
+[32m[2mNew var:....... [22mdata = {'event_opened_times': {'EXISTING NOTES': [17115...NOTES': [1713526242.403941, 1713612642.5789733]}}[0m
+[2m15:03:18.750258 line       246[0m     shouldOpenTabs = bool(set_event_flag)
+[32m[2mNew var:....... [22mshouldOpenTabs = True[0m
+[2m15:03:18.750474 line       247[0m     config = getConfig()
+[32m[2mNew var:....... [22mconfig = {'newIcsSavePath': '/home/pimania/Documents/', '...enThreshold': 0.75, 'forceOpenLookBackCount': 12}[0m
+[2m15:03:18.750743 line       249[0m         config["forceOpenThreshold"],
+[2m15:03:18.750952 line       250[0m         config["forceOpenLookBackCount"],
+[2m15:03:18.751102 line       248[0m     forceOpenThreshold, forceOpenLookBackCount = (
+[32m[2mNew var:....... [22mforceOpenThreshold = 0.75[0m
+[32m[2mNew var:....... [22mforceOpenLookBackCount = 12[0m
+[2m15:03:18.751251 line       253[0m     eventOpenTimes = data["event_opened_times"].get(event_title, [])
+[32m[2mNew var:....... [22meventOpenTimes = [1712901648.3325403, 1713160864.8617804, 1713248....2615705, 1714110236.7283554, 1714120539.0682387][0m
+[2m15:03:18.751406 line       254[0m     eventScheduleTimes = data["event_scheduled_times"].get(event_title, [])
+[32m[2mNew var:....... [22meventScheduleTimes = [1713248682.164399, 1713248723.7886689, 17132487....1839716, 1714110231.1065485, 1714120533.4414306][0m
+[2m15:03:18.751562 line       255[0m     openingState = True
+[32m[2mNew var:....... [22mopeningState = True[0m
+[2m15:03:18.751720 line       256[0m     if len(eventScheduleTimes) >= forceOpenLookBackCount:
+[2m15:03:18.751880 line       257[0m         actualQuantityOfSchedules = min(len(eventScheduleTimes), forceOpenLookBackCount)
+[32m[2mNew var:....... [22mactualQuantityOfSchedules = 12[0m
+[2m15:03:18.752034 line       258[0m         dateOfEarliestSchedule = eventScheduleTimes[-actualQuantityOfSchedules]
+[32m[2mNew var:....... [22mdateOfEarliestSchedule = 1713248682.164399[0m
+[2m15:03:18.752193 line       261[0m             for openTime in eventOpenTimes
+[2m15:03:18.752363 line       259[0m         opensSinceEarliestSchedule = [
+[2m15:03:18.752516 line       261[0m             for openTime in eventOpenTimes
+[32m[2mNew var:....... [22mopenTime = 1712901648.3325403[0m
+[2m15:03:18.752666 line       262[0m             if openTime + 100 > dateOfEarliestSchedule
+[2m15:03:18.752826 line       260[0m             openTime
+[2m15:03:18.752980 line       259[0m         opensSinceEarliestSchedule = [
+[2m15:03:18.753130 line       261[0m             for openTime in eventOpenTimes
+[32m[2mModified var:.. [22mopenTime = 1713160864.8617804[0m
+[2m15:03:18.753287 line       262[0m             if openTime + 100 > dateOfEarliestSchedule
+[2m15:03:18.753448 line       260[0m             openTime
+[2m15:03:18.753600 line       259[0m         opensSinceEarliestSchedule = [
+[2m15:03:18.753751 line       261[0m             for openTime in eventOpenTimes
+[32m[2mModified var:.. [22mopenTime = 1713248686.4115179[0m
+[2m15:03:18.753903 line       262[0m             if openTime + 100 > dateOfEarliestSchedule
+[2m15:03:18.754062 line       260[0m             openTime
+[2m15:03:18.754218 line       259[0m         opensSinceEarliestSchedule = [
+[2m15:03:18.754371 line       261[0m             for openTime in eventOpenTimes
+[32m[2mModified var:.. [22mopenTime = 1713248704.5832[0m
+[2m15:03:18.754521 line       262[0m             if openTime + 100 > dateOfEarliestSchedule
+[2m15:03:18.754680 line       260[0m             openTime
+[2m15:03:18.754835 line       259[0m         opensSinceEarliestSchedule = [
+[2m15:03:18.754997 line       261[0m             for openTime in eventOpenTimes
+[32m[2mModified var:.. [22mopenTime = 1713248729.1363535[0m
+[2m15:03:18.755150 line       262[0m             if openTime + 100 > dateOfEarliestSchedule
+[2m15:03:18.755331 line       260[0m             openTime
+[2m15:03:18.755492 line       259[0m         opensSinceEarliestSchedule = [
+[2m15:03:18.755650 line       261[0m             for openTime in eventOpenTimes
+[32m[2mModified var:.. [22mopenTime = 1713248792.9379795[0m
+[2m15:03:18.755806 line       262[0m             if openTime + 100 > dateOfEarliestSchedule
+[2m15:03:18.755971 line       260[0m             openTime
+[2m15:03:18.756126 line       259[0m         opensSinceEarliestSchedule = [
+[2m15:03:18.756286 line       261[0m             for openTime in eventOpenTimes
+[32m[2mModified var:.. [22mopenTime = 1713597348.0849795[0m
+[2m15:03:18.756440 line       262[0m             if openTime + 100 > dateOfEarliestSchedule
+[2m15:03:18.756604 line       260[0m             openTime
+[2m15:03:18.756758 line       259[0m         opensSinceEarliestSchedule = [
+[2m15:03:18.756912 line       261[0m             for openTime in eventOpenTimes
+[32m[2mModified var:.. [22mopenTime = 1713712349.33517[0m
+[2m15:03:18.757065 line       262[0m             if openTime + 100 > dateOfEarliestSchedule
+[2m15:03:18.757231 line       260[0m             openTime
+[2m15:03:18.757385 line       259[0m         opensSinceEarliestSchedule = [
+[2m15:03:18.757537 line       261[0m             for openTime in eventOpenTimes
+[32m[2mModified var:.. [22mopenTime = 1713956916.6386907[0m
+[2m15:03:18.757690 line       262[0m             if openTime + 100 > dateOfEarliestSchedule
+[2m15:03:18.757852 line       260[0m             openTime
+[2m15:03:18.758005 line       259[0m         opensSinceEarliestSchedule = [
+[2m15:03:18.758157 line       261[0m             for openTime in eventOpenTimes
+[32m[2mModified var:.. [22mopenTime = 1714026489.3632689[0m
+[2m15:03:18.758317 line       262[0m             if openTime + 100 > dateOfEarliestSchedule
+[2m15:03:18.758480 line       260[0m             openTime
+[2m15:03:18.758632 line       259[0m         opensSinceEarliestSchedule = [
+[2m15:03:18.758785 line       261[0m             for openTime in eventOpenTimes
+[32m[2mModified var:.. [22mopenTime = 1714028482.2615705[0m
+[2m15:03:18.758939 line       262[0m             if openTime + 100 > dateOfEarliestSchedule
+[2m15:03:18.759101 line       260[0m             openTime
+[2m15:03:18.759262 line       259[0m         opensSinceEarliestSchedule = [
+[2m15:03:18.759420 line       261[0m             for openTime in eventOpenTimes
+[32m[2mModified var:.. [22mopenTime = 1714110236.7283554[0m
+[2m15:03:18.759575 line       262[0m             if openTime + 100 > dateOfEarliestSchedule
+[2m15:03:18.759740 line       260[0m             openTime
+[2m15:03:18.759895 line       259[0m         opensSinceEarliestSchedule = [
+[2m15:03:18.760051 line       261[0m             for openTime in eventOpenTimes
+[32m[2mModified var:.. [22mopenTime = 1714120539.0682387[0m
+[2m15:03:18.760210 line       262[0m             if openTime + 100 > dateOfEarliestSchedule
+[2m15:03:18.760377 line       260[0m             openTime
+[2m15:03:18.760532 line       259[0m         opensSinceEarliestSchedule = [
+[32m[2mNew var:....... [22mopensSinceEarliestSchedule = [1713248686.4115179, 1713248704.5832, 1713248729....2615705, 1714110236.7283554, 1714120539.0682387][0m
+[2m15:03:18.760686 line       264[0m         opensPerSchedule = len(opensSinceEarliestSchedule) / actualQuantityOfSchedules
+[32m[2mNew var:....... [22mopensPerSchedule = 0.9166666666666666[0m
+[2m15:03:18.760858 line       265[0m         openingState = True if opensPerSchedule <= forceOpenThreshold else False
+[32m[2mModified var:.. [22mopeningState = False[0m
+[2m15:03:18.761031 line       267[0m     shouldOpenTabs = openingState or shouldOpenTabs
+[2m15:03:18.761218 line       268[0m     eventScheduleTimes.append(time.time())
+[32m[2mModified var:.. [22meventScheduleTimes = [1713248682.164399, 1713248723.7886689, 17132487....1065485, 1714120533.4414306, 1714215798.7613854][0m
+[2m15:03:18.761387 line       269[0m     eventScheduleTimes = eventScheduleTimes[-forceOpenLookBackCount:]
+[32m[2mModified var:.. [22meventScheduleTimes = [1713248723.7886689, 1713248787.5909867, 1713333....1065485, 1714120533.4414306, 1714215798.7613854][0m
+[2m15:03:18.761571 line       270[0m     eventOpenTimes = eventOpenTimes[-forceOpenLookBackCount:]
+[32m[2mModified var:.. [22meventOpenTimes = [1713160864.8617804, 1713248686.4115179, 1713248....2615705, 1714110236.7283554, 1714120539.0682387][0m
+[2m15:03:18.761747 line       272[0m     data["event_scheduled_times"][event_title] = eventScheduleTimes
+[2m15:03:18.761919 line       273[0m     data["event_opened_times"][event_title] = eventOpenTimes
+[2m15:03:18.762084 line       274[0m     save_event_data(data)
+[2m15:03:18.764681 line       276[0m     return shouldOpenTabs
+[2m15:03:18.764891 return     276[0m     return shouldOpenTabs
+[36m[2mReturn value:.. [22mTrue[0m
+[33m[2mElapsed time: [22m00:00:00.022691[0m
+[3016115:3016115:0427/150322.709413:ERROR:chrome_browser_cloud_management_controller.cc(161)] Cloud management controller initialization aborted as CBCM is not enabled. Please use the `--enable-chrome-browser-cloud-management` command line flag to enable it if you are not using the official Google Chrome build.
+Opening in existing browser session.
+Opening in existing browser session.
+Opening in existing browser session.
+[3016115:3016115:0427/150323.219772:ERROR:object_proxy.cc(576)] Failed to call method: org.freedesktop.ScreenSaver.GetActive: object_path= /org/freedesktop/ScreenSaver: org.freedesktop.DBus.Error.NotSupported: This method is not part of the idle inhibition specification: https://specifications.freedesktop.org/idle-inhibit-spec/latest/
+Opening in existing browser session.
+Opening in existing browser session.
+Opening in existing browser session.
+Opening in existing browser session.
+Opening in existing browser session.
+[3016153:3016153:0427/150325.663999:ERROR:gl_surface_presentation_helper.cc(260)] GetVSyncParametersIfAvailable() failed for 1 times!
+[3016153:3016153:0427/150325.924137:ERROR:gl_surface_presentation_helper.cc(260)] GetVSyncParametersIfAvailable() failed for 2 times!
+[3016153:3016153:0427/150325.925177:ERROR:gl_surface_presentation_helper.cc(260)] GetVSyncParametersIfAvailable() failed for 3 times!
+Killing process: pkill --signal 2 brave
+
+
+
+About to execute command: pkill --signal 2 brave
+
+
+
+Killing process: pkill Telegram
+
+
+
+About to execute command: pkill Telegram
+
+
+
+Killing process: pkill --signal 2 code
+
+
+
+About to execute command: pkill --signal 2 code
+
+
+
+Found workspace config dir: /home/pimania/.config/Code/User/workspaceStorage/45c0011df96db78fb48c8c2920d428fd/workspace.json {'folder': 'file:///home/pimania/notes'}
+Found workspace config dir: /home/pimania/.config/Code/User/workspaceStorage/b5133dee224a2fd92e676dba827ae0dc/meta.json {'id': 'b5133dee224a2fd92e676dba827ae0dc', 'name': 'notes'}
+Removed backup database: /home/pimania/.config/Code/User/workspaceStorage/45c0011df96db78fb48c8c2920d428fd/state.vscdb.backup
+No memento/workbench.parts.editor row found in database: /home/pimania/.config/Code/User/workspaceStorage/b5133dee224a2fd92e676dba827ae0dc/state.vscdb
+
+
+
+About to execute command: brave-browser --profile-directory=Default --app=https://web.whatsapp.com/ &
+
+
+
+
+
+
+About to execute command: brave-browser --new-window "https://app.slack.com/client/T02GBA68K43/C06CQCH1CQ0" &
+
+
+
+
+
+
+About to execute command: brave-browser "https://app.slack.com/client/T02A8UTG7FA/C03D0A943JR" &
+
+
+
+
+
+
+About to execute command: brave-browser "https://app.slack.com/client/T02GBA68K43/C05MEP301D4" &
+
+
+
+
+
+
+About to execute command: brave-browser "https://ap-southeast-2.console.aws.amazon.com/console/home?region=ap-southeast-2#" &
+
+
+
+
+
+
+About to execute command: brave-browser "https://bigarcade.org/" &
+
+
+
+
+
+
+About to execute command: brave-browser "https://docs.google.com/document/d/1gadrH6tXzlJmwcGUInSolYhtdRG5X_mNRJCgfROjCAk/edit" &
+
+
+
+
+
+
+About to execute command: brave-browser "https://docs.google.com/spreadsheets/d/1F5I5STOIYLfHLACHJJZQuv8FgEIl9bN11lgI48DLIGs/edit#gid=0" &
+
+
+
+
+
+
+About to execute command: brave-browser "https://sating.io/bulkinscribes" &
+
+
+
+
+
+
+About to execute command: code "/home/pimania/notes" &
+
+
+
+
+
+
+About to execute command: code -r "/home/pimania/notes/zk/paul tmp.md" &
+
+
+
+
+
+
+About to execute command: code -r "/home/pimania/notes/Work/Paul/stoshi distribution.md" &
+
+
+
+
+
+
+About to execute command: code -r "/home/pimania/notes/Work/Paul/Paul todo.md" &
+
+
+
+todo string:        1) WIP biga email securi
+[3016115:3016115:0427/151120.070234:ERROR:interface_endpoint_client.cc(707)] Message 0 rejected by interface blink.mojom.WidgetHost
+[3016153:3016153:0427/160249.617567:ERROR:shared_image_manager.cc(222)] SharedImageManager::ProduceSkia: Trying to Produce a Skia representation from a non-existent mailbox.
+[3016153:3016153:0427/160249.618004:ERROR:shared_image_manager.cc(222)] SharedImageManager::ProduceSkia: Trying to Produce a Skia representation from a non-existent mailbox.
+[3016153:3016153:0427/160304.731660:ERROR:shared_image_manager.cc(222)] SharedImageManager::ProduceSkia: Trying to Produce a Skia representation from a non-existent mailbox.
+[3016153:3016153:0427/160338.154010:ERROR:shared_image_manager.cc(222)] SharedImageManager::ProduceSkia: Trying to Produce a Skia representation from a non-existent mailbox.
+[3016153:3016153:0427/160338.154434:ERROR:shared_image_manager.cc(222)] SharedImageManager::ProduceSkia: Trying to Produce a Skia representation from a non-existent mailbox.
+[3016115:3016115:0427/160551.303072:ERROR:interface_endpoint_client.cc(707)] Message 1 rejected by interface blink.mojom.WidgetHost

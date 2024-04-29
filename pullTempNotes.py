@@ -86,11 +86,20 @@ def saveNotesFromKeep(keep):
     return textToAddToFile
 
 
-def tryDeleteFile(path):
+def tryDeleteFile(path, fileText):
+    fileExt = path.split(".")[-1]
+    oldFileName = path.split("/")[-1]
+    newFileName = (
+        "".join([char for char in fileText if char.isalnum() or char == " "][:65])
+        + "."
+        + fileExt
+    )
+    newFilePath = path.replace(oldFileName, newFileName)
+    os.rename(path, newFilePath)
     try:
-        send2trash(path)
+        send2trash(newFilePath)
     except Exception as e:
-        print(f"Error moving {path} to trash: {e}")
+        print(f"Error moving {newFilePath} to trash: {e}")
         pass
 
 
@@ -116,7 +125,7 @@ def sort_key(filename):
 def saveNotesFromMp3s():
     mp3FolderPath = general.getConfig()["mp3CaptureFolder"]
     textToAddToFile = ""
-    processedMp3s = []
+    processedMp3s = {}
 
     musicFiles = sorted(
         glob.glob(mp3FolderPath + "/*.mp3") + glob.glob(mp3FolderPath + "/*.m4a"),
@@ -129,7 +138,7 @@ def saveNotesFromMp3s():
         if textFromMp3:
             textToAddToFile += "\n\n" + textFromMp3
             print("text from mp3: {}".format(textFromMp3))
-        processedMp3s.append(fileName)
+        processedMp3s[fileName] = textFromMp3
 
     return textToAddToFile, processedMp3s
 
@@ -195,5 +204,6 @@ writeToFile(tempFilePath, textToAddToFile)
 ## only now do we delete/archive synced notes and mp3s
 keep.sync()
 for mp3File in processedMp3s:
+    fileText = processedMp3s[mp3File]
     print(f"Deleting {mp3File}")
-    tryDeleteFile(os.path.join(mp3FolderPath, mp3File))
+    tryDeleteFile(os.path.join(mp3FolderPath, mp3File), fileText)
