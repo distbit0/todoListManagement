@@ -90,7 +90,7 @@ def tryDeleteFile(path, fileText):
     fileExt = path.split(".")[-1]
     oldFileName = path.split("/")[-1]
     newFileName = (
-        "".join([char for char in fileText if char.isalnum() or char == " "][:65])
+        "".join([char for char in fileText if char.isalnum() or char == " "][:120])
         + "."
         + fileExt
     )
