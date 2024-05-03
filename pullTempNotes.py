@@ -20,7 +20,7 @@ def formatIncommingText(text, isTranscription):
         line = pattern.sub("http", line)
         line = " ".join(
             word.lower() if isTranscription else word for word in line.split()
-        )
+        )  # only convert transcribed text to lowercase. otherwise could clobber case sensitive text such as urls from gkeep
         modified_lines.append(line)
 
     modified_text = "\n".join(modified_lines)
