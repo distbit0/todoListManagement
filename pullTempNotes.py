@@ -19,7 +19,8 @@ def formatIncommingText(text):
     for line in text.split("\n"):
         line = pattern.sub("http", line)
         line = " ".join(
-            word.lower() if word.upper() != word else word for word in line.split(" ")
+            word.lower() if word.upper() != word and "http" not in word else word
+            for word in line.split()
         )
         modified_lines.append(line)
 
