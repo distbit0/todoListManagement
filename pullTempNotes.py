@@ -12,15 +12,14 @@ from send2trash import send2trash
 load_dotenv()
 
 
-def formatIncommingText(text):
+def formatIncommingText(text, isTranscription):
     pattern = re.compile(r"(^\d+\.\s*)http")
     modified_lines = []
 
     for line in text.split("\n"):
         line = pattern.sub("http", line)
         line = " ".join(
-            word.lower() if word.upper() != word and "http" not in word else word
-            for word in line.split()
+            word.lower() if isTranscription else word for word in line.split()
         )
         modified_lines.append(line)
 
@@ -75,7 +74,7 @@ def saveNotesFromKeep(keep):
         if isEmpty or isWatchNote:
             continue
         noteText, noteTitle = (
-            formatIncommingText(gnote.text.strip()),
+            formatIncommingText(gnote.text.strip(), False),
             gnote.title.strip(),
         )
         print("text from keep: {}".format(noteTitle + "\n" + noteText))
@@ -139,6 +138,7 @@ def saveNotesFromMp3s():
         fileName = mp3File.split("/")[-1]
         print("processing {}".format(fileName))
         textFromMp3 = processMp3File(mp3File)
+        textFromMp3 = formatIncommingText(textFromMp3, True)
         if textFromMp3:
             textToAddToFile += "\n\n" + textFromMp3
             print("text from mp3: {}".format(textFromMp3))
