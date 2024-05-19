@@ -184,7 +184,7 @@ def writeToFile(filePath, textToAddToFile):
         existingText += "\n"
     if existingText.strip().split("\n")[-1][0] == "#":
         existingText += "\n"
-    existingText = existingText.replace("\n\n\n\n", "\n\n\n")
+    existingText = existingText.replace("\n\n\n", "\n\n")
     with open(filePath, "w") as f:
         f.write(existingText)
 
