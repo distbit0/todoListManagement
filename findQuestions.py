@@ -76,6 +76,9 @@ def mark_as_read(file_list, sentences):
                 modified_text = modified_text.replace(
                     sentence, sentence + " " + markAsReadString
                 )
+            currentText = open(file).read()
+            if currentText == modified_text:
+                continue
             with open(file, "w") as f:
                 f.write(modified_text)
         except:
