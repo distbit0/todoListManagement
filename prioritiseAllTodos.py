@@ -306,11 +306,11 @@ def main():
             interactive = False
 
     excludedFiles = general.getConfig()["todosExcludedFromPrioritisation"]
-    # toDoFiles = general.getAllToDos()
+    toDoFiles = general.getAllToDos()
     testFileText = general.readFromFile("testFile.md")
-    toDoFiles = {
-        "testFile": {"master": {"text": testFileText, "path": "modifiedTestFile.md"}}
-    }
+    # toDoFiles = {
+    #     "testFile": {"master": {"text": testFileText, "path": "modifiedTestFile.md"}}
+    # }
     for file in toDoFiles:
         if "conflict" in toDoFiles[file]:
             continue
