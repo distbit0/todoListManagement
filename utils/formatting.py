@@ -1,7 +1,6 @@
 import re
 
 
-## sort dep to bottom of list
 def extractToDoText(todoSegment):
     # Check if the text contains any of the specified patterns
     if (
