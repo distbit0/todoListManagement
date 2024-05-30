@@ -4,6 +4,7 @@ import utils.priority as priorityLib
 import utils.parseLists as parseLists
 import utils.recurrence as recurrence
 import utils.completion as completion
+import utils.formatting as formatting
 
 tasksToAssignPriority = general.getConfig()["tasksToAssignPriority"]
 
@@ -213,6 +214,16 @@ def triggerReprioritisationIfNecessary(todoPaths):
     return outputTodoPaths
 
 
+def formatTodoPaths(todoPaths):
+    formattedTodoPaths = []
+    for i, path in enumerate(todoPaths):
+        isLastPath = i == len(todoPaths) - 1
+        hasChild = False if isLastPath else len(todoPaths[i + 1]) > len(todoPaths[i])
+        formattedTodoPaths.append(formatting.formatTodo(path, hasChild))
+
+    return todoPaths
+
+
 def saveErrorData(newText, oldText):
     with open(general.getAbsPath("errorNewText.txt"), "w") as f:
         f.write(newText)
@@ -248,6 +259,7 @@ def processTodoPaths(text, path, interactive):
     print("processing: {}".format(path))
     todoPathsOrig = parseLists.getAllToDoPaths(text)
     todoPaths = list(todoPathsOrig)
+    print(todoPaths)
     functionsToExecute = [
         regularisePriorities,
         manageRecurringTasks,
@@ -256,6 +268,7 @@ def processTodoPaths(text, path, interactive):
         deduplicatePriorities,
         removePriorityFromParentTodos,
         triggerReprioritisationIfNecessary,
+        formatTodoPaths,
     ]
     for i, functionToExecute in enumerate(functionsToExecute):
         todoPaths = functionToExecute(todoPaths)
@@ -293,11 +306,11 @@ def main():
             interactive = False
 
     excludedFiles = general.getConfig()["todosExcludedFromPrioritisation"]
-    toDoFiles = general.getAllToDos()
+    # toDoFiles = general.getAllToDos()
     testFileText = general.readFromFile("testFile.md")
-    # toDoFiles = {
-    #     "testFile": {"master": {"text": testFileText, "path": "modifiedTestFile.md"}}
-    # }
+    toDoFiles = {
+        "testFile": {"master": {"text": testFileText, "path": "modifiedTestFile.md"}}
+    }
     for file in toDoFiles:
         if "conflict" in toDoFiles[file]:
             continue

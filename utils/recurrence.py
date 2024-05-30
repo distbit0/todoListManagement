@@ -6,11 +6,14 @@ from datetime import datetime, timedelta
 
 ## GET RECURRENCE INFO
 
+dateRegex = r"\^(\d{1,2}/\d{1,2})"
+recurrenceRegex = r"@(\d+)"
+
 
 def getTodoSegmentRecurrencePeriod(todoSegment):
     periodInDays = "noPeriod"
     # Regular expression for the number after '@'
-    match_period = re.search(r"@(\d+)", todoSegment)
+    match_period = re.search(recurrenceRegex, todoSegment)
     if match_period:
         periodInDays = match_period.group(1)
         if periodInDays.isdigit():
@@ -26,7 +29,7 @@ def getTodoRecurrencePeriod(todoPath):
 def getTodoSegmentNextOccurrence(todoSegment):
     nextOccurrence = "noNextOccurrence"
     # Regular expression for the date in 'dd/mm' format
-    match_date = re.search(r"\^(\d{1,2}/\d{1,2})", todoSegment)
+    match_date = re.search(dateRegex, todoSegment)
     if match_date:
         date_str = match_date.group(1)
         date = datetime.strptime(date_str, "%d/%m")
@@ -61,15 +64,14 @@ def getTodoDaysToNextOccurrence(todoPath):
 
 
 def updateTodoSegmentNextOccurrence(todoSegment):
-    dateSpecifierRegex = r"\^\d{1,2}/\d{1,2}"
     recurrencePeriod = getTodoSegmentRecurrencePeriod(todoSegment)
     nextOccurenceDate = ""
     if recurrencePeriod != "noPeriod":
         nextOccurenceDate = datetime.now() + timedelta(days=recurrencePeriod)
         nextOccurenceDate = "^" + nextOccurenceDate.strftime("%d/%m")
 
-    if re.search(dateSpecifierRegex, todoSegment):
-        updated_task = re.sub(dateSpecifierRegex, f"{nextOccurenceDate}", todoSegment)
+    if re.search(dateRegex, todoSegment):
+        updated_task = re.sub(dateRegex, nextOccurenceDate, todoSegment)
     else:
         updated_task = f"{todoSegment} {nextOccurenceDate}".rstrip(" ")
 
