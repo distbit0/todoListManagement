@@ -170,12 +170,12 @@ def manageRecurringTasks(todoPaths):
     updatedTasks = []
     for todo in todoPaths:
         daysUntilNextOccurrence = recurrence.getTodoDaysToNextOccurrence(todo)
-        if daysUntilNextOccurrence == "noPeriod":
+        if daysUntilNextOccurrence == "notRecurring":
             pass
-        elif daysUntilNextOccurrence == "noLastOccurrence":
-            todo = recurrence.updateTodoLastOccurrence(todo)
+        elif daysUntilNextOccurrence == "noNextOccurrence":
+            todo = recurrence.updateTodoNextOccurrence(todo)
         elif daysUntilNextOccurrence <= 0:
-            todo = recurrence.updateTodoLastOccurrence(todo)
+            todo = recurrence.updateTodoNextOccurrence(todo)
             todo = priorityLib.replacePriorityOfTodo(todo, 1)
         elif completion.isTodoDone(todo):
             todo = completion.markTodoAsUnDone(todo)
@@ -294,7 +294,7 @@ def main():
 
     excludedFiles = general.getConfig()["todosExcludedFromPrioritisation"]
     toDoFiles = general.getAllToDos()
-    # testFileText = general.readFromFile("testFile.md")
+    testFileText = general.readFromFile("testFile.md")
     # toDoFiles = {
     #     "testFile": {"master": {"text": testFileText, "path": "modifiedTestFile.md"}}
     # }

@@ -1,39 +1,55 @@
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 #### RECURRENCE
 
-
 ## GET RECURRENCE INFO
-def getTodoSegmentDaysToNextOccurrence(todoSegment):
-    # Initialize values as None
-    periodInDays = None
-    lastOccurrence = None
 
+
+def getTodoSegmentRecurrencePeriod(todoSegment):
+    periodInDays = "noPeriod"
     # Regular expression for the number after '@'
     match_period = re.search(r"@(\d+)", todoSegment)
     if match_period:
         periodInDays = match_period.group(1)
         if periodInDays.isdigit():
             periodInDays = int(periodInDays)
-        else:
-            return "noPeriod"
-    else:
-        return "noPeriod"
 
-    currentDaysInYear = (datetime.now() - datetime(datetime.now().year, 1, 1)).days + 1
+    return periodInDays
+
+
+def getTodoRecurrencePeriod(todoPath):
+    return getTodoSegmentRecurrencePeriod(todoPath[-1])
+
+
+def getTodoSegmentNextOccurrence(todoSegment):
+    nextOccurrence = "noNextOccurrence"
     # Regular expression for the date in 'dd/mm' format
     match_date = re.search(r"\^(\d{1,2}/\d{1,2})", todoSegment)
     if match_date:
         date_str = match_date.group(1)
         date = datetime.strptime(date_str, "%d/%m")
-        lastOccurrence = (date - datetime(date.year, 1, 1)).days + 1
-    else:
-        return "noLastOccurrence"
+        nextOccurrence = (date - datetime(date.year, 1, 1)).days + 1
+    return nextOccurrence
 
-    daysUntilNextOccurrence = (lastOccurrence + periodInDays) - currentDaysInYear
 
+def getTodoNextOccurrence(todoPath):
+    return getTodoSegmentNextOccurrence(todoPath[-1])
+
+
+def getTodoSegmentDaysToNextOccurrence(todoSegment):
+    # Initialize values as None
+    periodInDays = getTodoSegmentRecurrencePeriod(todoSegment)
+    nextOccurrence = getTodoSegmentNextOccurrence(todoSegment)
+    if nextOccurrence == "noNextOccurrence":
+        if periodInDays == "noPeriod":
+            return "notRecurring"
+        return "noNextOccurrence"
+
+    currentDaysInYear = (datetime.now() - datetime(datetime.now().year, 1, 1)).days + 1
+
+    daysUntilNextOccurrence = nextOccurrence - currentDaysInYear
     return daysUntilNextOccurrence
 
 
@@ -44,21 +60,22 @@ def getTodoDaysToNextOccurrence(todoPath):
 ## MODIFY RECURRENCE INFO
 
 
-def updateTodoSegmentLastOccurrence(todoSegment):
-    # Get current date in 'dd/mm' format
-    current_date = datetime.now().strftime("%d/%m")
+def updateTodoSegmentNextOccurrence(todoSegment):
+    dateSpecifierRegex = r"\^\d{1,2}/\d{1,2}"
+    recurrencePeriod = getTodoSegmentRecurrencePeriod(todoSegment)
+    nextOccurenceDate = ""
+    if recurrencePeriod != "noPeriod":
+        nextOccurenceDate = datetime.now() + timedelta(days=recurrencePeriod)
+        nextOccurenceDate = "^" + nextOccurenceDate.strftime("%d/%m")
 
-    # Regular expression to check if the date specifier exists
-    if re.search(r"\^\d{1,2}/\d{1,2}", todoSegment):
-        # If exists, update it
-        updated_task = re.sub(r"\^\d{1,2}/\d{1,2}", f"^{current_date}", todoSegment)
+    if re.search(dateSpecifierRegex, todoSegment):
+        updated_task = re.sub(dateSpecifierRegex, f"{nextOccurenceDate}", todoSegment)
     else:
-        # If not, add it
-        updated_task = f"{todoSegment} ^{current_date}"
+        updated_task = f"{todoSegment} {nextOccurenceDate}".rstrip(" ")
 
     return updated_task
 
 
-def updateTodoLastOccurrence(todoPath):
-    todoPath[-1] = updateTodoSegmentLastOccurrence(todoPath[-1])
+def updateTodoNextOccurrence(todoPath):
+    todoPath[-1] = updateTodoSegmentNextOccurrence(todoPath[-1])
     return todoPath
