@@ -259,7 +259,6 @@ def processTodoPaths(text, path, interactive):
     print("processing: {}".format(path))
     todoPathsOrig = parseLists.getAllToDoPaths(text)
     todoPaths = list(todoPathsOrig)
-    print(todoPaths)
     functionsToExecute = [
         regularisePriorities,
         manageRecurringTasks,

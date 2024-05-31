@@ -61,6 +61,5 @@ def formatTodoSegment(todoSegment, hasChild):
 
 
 def formatTodo(todoPath, hasChild):
-    print(todoPath)
     todoPath[-1] = formatTodoSegment(todoPath[-1], hasChild)
     return todoPath
