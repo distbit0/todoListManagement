@@ -53,8 +53,8 @@ def formatTodoSegment(todoSegment, hasChild):
     if not hasCheckbox or hasChild:
         return todoSegment
     # only do this once I can prevent files created by foam from replacing spaces with dashes
-    # if todoText != None and len(todoText) > 0 and len(todoText) < 55:
     # todoText = extractToDoText(todoSegment)
+    # if todoText != None and len(todoText) > 0 and len(todoText) < 55:
     # todoSegment = todoSegment.replace(todoText, f"[[{todoText}]]")
     todoSegment = formatTodoSegmentDepencency(todoSegment)
     return todoSegment
