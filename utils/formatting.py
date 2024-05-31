@@ -39,7 +39,7 @@ def extractToDoText(todoSegment):
 
 
 def formatTodoSegmentDepencency(todoSegment):
-    if "] dep " in todoSegment and ":" in todoSegment:
+    if "] dep " in todoSegment.lower() and ":" in todoSegment:
         todoSegment = todoSegment.replace("] dep ", "] (DEP) ")
         todoSegment = todoSegment.replace("] DEP ", "] (DEP) ")
 

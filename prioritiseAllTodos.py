@@ -307,7 +307,7 @@ def main():
 
     excludedFiles = general.getConfig()["todosExcludedFromPrioritisation"]
     toDoFiles = general.getAllToDos()
-    testFileText = general.readFromFile("testFile.md")
+    # testFileText = general.readFromFile("testFile.md")
     # toDoFiles = {
     #     "testFile": {"master": {"text": testFileText, "path": "modifiedTestFile.md"}}
     # }
