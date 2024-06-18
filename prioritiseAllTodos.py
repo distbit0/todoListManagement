@@ -1,4 +1,5 @@
 import sys
+import os
 import utils.general as general
 import utils.priority as priorityLib
 import utils.parseLists as parseLists
@@ -72,6 +73,10 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
                                 prioritisedPaths, priority1, priority2
                             )
                             prioritisedPaths = removeGapsInPriorities(prioritisedPaths)
+                        elif priority[0] == '"' and priority[-1] == '"':
+                            prioritisedPaths = createNoteFromTodo(
+                                prioritisedPaths, path, priority
+                            )
                         else:
                             break
                 prioritisedSoFar += 1
@@ -86,6 +91,27 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
                     prioritisedPaths = removeGapsInPriorities(prioritisedPaths)
 
     return prioritisedPaths, receivedCtrlC
+
+
+def createNoteFromTodo(todoPaths, path, priority):
+    config = general.getConfig()
+    newFileName = priority[1:-1] + ".md"
+    newNotePath = os.path.join(
+        config["toDoFolderPath"],
+        config["newNotesSubDir"],
+        newFileName,
+    )
+    oldTodoName = general.getTodoName(path)
+    if "[[" in oldTodoName or "]]" in oldTodoName:
+        print("todo already contains wikilink, not creating new note")
+        return todoPaths
+    with open(newNotePath, "w") as f:
+        f.write(oldTodoName)
+    indexOfPath = todoPaths.index(path)
+    linkToNewNote = f"[[{newFileName.replace('.md', '')}]]"
+    path[-1] = path[-1].replace(oldTodoName, linkToNewNote)
+    todoPaths[indexOfPath] = path
+    return todoPaths
 
 
 def removePriorityFromParentTodos(todoPaths):

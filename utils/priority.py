@@ -70,6 +70,8 @@ def askForPriority(todo_path, todo_file, remaining):
             return priority
         elif priority_input.lower() == "d":
             return "d"
+        elif priority_input.lower()[0] == '"' and priority_input.lower()[-1] == '"':
+            return priority_input
         else:
             print("invalid input")
 
@@ -99,20 +101,7 @@ def getTopNTodosAsText(todoPaths, n):
         priority, path = sortedTodos[i]
         isInProgress = "[/] " in path[-1] or "[-] " in path[-1]
         inProgressText = "[[WIP]]" if isInProgress else ""
-        todoName = (
-            path[-1]
-            .replace("- [x] ", "")
-            .replace("- [/] ", "")
-            .replace("- [ ] ", "")
-            .replace("- [-] ", "")
-        )
-        todoName = " ".join(
-            [
-                segment
-                for segment in todoName.split()
-                if "@" not in segment and "^" not in segment and "#" not in segment
-            ]
-        )
+        todoName = getTodoName(path)
         textOutput.append(f"{priority}) {inProgressText} {todoName}")
 
     textOutput = "\n".join(textOutput)

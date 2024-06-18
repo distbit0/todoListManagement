@@ -165,3 +165,21 @@ def generateTodoListHash(todoPaths):
     pathCount = len(todoPaths)
     indentSum = sum(len(todo) for todo in todoPaths)
     return (indentHash, indentSum, pathCount)
+
+
+def getTodoName(todoPath):
+    todoName = (
+        todoPath[-1]
+        .replace("- [x] ", "")
+        .replace("- [/] ", "")
+        .replace("- [ ] ", "")
+        .replace("- [-] ", "")
+    )
+    todoName = " ".join(
+        [
+            segment
+            for segment in todoName.split()
+            if "@" not in segment and "^" not in segment and "#" not in segment
+        ].strip()
+    )
+    return todoName

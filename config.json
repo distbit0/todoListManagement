@@ -1,5 +1,6 @@
 {
     "toDoFolderPath": "/home/pimania/notes/",
+    "newNotesSubDir": "zk",
     "todosExcludedFromPrioritisation": [
         "/home/pimania/notes/Misc/App feature reqs/voice features todo.md"
     ],
