@@ -96,7 +96,7 @@ def createNoteFromTodo(todoPaths, path, priority):
         print("todo already is wikilink, not creating new note")
         return todoPaths
     if os.path.exists(newNotePath):
-        print("new note already exists, not creating new note")
+        print("target note already exists, not creating new note")
         return todoPaths
     with open(newNotePath, "w") as f:
         f.write(oldTodoName)
