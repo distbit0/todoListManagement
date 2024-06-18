@@ -1,4 +1,5 @@
 import sys
+from prompt_toolkit import prompt
 import os
 import utils.general as general
 import utils.priority as priorityLib
@@ -67,6 +68,8 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
                             prioritisedPaths = createNoteFromTodo(
                                 prioritisedPaths, path, priority
                             )
+                        elif priority == "rename":
+                            prioritisedPaths = renameTodo(prioritisedPaths, path)
                         else:
                             break
                 prioritisedSoFar += 1
@@ -81,6 +84,17 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
                     prioritisedPaths = removeGapsInPriorities(prioritisedPaths)
 
     return prioritisedPaths, receivedCtrlC
+
+
+def renameTodo(prioritisedPaths, path):
+    todoName = general.getTodoName(path)
+    newName = prompt(f"\n\n\nRename to: ", default=todoName)
+    if newName == "":
+        return prioritisedPaths
+    indexOfPath = prioritisedPaths.index(path)
+    path[-1] = path[-1].replace(todoName, newName)
+    prioritisedPaths[indexOfPath] = path
+    return prioritisedPaths
 
 
 def createNoteFromTodo(todoPaths, path, priority):
