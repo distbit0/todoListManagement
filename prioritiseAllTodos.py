@@ -92,8 +92,8 @@ def createNoteFromTodo(todoPaths, path, priority):
         newFileName,
     )
     oldTodoName = general.getTodoName(path)
-    if "[[" in oldTodoName or "]]" in oldTodoName:
-        print("todo already contains wikilink, not creating new note")
+    if oldTodoName.startswith("[[") and oldTodoName.endswith("]]"):
+        print("todo already is wikilink, not creating new note")
         return todoPaths
     if os.path.exists(newNotePath):
         print("new note already exists, not creating new note")
