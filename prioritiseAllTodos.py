@@ -49,6 +49,7 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
     i = 0
     while i < len(todoPaths):
         path = todoPaths[i]
+        goBack = False
         shouldBePrioritised = priorityLib.shouldTodoBePrioritised(todoPaths, i, True)[0]
         if shouldBePrioritised and prioritisedSoFar < noOfTodosToPrioritise:
             try:
@@ -62,7 +63,13 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
                             path, todoFileName, remaining
                         )
                         if priority == "back" and i > 0:
-                            i -= 1
+                            prioritisedPaths[i - 1] = (
+                                priorityLib.removePriorityFromTodo(
+                                    prioritisedPaths[i - 1]
+                                )
+                            )
+                            i -= 2
+                            goBack = True
                             break
                         elif type(priority) == list:
                             prioritisedPaths = priorityLib.swapPriorities(
@@ -84,7 +91,7 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
                 receivedCtrlC = True
                 print("\n\nskipping all other todos in {}".format(todoFileName))
             else:
-                if not receivedCtrlC:
+                if not receivedCtrlC and not goBack:
                     prioritisedPaths = updatePathPriorities(
                         prioritisedPaths, i, priority
                     )
