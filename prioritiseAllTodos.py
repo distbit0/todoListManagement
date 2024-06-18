@@ -201,7 +201,7 @@ def triggerReprioritisationIfNecessary(todoPaths):
     except ValueError:
         highestPriorityTask = 0
 
-    if highestPriorityTask <= tasksToAssignPriority / 3:
+    if highestPriorityTask == 0:
         print("triggering a reprioritisation")
         outputTodoPaths = [
             (
