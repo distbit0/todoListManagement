@@ -68,7 +68,7 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
                             prioritisedPaths = createNoteFromTodo(
                                 prioritisedPaths, path, priority
                             )
-                        elif priority == "rename":
+                        elif priority == "edit":
                             prioritisedPaths = renameTodo(prioritisedPaths, path)
                         else:
                             break

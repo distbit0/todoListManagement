@@ -55,7 +55,7 @@ def replacePriorityOfTodo(todoPath, newPriority):
 def askForPriority(todo_path, todo_file, remaining):
     while True:
         priority_input = input(
-            f"\n\n\nPrioritise (0 - {tasksToAssignPriority} OR 'n' if not in top {tasksToAssignPriority} or 3-4 to swap priorities 3 and 4 or d to 'delete', \"name of new note\" to create note from todo or \"rename\" to rename todo):\nFile: {todo_file}\nRemaining: {remaining}\n{' '.join(todo_path)}: "
+            f"\n\n\nPrioritise (0 - {tasksToAssignPriority} OR 'n' if not in top {tasksToAssignPriority} or 3-4 to swap priorities 3 and 4 or d to 'delete', \"name of new note\" to create note from todo or \"edit\"):\nFile: {todo_file}\nRemaining: {remaining}\n{' '.join(todo_path)}: "
         )
         if (
             priority_input.isdigit()
@@ -68,8 +68,8 @@ def askForPriority(todo_path, todo_file, remaining):
         elif "-" in priority_input:
             priority = priority_input.split("-")
             return priority
-        elif priority_input.lower() == "rename":
-            return "rename"
+        elif priority_input.lower() == "edit":
+            return "edit"
         elif priority_input.lower() == "d":
             return "d"
         elif priority_input.lower()[0] == '"' and priority_input.lower()[-1] == '"':
