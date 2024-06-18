@@ -21,6 +21,7 @@ def formatIncommingText(text, isTranscription):
         line = " ".join(
             word.lower() if isTranscription else word for word in line.split()
         )  # only convert transcribed text to lowercase. otherwise could clobber case sensitive text such as urls from gkeep
+        line = line.strip(".!?") if isTranscription else line
         modified_lines.append(line)
 
     modified_text = "\n".join(modified_lines)
