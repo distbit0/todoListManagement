@@ -59,18 +59,8 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
                             path, todoFileName, remaining
                         )
                         if type(priority) == list:
-                            priority1 = (
-                                int(priority[0])
-                                if priority[0].isdigit()
-                                else priority[0]
-                            )
-                            priority2 = (
-                                int(priority[1])
-                                if priority[1].isdigit()
-                                else priority[1]
-                            )
                             prioritisedPaths = priorityLib.swapPriorities(
-                                prioritisedPaths, priority1, priority2
+                                prioritisedPaths, priority[0], priority[1]
                             )
                             prioritisedPaths = removeGapsInPriorities(prioritisedPaths)
                         elif priority[0] == '"' and priority[-1] == '"':

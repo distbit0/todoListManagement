@@ -145,6 +145,8 @@ def substitutePriority(prioritySubstitutions, todoPaths):
 
 
 def swapPriorities(todoPaths, priority1, priority2):
+    priority1 = int(priority1) if priority1.isdigit() else priority1
+    priority2 = int(priority2) if priority2.isdigit() else priority2
     # if priority2 == "n" or priority2 > tasksToAssignPriority: (commented this out so that we can recover these prioritisations even if they are for now not in top n
     if priority2 in ["n", "d"]:
         todoPaths = substitutePriority({priority1: priority2}, todoPaths)
