@@ -64,7 +64,10 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
                                 prioritisedPaths, priority[0], priority[1]
                             )
                             prioritisedPaths = removeGapsInPriorities(prioritisedPaths)
-                        elif priority[0] == '"' and priority[-1] == '"':
+                        elif (
+                            isinstance(priority, str)
+                            and priority[0] == priority[-1] == '"'
+                        ):
                             prioritisedPaths = createNoteFromTodo(
                                 prioritisedPaths, path, priority
                             )
