@@ -63,17 +63,11 @@ def askForPriority(todo_path, todo_file, remaining):
         ):
             priority = int(priority_input)
             return priority
-        elif priority_input.lower() == "n":
-            return priority_input.lower()
         elif "-" in priority_input:
             priority = priority_input.split("-")
             return priority
-        elif priority_input.lower() == "edit":
-            return "edit"
-        elif priority_input.lower() == "back":
-            return "back"
-        elif priority_input.lower() == "d":
-            return "d"
+        elif priority_input.lower() in ["edit", "back", "d", "n"]:
+            return priority_input.lower()
         elif priority_input.lower()[0] == '"' and priority_input.lower()[-1] == '"':
             return priority_input
         else:
