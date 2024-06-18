@@ -180,6 +180,6 @@ def getTodoName(todoPath):
             segment
             for segment in todoName.split()
             if "@" not in segment and "^" not in segment and "#" not in segment
-        ].strip()
+        ]
     )
-    return todoName
+    return todoName.strip()

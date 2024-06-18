@@ -105,8 +105,12 @@ def createNoteFromTodo(todoPaths, path, priority):
     if "[[" in oldTodoName or "]]" in oldTodoName:
         print("todo already contains wikilink, not creating new note")
         return todoPaths
+    if os.path.exists(newNotePath):
+        print("new note already exists, not creating new note")
+        return todoPaths
     with open(newNotePath, "w") as f:
         f.write(oldTodoName)
+    print("created new note: {}".format(newNotePath))
     indexOfPath = todoPaths.index(path)
     linkToNewNote = f"[[{newFileName.replace('.md', '')}]]"
     path[-1] = path[-1].replace(oldTodoName, linkToNewNote)
