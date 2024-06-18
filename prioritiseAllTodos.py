@@ -38,12 +38,15 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
             if priorityLib.shouldTodoBePrioritised(todoPaths, i, True)[0]
         ]
     )
+    noOfTodosToPrioritise = min(
+        noOfTodosToPrioritise, general.getConfig()["maxTodosToPrioritise"]
+    )
     prioritisedSoFar = 0
     receivedCtrlC = False
     prioritisedPaths = list(todoPaths)
     for i, path in enumerate(todoPaths):
         shouldBePrioritised = priorityLib.shouldTodoBePrioritised(todoPaths, i, True)[0]
-        if shouldBePrioritised:
+        if shouldBePrioritised and prioritisedSoFar < noOfTodosToPrioritise:
             try:
                 remaining = noOfTodosToPrioritise - prioritisedSoFar - 1
                 if not receivedCtrlC:

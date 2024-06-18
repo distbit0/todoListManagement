@@ -1,6 +1,3 @@
-import re
-
-
 ## in order to sort todos with deps to end of sublist, move them down to just above the next todo which is less indented than them, and only if the todo below it doest also have a dep (because this would indicate that it has already been moved down previously)
 
 

@@ -4,6 +4,7 @@
         "/home/pimania/notes/Misc/App feature reqs/voice features todo.md"
     ],
     "tasksToAssignPriority": 10,
+    "maxTodosToPrioritise": 25,
     "tempNotesPath": "/home/pimania/notes/zk/temp.md",
     "mp3CaptureFolder": "/home/pimania/memos/",
     "questionFiles": [
