@@ -154,3 +154,14 @@ def swapPriorities(todoPaths, priority1, priority2):
         todoPaths = substitutePriority({1000000: priority2}, todoPaths)
         todoPaths = substitutePriority({5000000: priority1}, todoPaths)
     return todoPaths
+
+
+######### MISC
+def getNoOfTodosToPrioritise(todoPaths):
+    return len(
+        [
+            path
+            for i, path in enumerate(todoPaths)
+            if shouldTodoBePrioritised(todoPaths, i, True)[0]
+        ]
+    )

@@ -31,18 +31,10 @@ def updatePathPriorities(todoPaths, indexOfPath, priority):
     return todoPaths
 
 
-def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
+def prioritiseUnprioritisedTodos(todoPaths, todoFileName, maxTodosToPrioritise):
     prioritisedPaths = []
-    noOfTodosToPrioritise = len(
-        [
-            path
-            for i, path in enumerate(todoPaths)
-            if priorityLib.shouldTodoBePrioritised(todoPaths, i, True)[0]
-        ]
-    )
-    noOfTodosToPrioritise = min(
-        noOfTodosToPrioritise, general.getConfig()["maxTodosToPrioritise"]
-    )
+    noOfTodosToPrioritise = priorityLib.getNoOfTodosToPrioritise(todoPaths)
+    noOfTodosToPrioritise = min(noOfTodosToPrioritise, maxTodosToPrioritise)
     prioritisedSoFar = 0
     receivedCtrlC = False
     prioritisedPaths = list(todoPaths)
@@ -76,9 +68,7 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName):
                                 prioritisedPaths, priority[0], priority[1]
                             )
                             prioritisedPaths = removeGapsInPriorities(prioritisedPaths)
-                        elif (
-                            type(priority) == str and priority[0] == priority[-1] == '"'
-                        ):
+                        elif str(priority)[0] == str(priority)[-1] == '"':
                             prioritisedPaths = createNoteFromTodo(
                                 prioritisedPaths, path, priority
                             )
@@ -306,9 +296,8 @@ def checkThatHashesMatch(todoPaths, todoPathsOrig, path, operation):
 # check that priority logic does not assume that hashtag is at the end of the line
 
 
-def processTodoPaths(text, path, interactive):
-    print("processing: {}".format(path))
-    todoPathsOrig = parseLists.getAllToDoPaths(text)
+def processTodoPaths(todoPathsOrig, filePath, interactive, maxTodosToPrioritise):
+    print("processing: {}".format(filePath))
     todoPaths = list(todoPathsOrig)
     functionsToExecute = [
         regularisePriorities,
@@ -323,18 +312,20 @@ def processTodoPaths(text, path, interactive):
     for i, functionToExecute in enumerate(functionsToExecute):
         todoPaths = functionToExecute(todoPaths)
         checkThatHashesMatch(
-            todoPaths, todoPathsOrig, path, functionToExecute.__name__ + str(i)
+            todoPaths, todoPathsOrig, filePath, functionToExecute.__name__ + str(i)
         )
 
     if interactive:
-        fileName = path.split("/")[-1]
+        fileName = filePath.split("/")[-1]
         todoPaths = regularisePriorities(todoPaths, setToN=True)
         checkThatHashesMatch(
-            todoPaths, todoPathsOrig, path, "regularisePriorities (setToN)"
+            todoPaths, todoPathsOrig, filePath, "regularisePriorities (setToN)"
         )
-        todoPaths, receivedCtrlC = prioritiseUnprioritisedTodos(todoPaths, fileName)
+        todoPaths, receivedCtrlC = prioritiseUnprioritisedTodos(
+            todoPaths, fileName, maxTodosToPrioritise
+        )
         checkThatHashesMatch(
-            todoPaths, todoPathsOrig, path, "prioritiseUnprioritisedTodos"
+            todoPaths, todoPathsOrig, filePath, "prioritiseUnprioritisedTodos"
         )
         if receivedCtrlC:
             interactive = False
@@ -361,7 +352,24 @@ def main():
     # toDoFiles = {
     #     "testFile": {"master": {"text": testFileText, "path": "modifiedTestFile.md"}}
     # }
-    for file in toDoFiles:
+    processedTodos = 0
+    toDoFiles = dict(
+        sorted(
+            toDoFiles.items(),
+            key=lambda x: priorityLib.getNoOfTodosToPrioritise(
+                parseLists.getAllToDoPaths(
+                    priorityLib.removeTopTodosFromText(x[1]["master"]["text"]).strip(
+                        "\n"
+                    )
+                )
+            ),
+        )
+    )  # sort so that todo lists with fewest unprocessed todos are processed first, to evenly distribute workload across all todo lists
+    for i, file in enumerate(toDoFiles):
+        maxTodosToPrioritise = general.getConfig()["maxTodosToPrioritise"]
+        maxTodosToPrioritise *= (i + 1) / len(toDoFiles)
+        maxTodosToPrioritise -= processedTodos
+        maxTodosToPrioritise = int(maxTodosToPrioritise)
         if "conflict" in toDoFiles[file]:
             continue
         fileObj = toDoFiles[file]["master"]
@@ -371,8 +379,15 @@ def main():
         if path in excludedFiles:
             continue
         prevInteractiveState = bool(interactive)
+        todoPathsOrig = parseLists.getAllToDoPaths(text)
+        processedTodos += min(
+            priorityLib.getNoOfTodosToPrioritise(todoPathsOrig), maxTodosToPrioritise
+        )
         interactive, fileText = processTodoPaths(
-            text, path, interactive or str(onlyInteractiveTodo).lower() in path.lower()
+            todoPathsOrig,
+            path,
+            interactive or str(onlyInteractiveTodo).lower() in path.lower(),
+            maxTodosToPrioritise,
         )
         interactive = prevInteractiveState and interactive
         general.writeToFile(path, fileText)
