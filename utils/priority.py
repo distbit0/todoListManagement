@@ -70,6 +70,8 @@ def askForPriority(todo_path, todo_file, remaining):
             return priority
         elif priority_input.lower() == "edit":
             return "edit"
+        elif priority_input.lower() == "back":
+            return "back"
         elif priority_input.lower() == "d":
             return "d"
         elif priority_input.lower()[0] == '"' and priority_input.lower()[-1] == '"':
