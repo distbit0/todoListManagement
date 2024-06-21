@@ -9,6 +9,7 @@ def formatTodoSegmentDepencency(todoSegment):
     return todoSegment
 
 
+### objective: avoid formatting lines that contain non-outliner text
 def formatTodoSegment(todoSegment, hasChild):
     hasCheckbox = (
         "- [x]" in todoSegment or "- [/]" in todoSegment or "- [ ]" in todoSegment

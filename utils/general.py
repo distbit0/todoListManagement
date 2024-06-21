@@ -35,7 +35,7 @@ def normalisePaths(paths):
 
 
 def checkForUnDoneSubtasks(curPos, currentIndent, totalTextLines):
-    noUndoneSubTasks = True
+    unDoneSubTasks = False
     j = int(curPos) + 1
 
     while True:
@@ -45,11 +45,11 @@ def checkForUnDoneSubtasks(curPos, currentIndent, totalTextLines):
         indent = tmpLine.count("\t")
         if indent > currentIndent:
             if "[ ]" in tmpLine:
-                noUndoneSubTasks = False
+                noUndoneSubTasks = True
         else:
             break
         j += 1
-    return noUndoneSubTasks
+    return unDoneSubTasks
 
 
 def dedup(l):
