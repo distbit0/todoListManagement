@@ -14,7 +14,7 @@ def getAllToDoPaths(totalText, prefix=""):
         currentIndent = line.count("\t")
         path[currentIndent] = line.strip("\t")
         currentPath = [path[indent] for indent in range(currentIndent + 1)]
-        if "[x]" in line and getTodoSegmentDaysToNextOccurrence(line) == "noPeriod":
+        if "[x]" in line and getTodoSegmentDaysToNextOccurrence(line) == "notRecurring":
             unDoneSubTasks = checkForUnDoneSubtasks(i, currentIndent, totalTextLines)
             if unDoneSubTasks:
                 unDonePaths.append(currentPath)
