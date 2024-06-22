@@ -56,16 +56,16 @@ def askForPriority(todo_path, todo_file, remaining):
     while True:
         priority_input = input(
             f"""\n\n
-            "5" > assign task priority 5 (1 to {tasksToAssignPriority})
-            "3-4" > swap priorities 3 and 4
-            "n" or "3-n" > assign priority lower than top {tasksToAssignPriority}
-            "d" or "3-d" > mark todo as done
-            "[title of new note]" > create note from todo
-            "edit" > edit todo title
-            "back" > go back to last todo
-            File: {todo_file}
-            Remaining: {remaining}
-            {' > '.join([segment.strip("- [ ]") for segment in todo_path])}: """
+"5" > assign task priority 5 (1 to {tasksToAssignPriority})
+"3-4" > swap priorities 3 and 4
+"n" or "3-n" > assign priority lower than top {tasksToAssignPriority}
+"d" or "3-d" > mark todo as done
+"[title of new note]" > create note from todo
+"edit" > edit todo title
+"back" > go back to last todo
+File: {todo_file}
+Remaining: {remaining}
+{' > '.join([segment.strip("- [ ]") for segment in todo_path])}: """
         )
         if (
             priority_input.isdigit()
