@@ -109,7 +109,7 @@ def getTopNTodosAsText(todoPaths, n):
         priority, path = sortedTodos[i]
         isInProgress = "[/] " in path[-1] or "[-] " in path[-1]
         inProgressText = "[[WIP]]" if isInProgress else ""
-        todoName = getTodoSegmentName(path[-1])
+        todoName = getTodoSegmentName(path[-1], includeDep=True)
         textOutput.append(f"{priority}) {inProgressText} {todoName}")
 
     textOutput = "\n".join(textOutput)

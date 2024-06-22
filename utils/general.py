@@ -167,7 +167,7 @@ def generateTodoListHash(todoPaths):
     return (indentHash, indentSum, pathCount)
 
 
-def getTodoSegmentName(todoSegment):
+def getTodoSegmentName(todoSegment, includeDep=False):
     todoLine = (
         todoSegment.replace("- [x] ", "")
         .replace("- [/] ", "")
@@ -175,12 +175,13 @@ def getTodoSegmentName(todoSegment):
         .replace("- [-] ", "")
     )
 
-    # Determine the starting position for extraction
     start_pos = 0
-    if "(dep)" in todoLine.lower() or "] dep " in todoLine.lower():
-        colon_pos = todoLine.find(":")
-        if colon_pos != -1:
-            start_pos = colon_pos + 1
+    if not includeDep:
+        # Determine the starting position for extraction
+        if "(dep)" in todoLine.lower() or "] dep " in todoLine.lower():
+            colon_pos = todoLine.find(":")
+            if colon_pos != -1:
+                start_pos = colon_pos + 1
 
     # Extract the todo name, stopping at special characters
     todoName = []
