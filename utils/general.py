@@ -168,18 +168,27 @@ def generateTodoListHash(todoPaths):
 
 
 def getTodoName(todoPath):
-    todoName = (
-        todoPath[-1]
-        .replace("- [x] ", "")
+    todoLine = todoPath[-1]
+    todoLine = (
+        todoLine.replace("- [x] ", "")
         .replace("- [/] ", "")
         .replace("- [ ] ", "")
         .replace("- [-] ", "")
     )
-    todoName = " ".join(
-        [
-            segment
-            for segment in todoName.split()
-            if "@" not in segment and "^" not in segment and "#" not in segment
-        ]
-    )
+
+    # Determine the starting position for extraction
+    start_pos = 0
+    if "(dep)" in todoLine.lower() or "] dep " in todoLine.lower():
+        colon_pos = todoLine.find(":")
+        if colon_pos != -1:
+            start_pos = colon_pos + 1
+
+    # Extract the todo name, stopping at special characters
+    todoName = []
+    for segment in todoLine[start_pos:].split():
+        if "@" in segment or "^" in segment or "#" in segment:
+            break
+        todoName.append(segment)
+
+    todoName = " ".join(todoName)
     return todoName.strip()

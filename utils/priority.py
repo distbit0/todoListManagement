@@ -55,7 +55,15 @@ def replacePriorityOfTodo(todoPath, newPriority):
 def askForPriority(todo_path, todo_file, remaining):
     while True:
         priority_input = input(
-            f"\n\n\nPrioritise (0 - {tasksToAssignPriority} OR 'n' if not in top {tasksToAssignPriority} or 3-4 to swap priorities 3 and 4 or d to 'delete', \"name of new note\" to create note from todo or \"edit\" or \"back\"):\nFile: {todo_file}\nRemaining: {remaining}\n{' '.join(todo_path)}: "
+            f"""\n\n
+            "5" > assign task priority 5 (1 to {tasksToAssignPriority})
+            "3-4" > swap priorities 3 and 4
+            "n" or "3-n" > assign priority lower than top {tasksToAssignPriority}
+            "d" or "3-d" > mark todo as done
+            "[name of new note]" > create note from todo
+            "edit" > edit todo title
+            "back" > go back to last todo
+            File: {todo_file}\nRemaining: {remaining}\n{' '.join(todo_path)}: """
         )
         if (
             priority_input.isdigit()
@@ -68,7 +76,7 @@ def askForPriority(todo_path, todo_file, remaining):
             return priority
         elif priority_input.lower() in ["edit", "back", "d", "n"]:
             return priority_input.lower()
-        elif priority_input.lower()[0] == '"' and priority_input.lower()[-1] == '"':
+        elif priority_input.lower()[0] == "[" and priority_input.lower()[-1] == "]":
             return priority_input
         else:
             print("invalid input")

@@ -68,7 +68,7 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName, maxTodosToPrioritise):
                                 prioritisedPaths, priority[0], priority[1]
                             )
                             prioritisedPaths = removeGapsInPriorities(prioritisedPaths)
-                        elif str(priority)[0] == str(priority)[-1] == '"':
+                        elif str(priority)[0] == "[" and str(priority)[-1] == "]":
                             prioritisedPaths = createNoteFromTodo(
                                 prioritisedPaths, path, priority
                             )
@@ -103,7 +103,7 @@ def renameTodo(prioritisedPaths, path):
 
 def createNoteFromTodo(todoPaths, path, priority):
     config = general.getConfig()
-    newFileName = priority[1:-1] + ".md"
+    newFileName = priority.strip("[]") + ".md"
     newNotePath = os.path.join(
         config["toDoFolderPath"],
         config["newNotesSubDir"],
