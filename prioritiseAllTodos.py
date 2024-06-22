@@ -125,11 +125,9 @@ def createNoteFromTodo(todoPaths, path, priority, autoCreate=False):
         config["newNotesSubDir"],
         newFileName,
     )
-    todoAlreadyContainsLink = (
-        "[[" in oldTodoName
-        or "]]" in oldTodoName
-        or "http" in oldTodoName
-        or "](" in oldTodoName
+    linkIndicators = ["[[", "]]", "http", "]("]
+    todoAlreadyContainsLink = any(
+        [linkIndicator in oldTodoName for linkIndicator in linkIndicators]
     )
     if todoAlreadyContainsLink and autoCreate:
         return todoPaths
