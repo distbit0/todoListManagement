@@ -111,7 +111,7 @@ def createNoteFromTodo(todoPaths, path, priority, autoCreate=False):
     oldTodoName = general.getTodoSegmentName(path[-1])
     if priority and priority[0] == "[" and priority[-1] == "]":
         newFileName = priority.strip("[]")
-    elif len(oldTodoName) < 45 and autoCreate:
+    elif len(oldTodoName) < 50 and autoCreate:
         newFileName = oldTodoName
     else:
         return todoPaths
@@ -125,7 +125,12 @@ def createNoteFromTodo(todoPaths, path, priority, autoCreate=False):
         config["newNotesSubDir"],
         newFileName,
     )
-    if "[[" in oldTodoName and "]]" in oldTodoName:
+    if (
+        "[[" in oldTodoName
+        and "]]" in oldTodoName
+        and "http" not in oldTodoName
+        and "](" not in oldTodoName
+    ):
         # print("todo already contains wikilink, not creating new note: ", oldTodoName)
         return todoPaths
     if not os.path.exists(newNotePath):
