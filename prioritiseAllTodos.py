@@ -102,18 +102,15 @@ def renameTodo(prioritisedPaths, path):
     return prioritisedPaths
 
 
-def autoCreateNotesFromTodos(todoPaths, todoFileName):
-    prioritisedPaths = list(todoPaths)
-    for i, path in enumerate(prioritisedPaths):
-        if todoFileName not in general.getConfig()["todosExcludedFromAutoNoteCreation"]:
-            isATodo = priorityLib.shouldTodoBePrioritised(todoPaths, i, False)[0]
-            if isATodo:
-                prioritisedPaths = createNoteFromTodo(
-                    prioritisedPaths, path, "", autoCreate=True
-                )
+def autoCreateNotesFromTodos(todoPaths):
+    outputTodos = list(todoPaths)
+    for i, path in enumerate(todoPaths):
+        isATodo = priorityLib.shouldTodoBePrioritised(todoPaths, i, False)[0]
+        if isATodo:
+            outputTodos = createNoteFromTodo(outputTodos, path, "", autoCreate=True)
+    return outputTodos
 
 
-@pysnooper.snoop()
 def createNoteFromTodo(todoPaths, path, priority, autoCreate=False):
     config = general.getConfig()
     oldTodoName = general.getTodoSegmentName(path[-1])
@@ -143,9 +140,9 @@ def createNoteFromTodo(todoPaths, path, priority, autoCreate=False):
     if not os.path.exists(newNotePath):
         with open(newNotePath, "w") as f:
             if autoCreate:
-                f.write("#task\n\n#### " + oldTodoName + "\n")
+                f.write("#task\n#### " + oldTodoName + "\n")
             else:
-                f.write("#task\n\n" + oldTodoName + "\n")
+                f.write("#task\n" + oldTodoName + "\n")
         print("created new note: {}".format(newNotePath))
     indexOfPath = todoPaths.index(path)
     linkToNewNote = f"[[{newFileName.replace('.md', '')}]]"
@@ -338,6 +335,7 @@ def processTodoPaths(todoPathsOrig, filePath, interactive, maxTodosToPrioritise)
         deduplicatePriorities,
         removePriorityFromParentTodos,
         triggerReprioritisationIfNecessary,
+        autoCreateNotesFromTodos,
         formatTodoPaths,
     ]
     for i, functionToExecute in enumerate(functionsToExecute):

@@ -183,9 +183,9 @@ def getTodoSegmentName(todoSegment, includeDep=False):
     todoName = []
     for segment in todoSegment[start_pos:].split():
         if (
-            re.search(r"#(\d+|[a-zA-Z])", segment)
-            or re.search(r"\^(\d{1,2}/\d{1,2})", segment)
-            or re.search(r"@(\d+)", segment)
+            re.fullmatch(r"#(\d+|[a-zA-Z])", segment)
+            or re.fullmatch(r"\^(\d{1,2}/\d{1,2})", segment)
+            or re.fullmatch(r"@(\d+)", segment)
         ):
             break
         todoName.append(segment)
