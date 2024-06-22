@@ -4,6 +4,7 @@
     "todosExcludedFromPrioritisation": [
         "/home/pimania/notes/Misc/App feature reqs/voice features todo.md"
     ],
+    "todosExcludedFromAutoNoteCreation": [],
     "tasksToAssignPriority": 10,
     "maxTodosToPrioritise": 30,
     "tempNotesPath": "/home/pimania/notes/zk/temp.md",

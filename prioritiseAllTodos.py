@@ -88,6 +88,10 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName, maxTodosToPrioritise):
                     prioritisedPaths = removeGapsInPriorities(prioritisedPaths)
         isATodo = priorityLib.shouldTodoBePrioritised(todoPaths, i, False)[0]
         if isATodo:
+            if (
+                "personal dev" not in todoFileName
+            ):  ###########################TEMP ###############################
+                continue  ####################################################### TEMPORARY ##########################
             prioritisedPaths = createNoteFromTodo(
                 prioritisedPaths, path, "", autoCreate=True
             )
@@ -106,6 +110,7 @@ def renameTodo(prioritisedPaths, path):
     return prioritisedPaths
 
 
+@pysnooper.snoop()
 def createNoteFromTodo(todoPaths, path, priority, autoCreate=False):
     config = general.getConfig()
     oldTodoName = general.getTodoSegmentName(path[-1])
@@ -131,6 +136,7 @@ def createNoteFromTodo(todoPaths, path, priority, autoCreate=False):
     )
     if todoAlreadyContainsLink and autoCreate:
         return todoPaths
+
     if not os.path.exists(newNotePath):
         with open(newNotePath, "w") as f:
             if autoCreate:
