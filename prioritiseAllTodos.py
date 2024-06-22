@@ -1,4 +1,5 @@
 import sys
+import pysnooper
 from prompt_toolkit import prompt
 import os
 import utils.general as general
@@ -86,15 +87,6 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName, maxTodosToPrioritise):
                         prioritisedPaths, i, priority
                     )
                     prioritisedPaths = removeGapsInPriorities(prioritisedPaths)
-        isATodo = priorityLib.shouldTodoBePrioritised(todoPaths, i, False)[0]
-        if isATodo:
-            if (
-                "personal dev" not in todoFileName
-            ):  ###########################TEMP ###############################
-                continue  ####################################################### TEMPORARY ##########################
-            prioritisedPaths = createNoteFromTodo(
-                prioritisedPaths, path, "", autoCreate=True
-            )
         i += 1
     return prioritisedPaths, receivedCtrlC
 
@@ -108,6 +100,17 @@ def renameTodo(prioritisedPaths, path):
     path[-1] = path[-1].replace(todoName, newName)
     prioritisedPaths[indexOfPath] = path
     return prioritisedPaths
+
+
+def autoCreateNotesFromTodos(todoPaths, todoFileName):
+    prioritisedPaths = list(todoPaths)
+    for i, path in enumerate(prioritisedPaths):
+        if todoFileName not in general.getConfig()["todosExcludedFromAutoNoteCreation"]:
+            isATodo = priorityLib.shouldTodoBePrioritised(todoPaths, i, False)[0]
+            if isATodo:
+                prioritisedPaths = createNoteFromTodo(
+                    prioritisedPaths, path, "", autoCreate=True
+                )
 
 
 @pysnooper.snoop()
@@ -324,6 +327,9 @@ def checkThatHashesMatch(todoPaths, todoPathsOrig, path, operation):
 def processTodoPaths(todoPathsOrig, filePath, interactive, maxTodosToPrioritise):
     print("processing: {}".format(filePath))
     todoPaths = list(todoPathsOrig)
+    excludedFunctions = general.getConfig()["functionsExcludedFromTodos"].get(
+        filePath.split("/")[-1], []
+    )
     functionsToExecute = [
         regularisePriorities,
         manageRecurringTasks,
@@ -335,23 +341,26 @@ def processTodoPaths(todoPathsOrig, filePath, interactive, maxTodosToPrioritise)
         formatTodoPaths,
     ]
     for i, functionToExecute in enumerate(functionsToExecute):
+        functionName = functionToExecute.__name__
+        if functionName in excludedFunctions:
+            continue
         todoPaths = functionToExecute(todoPaths)
-        checkThatHashesMatch(
-            todoPaths, todoPathsOrig, filePath, functionToExecute.__name__ + str(i)
-        )
+        checkThatHashesMatch(todoPaths, todoPathsOrig, filePath, functionName + str(i))
 
     if interactive:
         fileName = filePath.split("/")[-1]
-        todoPaths = regularisePriorities(todoPaths, setToN=True)
-        checkThatHashesMatch(
-            todoPaths, todoPathsOrig, filePath, "regularisePriorities (setToN)"
-        )
-        todoPaths, receivedCtrlC = prioritiseUnprioritisedTodos(
-            todoPaths, fileName, maxTodosToPrioritise
-        )
-        checkThatHashesMatch(
-            todoPaths, todoPathsOrig, filePath, "prioritiseUnprioritisedTodos"
-        )
+        if "regularisePriorities" not in excludedFunctions:
+            todoPaths = regularisePriorities(todoPaths, setToN=True)
+            checkThatHashesMatch(
+                todoPaths, todoPathsOrig, filePath, "regularisePriorities (setToN)"
+            )
+        if "prioritiseUnprioritisedTodos" not in excludedFunctions:
+            todoPaths, receivedCtrlC = prioritiseUnprioritisedTodos(
+                todoPaths, fileName, maxTodosToPrioritise
+            )
+            checkThatHashesMatch(
+                todoPaths, todoPathsOrig, filePath, "prioritiseUnprioritisedTodos"
+            )
         if receivedCtrlC:
             interactive = False
             print("disabling interactive mode for all following files..")
@@ -371,7 +380,6 @@ def main():
             onlyInteractiveTodo = sys.argv[1]
             interactive = False
 
-    excludedFiles = general.getConfig()["todosExcludedFromPrioritisation"]
     toDoFiles = general.getAllToDos()
     # testFileText = general.readFromFile("testFile.md")
     # toDoFiles = {
@@ -399,10 +407,13 @@ def main():
             continue
         fileObj = toDoFiles[file]["master"]
         text, path = fileObj["text"], fileObj["path"]
-        text = priorityLib.removeTopTodosFromText(text).lstrip("\n")
 
-        if path in excludedFiles:
+        excludedFunctions = general.getConfig()["functionsExcludedFromTodos"].get(
+            path.split("/")[-1], []
+        )
+        if "all" in excludedFunctions:
             continue
+        text = priorityLib.removeTopTodosFromText(text).lstrip("\n")
         prevInteractiveState = bool(interactive)
         todoPathsOrig = parseLists.getAllToDoPaths(text)
         processedTodos += min(

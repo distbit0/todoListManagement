@@ -1,10 +1,14 @@
 {
     "toDoFolderPath": "/home/pimania/notes/",
     "newNotesSubDir": "zk",
-    "todosExcludedFromPrioritisation": [
-        "/home/pimania/notes/Misc/App feature reqs/voice features todo.md"
-    ],
-    "todosExcludedFromAutoNoteCreation": [],
+    "functionsExcludedFromTodos": {
+        "voice features todo.md": [
+            "all"
+        ],
+        "personal dev todo.md": [
+            "autoCreateNotesFromTodos"
+        ]
+    },
     "tasksToAssignPriority": 10,
     "maxTodosToPrioritise": 30,
     "tempNotesPath": "/home/pimania/notes/zk/temp.md",
