@@ -86,10 +86,12 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName, maxTodosToPrioritise):
                         prioritisedPaths, i, priority
                     )
                     prioritisedPaths = removeGapsInPriorities(prioritisedPaths)
+        isATodo = priorityLib.shouldTodoBePrioritised(todoPaths, i, False)[0]
+        if isATodo:
+            prioritisedPaths = createNoteFromTodo(
+                prioritisedPaths, path, "", autoCreate=True
+            )
         i += 1
-        prioritisedPaths = createNoteFromTodo(
-            prioritisedPaths, path, priority, autoCreate=True
-        )
     return prioritisedPaths, receivedCtrlC
 
 
@@ -105,32 +107,32 @@ def renameTodo(prioritisedPaths, path):
 
 
 def createNoteFromTodo(todoPaths, path, priority, autoCreate=False):
+    ## TODO: do not create notes for heading outlines
     config = general.getConfig()
     oldTodoName = general.getTodoSegmentName(path[-1])
     if "[[" in priority and "]]" in priority:
-        newFileName = priority.strip("[]") + ".md"
-    elif len(oldTodoName.split()) < 7 and autoCreate:
-        newFileName = oldTodoName + ".md"
+        newFileName = priority.strip("[]")
+    elif len(oldTodoName) < 35 and autoCreate:
+        newFileName = oldTodoName
     else:
         return todoPaths
 
     newFileName = "".join(
         [char for char in newFileName if char.isalnum() or char == " "]
     )
+    newFileName += ".md"
     newNotePath = os.path.join(
         config["toDoFolderPath"],
         config["newNotesSubDir"],
         newFileName,
     )
     if "[[" in oldTodoName and "]]" in oldTodoName:
-        print("todo already is wikilink, not creating new note")
+        # print("todo already contains wikilink, not creating new note: ", oldTodoName)
         return todoPaths
-    if os.path.exists(newNotePath):
-        print("target note already exists, not creating new note")
-        return todoPaths
-    with open(newNotePath, "w") as f:
-        f.write(oldTodoName)
-    print("created new note: {}".format(newNotePath))
+    if not os.path.exists(newNotePath):
+        with open(newNotePath, "w") as f:
+            f.write(oldTodoName)
+        print("created new note: {}".format(newNotePath))
     indexOfPath = todoPaths.index(path)
     linkToNewNote = f"[[{newFileName.replace('.md', '')}]]"
     path[-1] = path[-1].replace(oldTodoName, linkToNewNote)
