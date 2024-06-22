@@ -109,7 +109,7 @@ def renameTodo(prioritisedPaths, path):
 def createNoteFromTodo(todoPaths, path, priority, autoCreate=False):
     config = general.getConfig()
     oldTodoName = general.getTodoSegmentName(path[-1])
-    if priority[0] == "[" and priority[-1] == "]":
+    if priority and priority[0] == "[" and priority[-1] == "]":
         newFileName = priority.strip("[]")
     elif len(oldTodoName) < 45 and autoCreate:
         newFileName = oldTodoName
