@@ -65,7 +65,7 @@ def askForPriority(todo_path, todo_file, remaining):
             "back" > go back to last todo
             File: {todo_file}
             Remaining: {remaining}
-            {' > '.join(todo_path.strip("- [ ] "))}: """
+            {' > '.join([segment.strip("- [ ]") for segment in todo_path])}: """
         )
         if (
             priority_input.isdigit()
