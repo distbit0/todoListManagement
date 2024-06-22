@@ -125,13 +125,13 @@ def createNoteFromTodo(todoPaths, path, priority, autoCreate=False):
         config["newNotesSubDir"],
         newFileName,
     )
-    if (
+    todoAlreadyContainsLink = (
         "[[" in oldTodoName
-        and "]]" in oldTodoName
-        and "http" not in oldTodoName
-        and "](" not in oldTodoName
-    ):
-        # print("todo already contains wikilink, not creating new note: ", oldTodoName)
+        or "]]" in oldTodoName
+        or "http" in oldTodoName
+        or "](" in oldTodoName
+    )
+    if todoAlreadyContainsLink and autoCreate:
         return todoPaths
     if not os.path.exists(newNotePath):
         with open(newNotePath, "w") as f:
