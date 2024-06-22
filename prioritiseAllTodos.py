@@ -135,7 +135,10 @@ def createNoteFromTodo(todoPaths, path, priority, autoCreate=False):
         return todoPaths
     if not os.path.exists(newNotePath):
         with open(newNotePath, "w") as f:
-            f.write("#### " + oldTodoName + "\n")
+            if autoCreate:
+                f.write("#### " + oldTodoName + "\n")
+            else:
+                f.write(oldTodoName + "\n")
         print("created new note: {}".format(newNotePath))
     indexOfPath = todoPaths.index(path)
     linkToNewNote = f"[[{newFileName.replace('.md', '')}]]"
