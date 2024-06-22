@@ -65,7 +65,7 @@ def askForPriority(todo_path, todo_file, remaining):
 "back" > go back to last todo
 File: {todo_file}
 Remaining: {remaining}
-{' > '.join([segment.strip("- [ ]") for segment in todo_path])}: """
+{' > '.join([getTodoSegmentName(segment) for segment in todo_path])}: """
         )
         if (
             priority_input.isdigit()
@@ -109,7 +109,7 @@ def getTopNTodosAsText(todoPaths, n):
         priority, path = sortedTodos[i]
         isInProgress = "[/] " in path[-1] or "[-] " in path[-1]
         inProgressText = "[[WIP]]" if isInProgress else ""
-        todoName = getTodoName(path)
+        todoName = getTodoSegmentName(path[-1])
         textOutput.append(f"{priority}) {inProgressText} {todoName}")
 
     textOutput = "\n".join(textOutput)

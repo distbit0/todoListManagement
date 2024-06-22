@@ -91,7 +91,7 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName, maxTodosToPrioritise):
 
 
 def renameTodo(prioritisedPaths, path):
-    todoName = general.getTodoName(path)
+    todoName = general.getTodoSegmentName(path[-1])
     newName = prompt(f"\n\n\nRename to: ", default=todoName)
     if newName == "":
         return prioritisedPaths
@@ -109,7 +109,7 @@ def createNoteFromTodo(todoPaths, path, priority):
         config["newNotesSubDir"],
         newFileName,
     )
-    oldTodoName = general.getTodoName(path)
+    oldTodoName = general.getTodoSegmentName(path[-1])
     if oldTodoName.startswith("[[") and oldTodoName.endswith("]]"):
         print("todo already is wikilink, not creating new note")
         return todoPaths

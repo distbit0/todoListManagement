@@ -167,10 +167,9 @@ def generateTodoListHash(todoPaths):
     return (indentHash, indentSum, pathCount)
 
 
-def getTodoName(todoPath):
-    todoLine = todoPath[-1]
+def getTodoSegmentName(todoSegment):
     todoLine = (
-        todoLine.replace("- [x] ", "")
+        todoSegment.replace("- [x] ", "")
         .replace("- [/] ", "")
         .replace("- [ ] ", "")
         .replace("- [-] ", "")
