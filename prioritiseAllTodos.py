@@ -107,12 +107,11 @@ def renameTodo(prioritisedPaths, path):
 
 
 def createNoteFromTodo(todoPaths, path, priority, autoCreate=False):
-    ## TODO: do not create notes for heading outlines
     config = general.getConfig()
     oldTodoName = general.getTodoSegmentName(path[-1])
     if "[[" in priority and "]]" in priority:
         newFileName = priority.strip("[]")
-    elif len(oldTodoName) < 35 and autoCreate:
+    elif len(oldTodoName) < 45 and autoCreate:
         newFileName = oldTodoName
     else:
         return todoPaths
