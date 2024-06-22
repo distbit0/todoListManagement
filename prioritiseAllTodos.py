@@ -87,6 +87,9 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName, maxTodosToPrioritise):
                     )
                     prioritisedPaths = removeGapsInPriorities(prioritisedPaths)
         i += 1
+        prioritisedPaths = createNoteFromTodo(
+            prioritisedPaths, path, priority, autoCreate=True
+        )
     return prioritisedPaths, receivedCtrlC
 
 
@@ -101,16 +104,25 @@ def renameTodo(prioritisedPaths, path):
     return prioritisedPaths
 
 
-def createNoteFromTodo(todoPaths, path, priority):
+def createNoteFromTodo(todoPaths, path, priority, autoCreate=False):
     config = general.getConfig()
-    newFileName = priority.strip("[]") + ".md"
+    oldTodoName = general.getTodoSegmentName(path[-1])
+    if "[[" in priority and "]]" in priority:
+        newFileName = priority.strip("[]") + ".md"
+    elif len(oldTodoName.split()) < 7 and autoCreate:
+        newFileName = oldTodoName + ".md"
+    else:
+        return todoPaths
+
+    newFileName = "".join(
+        [char for char in newFileName if char.isalnum() or char == " "]
+    )
     newNotePath = os.path.join(
         config["toDoFolderPath"],
         config["newNotesSubDir"],
         newFileName,
     )
-    oldTodoName = general.getTodoSegmentName(path[-1])
-    if oldTodoName.startswith("[[") and oldTodoName.endswith("]]"):
+    if "[[" in oldTodoName and "]]" in oldTodoName:
         print("todo already is wikilink, not creating new note")
         return todoPaths
     if os.path.exists(newNotePath):
