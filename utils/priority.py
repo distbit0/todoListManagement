@@ -60,10 +60,12 @@ def askForPriority(todo_path, todo_file, remaining):
             "3-4" > swap priorities 3 and 4
             "n" or "3-n" > assign priority lower than top {tasksToAssignPriority}
             "d" or "3-d" > mark todo as done
-            "[name of new note]" > create note from todo
+            "[title of new note]" > create note from todo
             "edit" > edit todo title
             "back" > go back to last todo
-            File: {todo_file}\nRemaining: {remaining}\n{' '.join(todo_path)}: """
+            File: {todo_file}
+            Remaining: {remaining}
+            {' > '.join(todo_path.strip("- [ ] "))}: """
         )
         if (
             priority_input.isdigit()
