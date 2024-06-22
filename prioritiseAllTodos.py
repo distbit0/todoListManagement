@@ -1,7 +1,5 @@
-import sys
 import pysnooper
-from prompt_toolkit import prompt
-import os
+import sys
 import utils.general as general
 import utils.priority as priorityLib
 import utils.parseLists as parseLists
@@ -70,11 +68,13 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName, maxTodosToPrioritise):
                             )
                             prioritisedPaths = removeGapsInPriorities(prioritisedPaths)
                         elif str(priority)[0] == "[" and str(priority)[-1] == "]":
-                            prioritisedPaths = createNoteFromTodo(
+                            prioritisedPaths = formatting.createNoteFromTodo(
                                 prioritisedPaths, path, priority
                             )
                         elif priority == "edit":
-                            prioritisedPaths = renameTodo(prioritisedPaths, path)
+                            prioritisedPaths = formatting.renameTodo(
+                                prioritisedPaths, path
+                            )
                         else:
                             break
                 prioritisedSoFar += 1
@@ -91,64 +91,15 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName, maxTodosToPrioritise):
     return prioritisedPaths, receivedCtrlC
 
 
-def renameTodo(prioritisedPaths, path):
-    todoName = general.getTodoSegmentName(path[-1])
-    newName = prompt(f"\n\n\nRename to: ", default=todoName)
-    if newName == "":
-        return prioritisedPaths
-    indexOfPath = prioritisedPaths.index(path)
-    path[-1] = path[-1].replace(todoName, newName)
-    prioritisedPaths[indexOfPath] = path
-    return prioritisedPaths
-
-
 def autoCreateNotesFromTodos(todoPaths):
     outputTodos = list(todoPaths)
     for i, path in enumerate(todoPaths):
         isATodo = priorityLib.shouldTodoBePrioritised(todoPaths, i, False)[0]
         if isATodo:
-            outputTodos = createNoteFromTodo(outputTodos, path, "", autoCreate=True)
+            outputTodos = formatting.createNoteFromTodo(
+                outputTodos, path, "", autoCreate=True
+            )
     return outputTodos
-
-
-def createNoteFromTodo(todoPaths, path, priority, autoCreate=False):
-    config = general.getConfig()
-    oldTodoName = general.getTodoSegmentName(path[-1])
-    if priority and priority[0] == "[" and priority[-1] == "]":
-        newFileName = priority.strip("[]")
-    elif len(oldTodoName) < 50 and autoCreate:
-        newFileName = oldTodoName
-    else:
-        return todoPaths
-
-    newFileName = "".join(
-        [char for char in newFileName if char.isalnum() or char == " "]
-    ).lower()
-    newFileName += ".md"
-    newNotePath = os.path.join(
-        config["toDoFolderPath"],
-        config["newNotesSubDir"],
-        newFileName,
-    )
-    linkIndicators = ["[[", "]]", "http", "]("]
-    todoAlreadyContainsLink = any(
-        [linkIndicator in oldTodoName for linkIndicator in linkIndicators]
-    )
-    if todoAlreadyContainsLink and autoCreate:
-        return todoPaths
-
-    if not os.path.exists(newNotePath):
-        with open(newNotePath, "w") as f:
-            if autoCreate:
-                f.write("#task\n#### " + oldTodoName + "\n")
-            else:
-                f.write("#task\n" + oldTodoName + "\n")
-        print("created new note: {}".format(newNotePath))
-    indexOfPath = todoPaths.index(path)
-    linkToNewNote = f"[[{newFileName.replace('.md', '')}]]"
-    path[-1] = path[-1].replace(oldTodoName, linkToNewNote)
-    todoPaths[indexOfPath] = path
-    return todoPaths
 
 
 def removePriorityFromParentTodos(todoPaths):
