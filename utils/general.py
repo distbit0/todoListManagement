@@ -174,7 +174,6 @@ def getTodoSegmentName(todoSegment, includeDep=False):
         .replace("- [ ] ", "")
         .replace("- [-] ", "")
     )
-
     start_pos = 0
     if not includeDep:
         # Determine the starting position for extraction
@@ -186,9 +185,12 @@ def getTodoSegmentName(todoSegment, includeDep=False):
     # Extract the todo name, stopping at special characters
     todoName = []
     for segment in todoLine[start_pos:].split():
-        if "@" in segment or "^" in segment or "#" in segment:
+        if (
+            re.search(r"#(\d+|[a-zA-Z])", segment)
+            or re.search(r"\^(\d{1,2}/\d{1,2})", segment)
+            or re.search(r"@(\d+)", segment)
+        ):
             break
         todoName.append(segment)
-
     todoName = " ".join(todoName)
     return todoName.strip()
