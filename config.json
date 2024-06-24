@@ -10,7 +10,7 @@
         ]
     },
     "tasksToAssignPriority": 10,
-    "maxTodosToPrioritise": 30,
+    "maxTodosToPrioritise": 21,
     "tempNotesPath": "/home/pimania/notes/zk/temp.md",
     "mp3CaptureFolder": "/home/pimania/memos/",
     "questionFiles": [
