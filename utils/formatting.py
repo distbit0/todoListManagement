@@ -45,7 +45,7 @@ def createNoteFromTodo(todoPaths, path, priority, autoCreate=False):
     oldTodoName = general.getTodoSegmentName(path[-1])
     if priority and priority[0] == "[" and priority[-1] == "]":
         newFileName = priority.strip("[]")
-    elif len(oldTodoName) < 50 and autoCreate:
+    elif len(oldTodoName) < 50 and autoCreate and oldTodoName != "":
         newFileName = oldTodoName
     else:
         return todoPaths
