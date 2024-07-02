@@ -2,9 +2,6 @@
     "toDoFolderPath": "/home/pimania/notes/",
     "newNotesSubDir": "zk",
     "functionsExcludedFromTodos": {
-        "voice features todo.md": [
-            "all"
-        ],
         "personal dev todo.md": [
             "autoCreateNotesFromTodos",
             "prioritiseUnprioritisedTodos"
