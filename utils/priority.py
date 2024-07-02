@@ -79,7 +79,11 @@ Remaining: {remaining}
             return priority
         elif priority_input.lower() in ["edit", "back", "d", "n"]:
             return priority_input.lower()
-        elif priority_input.lower()[0] == "[" and priority_input.lower()[-1] == "]":
+        elif (
+            priority_input
+            and priority_input.lower()[0] == "["
+            and priority_input.lower()[-1] == "]"
+        ):
             return priority_input
         else:
             print("invalid input")
