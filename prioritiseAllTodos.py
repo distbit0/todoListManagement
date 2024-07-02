@@ -297,6 +297,7 @@ def processTodoPaths(todoPathsOrig, filePath, interactive, maxTodosToPrioritise)
         checkThatHashesMatch(todoPaths, todoPathsOrig, filePath, functionName + str(i))
 
     if interactive:
+        receivedCtrlC = False
         fileName = filePath.split("/")[-1]
         if "regularisePriorities" not in excludedFunctions:
             todoPaths = regularisePriorities(todoPaths, setToN=True)
