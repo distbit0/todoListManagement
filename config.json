@@ -6,7 +6,8 @@
             "all"
         ],
         "personal dev todo.md": [
-            "autoCreateNotesFromTodos"
+            "autoCreateNotesFromTodos",
+            "prioritiseUnprioritisedTodos"
         ]
     },
     "tasksToAssignPriority": 10,
