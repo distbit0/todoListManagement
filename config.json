@@ -8,6 +8,7 @@
         ]
     },
     "tasksToAssignPriority": 10,
+    "delPrioritiesAboveNBeforeReprioritising": False,
     "maxTodosToPrioritise": 21,
     "tempNotesPath": "/home/pimania/notes/zk/temp.md",
     "mp3CaptureFolder": "/home/pimania/memos/",

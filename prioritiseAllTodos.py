@@ -300,7 +300,10 @@ def processTodoPaths(todoPathsOrig, filePath, interactive, maxTodosToPrioritise)
         receivedCtrlC = False
         fileName = filePath.split("/")[-1]
         if "regularisePriorities" not in excludedFunctions:
-            todoPaths = regularisePriorities(todoPaths, setToN=True)
+            setToN = general.getConfig()["delPrioritiesAboveNBeforeReprioritising"]
+            ### setToN determines whether tasks with priority above tasksToAssignPriority are set to priority "n" before a reprioritisation
+            ### doing so ensures more accurate prioritisation, as it means all new todos are compared against all prioritised todos, but it comes at the cost of losing some prioritisation information due to the priorities being erased (set to "n"). 
+            todoPaths = regularisePriorities(todoPaths, setToN=setToN)
             checkThatHashesMatch(
                 todoPaths, todoPathsOrig, filePath, "regularisePriorities (setToN)"
             )
