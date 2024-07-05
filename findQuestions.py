@@ -36,7 +36,7 @@ def find_random_matches(file_list, matchingWords, num_matches):
         else:
             paragraphs = re.split(
                 r"\n{2,}", text.strip()
-            )  ##split on two or more newlines
+            )  # split on two or more newlines
             for i in range(1, len(paragraphs)):
                 currentParagraph = paragraphs[i].strip()
                 if checkParagraphSatisfiesConstraints(currentParagraph, matchingWords):

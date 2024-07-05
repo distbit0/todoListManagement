@@ -206,7 +206,7 @@ textToAddToFile, processedMp3s = saveNotesFromMp3s()
 textToAddToFile += saveNotesFromKeep(keep)
 writeToFile(tempFilePath, textToAddToFile)
 
-## only now do we delete/archive synced notes and mp3s
+# only now do we delete/archive synced notes and mp3s
 keep.sync()
 for mp3File in processedMp3s:
     fileText = processedMp3s[mp3File]

@@ -2,9 +2,9 @@ import re
 from datetime import datetime, timedelta
 
 
-#### RECURRENCE
+# RECURRENCE
 
-## GET RECURRENCE INFO
+# GET RECURRENCE INFO
 
 dateRegex = r"\^(\d{1,2}/\d{1,2})"
 recurrenceRegex = r"@(\d+)"
@@ -42,7 +42,6 @@ def getTodoNextOccurrence(todoPath):
 
 
 def getTodoSegmentDaysToNextOccurrence(todoSegment):
-    # Initialize values as None
     periodInDays = getTodoSegmentRecurrencePeriod(todoSegment)
     nextOccurrence = getTodoSegmentNextOccurrence(todoSegment)
     if nextOccurrence == "noNextOccurrence":
@@ -60,7 +59,7 @@ def getTodoDaysToNextOccurrence(todoPath):
     return getTodoSegmentDaysToNextOccurrence(todoPath[-1])
 
 
-## MODIFY RECURRENCE INFO
+# MODIFY RECURRENCE INFO
 
 
 def updateTodoSegmentNextOccurrence(todoSegment):

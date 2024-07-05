@@ -18,10 +18,10 @@ def updatePathPriorities(todoPaths, indexOfPath, priority):
     else:
         if priority != "n":
             prioritySubstitutions = dict(
-                [(j, j + 1) for j in range(priority, tasksToAssignPriority + 1)]
+                [(j, j + 1) for j in range(priority, tasksToAssignPriority)]
             )
-            ## added +1 to tasksToAssignPriority so that we do not erase the info re: the priority of a task just because it is no longer in top n
-            # prioritySubstitutions[tasksToAssignPriority] = "n" ##commented out this for the same reason as above
+            prioritySubstitutions[tasksToAssignPriority] = "n"
+            # the new solution is to just set tasksToAssignPriority to be higher than the number of tasks displayed. so a task's priority is not immediately erased (set to n) after exceeding the number of tasks displayed. only when it actually exceeds tasksToAssignPriority will it be erased.
             todoPaths = priorityLib.substitutePriority(prioritySubstitutions, todoPaths)
         todoPaths[indexOfPath] = priorityLib.replacePriorityOfTodo(
             todoPaths[indexOfPath], priority
@@ -30,10 +30,12 @@ def updatePathPriorities(todoPaths, indexOfPath, priority):
     return todoPaths
 
 
-def prioritiseUnprioritisedTodos(todoPaths, todoFileName, maxTodosToPrioritise):
+def prioritiseUnprioritisedTodos(
+    todoPaths, todoFileName, todosPerPrioritisationSession
+):
     prioritisedPaths = []
     noOfTodosToPrioritise = priorityLib.getNoOfTodosToPrioritise(todoPaths)
-    noOfTodosToPrioritise = min(noOfTodosToPrioritise, maxTodosToPrioritise)
+    noOfTodosToPrioritise = min(noOfTodosToPrioritise, todosPerPrioritisationSession)
     prioritisedSoFar = 0
     receivedCtrlC = False
     prioritisedPaths = list(todoPaths)
@@ -47,9 +49,7 @@ def prioritiseUnprioritisedTodos(todoPaths, todoFileName, maxTodosToPrioritise):
                 remaining = noOfTodosToPrioritise - prioritisedSoFar - 1
                 if not receivedCtrlC:
                     while True:
-                        priorityLib.printTopNTodos(
-                            prioritisedPaths, tasksToAssignPriority
-                        )
+                        priorityLib.printTopNTodos(prioritisedPaths)
                         priority = priorityLib.askForPriority(
                             path, todoFileName, remaining
                         )
@@ -127,7 +127,7 @@ def removePriorityFromParentTodos(todoPaths):
     return outputPaths
 
 
-def regularisePriorities(todoPaths, setToN=False):
+def regularisePriorities(todoPaths):
     regularisedTodos = []
     for path in todoPaths:
         priority = priorityLib.getPriorityOfTodo(path)
@@ -135,7 +135,7 @@ def regularisePriorities(todoPaths, setToN=False):
             regularisedTodos.append(path)
             continue
         elif type(priority) is int:
-            if priority > tasksToAssignPriority and setToN:
+            if priority > tasksToAssignPriority:
                 regularisedTodos.append(priorityLib.replacePriorityOfTodo(path, "n"))
             elif priority < 1:
                 regularisedTodos.append(priorityLib.replacePriorityOfTodo(path, 1))
@@ -165,17 +165,15 @@ def deduplicatePriorities(todoPaths):
 
 
 def removeGapsInPriorities(todos):
-    # Step 1: Extract todos with numeric priorities and their indices
     indexed_prioritized_todos = [
         (index, todo)
         for index, todo in enumerate(todos)
         if priorityLib.getPriorityOfTodo(todo) not in [False, "n"]
     ]
 
-    # Step 2: Sort the indexed todos by their priorities
     indexed_prioritized_todos.sort(key=lambda x: priorityLib.getPriorityOfTodo(x[1]))
 
-    # Step 3: Reassign priorities starting from 1
+    # Reassign priorities starting from 1
     new_priority = 1
     for index, todo in indexed_prioritized_todos:
         todos[index] = priorityLib.replacePriorityOfTodo(todo, new_priority)
@@ -249,7 +247,7 @@ def saveErrorData(newText, oldText):
 
 
 def addTopTodosToText(text, todoPaths):
-    topNTodos = priorityLib.getTopNTodosAsText(todoPaths, tasksToAssignPriority)
+    topNTodos = priorityLib.getTopNTodosAsText(todoPaths)
     text = "+++++\n" + topNTodos + "\n+++++\n\n" + text
     return text
 
@@ -272,7 +270,9 @@ def checkThatHashesMatch(todoPaths, todoPathsOrig, path, operation):
 # check that priority logic does not assume that hashtag is at the end of the line
 
 
-def processTodoPaths(todoPathsOrig, filePath, interactive, maxTodosToPrioritise):
+def processTodoPaths(
+    todoPathsOrig, filePath, interactive, todosPerPrioritisationSession
+):
     print("processing: {}".format(filePath))
     todoPaths = list(todoPathsOrig)
     excludedFunctions = general.getConfig()["functionsExcludedFromTodos"].get(
@@ -300,16 +300,13 @@ def processTodoPaths(todoPathsOrig, filePath, interactive, maxTodosToPrioritise)
         receivedCtrlC = False
         fileName = filePath.split("/")[-1]
         if "regularisePriorities" not in excludedFunctions:
-            setToN = general.getConfig()["delPrioritiesAboveNBeforeReprioritising"]
-            ### setToN determines whether tasks with priority above tasksToAssignPriority are set to priority "n" before a reprioritisation
-            ### doing so ensures more accurate prioritisation, as it means all new todos are compared against all prioritised todos, but it comes at the cost of losing some prioritisation information due to the priorities being erased (set to "n"). 
-            todoPaths = regularisePriorities(todoPaths, setToN=setToN)
+            todoPaths = regularisePriorities(todoPaths)
             checkThatHashesMatch(
                 todoPaths, todoPathsOrig, filePath, "regularisePriorities (setToN)"
             )
         if "prioritiseUnprioritisedTodos" not in excludedFunctions:
             todoPaths, receivedCtrlC = prioritiseUnprioritisedTodos(
-                todoPaths, fileName, maxTodosToPrioritise
+                todoPaths, fileName, todosPerPrioritisationSession
             )
             checkThatHashesMatch(
                 todoPaths, todoPathsOrig, filePath, "prioritiseUnprioritisedTodos"
@@ -352,10 +349,12 @@ def main():
         )
     )  # sort so that todo lists with fewest unprocessed todos are processed first, to evenly distribute workload across all todo lists
     for i, file in enumerate(toDoFiles):
-        maxTodosToPrioritise = general.getConfig()["maxTodosToPrioritise"]
-        maxTodosToPrioritise *= (i + 1) / len(toDoFiles)
-        maxTodosToPrioritise -= processedTodos
-        maxTodosToPrioritise = int(maxTodosToPrioritise)
+        todosPerPrioritisationSession = general.getConfig()[
+            "todosPerPrioritisationSession"
+        ]
+        todosPerPrioritisationSession *= (i + 1) / len(toDoFiles)
+        todosPerPrioritisationSession -= processedTodos
+        todosPerPrioritisationSession = int(todosPerPrioritisationSession)
         if "conflict" in toDoFiles[file]:
             continue
         fileObj = toDoFiles[file]["master"]
@@ -370,13 +369,14 @@ def main():
         prevInteractiveState = bool(interactive)
         todoPathsOrig = parseLists.getAllToDoPaths(text)
         processedTodos += min(
-            priorityLib.getNoOfTodosToPrioritise(todoPathsOrig), maxTodosToPrioritise
+            priorityLib.getNoOfTodosToPrioritise(todoPathsOrig),
+            todosPerPrioritisationSession,
         )
         interactive, fileText = processTodoPaths(
             todoPathsOrig,
             path,
             interactive or str(onlyInteractiveTodo).lower() in path.lower(),
-            maxTodosToPrioritise,
+            todosPerPrioritisationSession,
         )
         interactive = prevInteractiveState and interactive
         general.writeToFile(path, fileText)

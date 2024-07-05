@@ -5,12 +5,13 @@ import utils.completion as completion
 
 
 tasksToAssignPriority = getConfig()["tasksToAssignPriority"]
+tasksToDisplay = getConfig()["tasksToDisplay"]
 
 
-#### PRIORITISATION
+# PRIORITISATION
 
 
-## GET PRIORITISATION INFO
+# GET PRIORITISATION INFO
 def getPriorityOfTodoSegment(todoSegment):
     match = re.search(
         r" #(\d+|[a-zA-Z])", todoSegment
@@ -25,7 +26,7 @@ def getPriorityOfTodo(todo_path):
     return getPriorityOfTodoSegment(todo_path[-1])
 
 
-## MODIFY PRIORITISATION INFO
+# MODIFY PRIORITISATION INFO
 def removePriorityFromTodoSegment(todoSegment):
     return re.sub(r"\s*#(\d+|[a-zA-Z])", "", todoSegment)
 
@@ -49,16 +50,16 @@ def replacePriorityOfTodo(todoPath, newPriority):
     return todoPath
 
 
-#### PRIORITISATION INTERFACE
+# PRIORITISATION INTERFACE
 
 
 def askForPriority(todo_path, todo_file, remaining):
     while True:
         priority_input = input(
             f"""\n\n
-"5" > assign task priority 5 (1 to {tasksToAssignPriority})
+"5" > assign task priority 5 (1 to {tasksToDisplay})
 "3-4" > swap priorities 3 and 4
-"n" or "3-n" > assign priority lower than top {tasksToAssignPriority}
+"n" or "3-n" > assign priority lower than top {tasksToDisplay}
 "d" or "3-d" > mark todo as done
 ________________________________
 "[title of new note]" > create note from todo
@@ -68,10 +69,7 @@ File: {todo_file}
 Remaining: {remaining}
 {' > '.join([getTodoSegmentName(segment) for segment in todo_path])}: """
         )
-        if (
-            priority_input.isdigit()
-            and 1 <= int(priority_input) <= tasksToAssignPriority
-        ):
+        if priority_input.isdigit() and 1 <= int(priority_input) <= tasksToDisplay:
             priority = int(priority_input)
             return priority
         elif "-" in priority_input:
@@ -89,7 +87,7 @@ Remaining: {remaining}
             print("invalid input")
 
 
-#### PRIORTISATION TEXT MANPULATION
+# PRIORTISATION TEXT MANPULATION
 
 
 def removeTopTodosFromText(text):
@@ -98,7 +96,8 @@ def removeTopTodosFromText(text):
     return text
 
 
-def getTopNTodosAsText(todoPaths, n):
+def getTopNTodosAsText(todoPaths):
+    n = getConfig()["tasksToDisplay"]
     textOutput = []
     textOutput.append(f"Top {n} todos:")
     allTodos = [
@@ -121,12 +120,12 @@ def getTopNTodosAsText(todoPaths, n):
     return textOutput
 
 
-def printTopNTodos(todoPaths, n):
+def printTopNTodos(todoPaths):
     print(f"\n\n\n\n\n\n\n\n\n\n")
-    print(getTopNTodosAsText(todoPaths, n))
+    print(getTopNTodosAsText(todoPaths))
 
 
-#### PRIORITISATION DETERMINATION
+# PRIORITISATION DETERMINATION
 def shouldTodoBePrioritised(todoPaths, i, mustNotBeAlreadyPrioritised):
     path = todoPaths[i]
     isLastTodoInList = len(todoPaths) - 1 == i
@@ -143,7 +142,7 @@ def shouldTodoBePrioritised(todoPaths, i, mustNotBeAlreadyPrioritised):
     return shouldBePrioritised, hasNoChildren
 
 
-#### ABSTRACT PRIORITY MODIFICATION
+# ABSTRACT PRIORITY MODIFICATION
 def substitutePriority(prioritySubstitutions, todoPaths):
     for i, task in enumerate(todoPaths):
         taskPriority = getPriorityOfTodo(task)
@@ -160,9 +159,8 @@ def substitutePriority(prioritySubstitutions, todoPaths):
 def swapPriorities(todoPaths, priority1, priority2):
     priority1 = int(priority1) if priority1.isdigit() else priority1
     priority2 = int(priority2) if priority2.isdigit() else priority2
-    # if priority2 == "n" or priority2 > tasksToAssignPriority: (commented this out so that we can recover these prioritisations even if they are for now not in top n
-    if priority2 in ["n", "d"]:
-        todoPaths = substitutePriority({priority1: priority2}, todoPaths)
+    if priority2 in ["n", "d"] or priority2 > tasksToAssignPriority:
+        todoPaths = substitutePriority({priority1: "n"}, todoPaths)
     else:
         todoPaths = substitutePriority({priority1: 1000000}, todoPaths)
         todoPaths = substitutePriority({priority2: 5000000}, todoPaths)
@@ -171,7 +169,7 @@ def swapPriorities(todoPaths, priority1, priority2):
     return todoPaths
 
 
-######### MISC
+# MISC
 def getNoOfTodosToPrioritise(todoPaths):
     return len(
         [

@@ -1,4 +1,4 @@
-## in order to sort todos with deps to end of sublist, move them down to just above the next todo which is less indented than them, and only if the todo below it doest also have a dep (because this would indicate that it has already been moved down previously)
+# in order to sort todos with deps to end of sublist, move them down to just above the next todo which is less indented than them, and only if the todo below it doest also have a dep (because this would indicate that it has already been moved down previously)
 import re
 import os
 import utils.general as general
@@ -13,7 +13,7 @@ def formatTodoSegmentDepencency(todoSegment):
     return todoSegment
 
 
-### objective: avoid formatting lines that contain non-outliner text
+# objective: avoid formatting lines that contain non-outliner text
 def formatTodoSegment(todoSegment, hasChild):
     hasCheckbox = (
         "- [x]" in todoSegment or "- [/]" in todoSegment or "- [ ]" in todoSegment

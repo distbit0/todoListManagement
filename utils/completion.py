@@ -1,7 +1,7 @@
-#### COMPLETION
+# COMPLETION
 
 
-## GET COMPLETION INFO
+# GET COMPLETION INFO
 def isTodoSegmentDone(todoSegment):
     return "- [x] " in todoSegment
 
@@ -10,7 +10,7 @@ def isTodoDone(todoPath):
     return isTodoSegmentDone(todoPath[-1])
 
 
-## MODIFY COMPLETION INFO
+# MODIFY COMPLETION INFO
 def markTodoSegmentAsDone(todoSegment):
     todoSegment = todoSegment.replace("- [ ] ", "- [x] ")
     todoSegment = todoSegment.replace("- [/] ", "- [x] ")

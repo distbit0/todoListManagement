@@ -7,9 +7,9 @@
             "prioritiseUnprioritisedTodos"
         ]
     },
-    "tasksToAssignPriority": 10,
-    "delPrioritiesAboveNBeforeReprioritising": false,
-    "maxTodosToPrioritise": 21,
+    "tasksToAssignPriority": 17,
+    "tasksToDisplay": 10,
+    "todosPerPrioritisationSession": 21,
     "tempNotesPath": "/home/pimania/notes/zk/temp.md",
     "mp3CaptureFolder": "/home/pimania/memos/",
     "questionFiles": [
