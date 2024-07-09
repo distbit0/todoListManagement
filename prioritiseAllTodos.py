@@ -60,6 +60,7 @@ def prioritiseUnprioritisedTodos(
                                 )
                             )
                             i -= 2
+                            prioritisedSoFar -= 2
                             goBack = True
                             break
                         elif type(priority) == list:
