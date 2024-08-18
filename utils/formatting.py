@@ -5,7 +5,7 @@ import utils.general as general
 from prompt_toolkit import prompt
 
 
-def formatTodoSegmentDepencency(todoSegment):
+def formatTodoSegmentDependency(todoSegment):
     if "] dep " in todoSegment.lower() and ":" in todoSegment:
         todoSegment = todoSegment.replace("] dep ", "] (DEP) ")
         todoSegment = todoSegment.replace("] DEP ", "] (DEP) ")
@@ -20,7 +20,7 @@ def formatTodoSegment(todoSegment, hasChild):
     )
     if not hasCheckbox or hasChild:
         return todoSegment
-    todoSegment = formatTodoSegmentDepencency(todoSegment)
+    todoSegment = formatTodoSegmentDependency(todoSegment)
     return todoSegment
 
 

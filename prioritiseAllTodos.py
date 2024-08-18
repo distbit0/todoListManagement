@@ -93,6 +93,7 @@ def prioritiseUnprioritisedTodos(
 
 
 def autoCreateNotesFromTodos(todoPaths):
+    return todoPaths  # no longer need this, as I can do it w/ vim shortcut
     outputTodos = list(todoPaths)
     for i, path in enumerate(todoPaths):
         isATodo = priorityLib.shouldTodoBePrioritised(todoPaths, i, False)[0]
