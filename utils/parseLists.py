@@ -4,7 +4,7 @@ from utils.recurrence import getTodoSegmentDaysToNextOccurrence
 
 def getAllToDoPaths(totalText, prefix=""):
     totalText = totalText.replace("    ", "\t")
-    totalText = totalText.replace("**", "")
+    # totalText = totalText.replace("**", "")
     path = {}
     unDonePaths = []
     totalTextLines = totalText.split("\n")
@@ -58,17 +58,17 @@ def groupRelatedPaths(paths):
     return consolidatedPaths
 
 
-def convertRowToHeading(row, lastIndent):
-    if "[" in row[:10] and "]" in row[:10]:
-        prefixSize = len("- [ ] ")
-    else:
-        prefixSize = len("- ")
+# def convertRowToHeading(row, lastIndent):
+#     if "[" in row[:10] and "]" in row[:10]:
+#         prefixSize = len("- [ ] ")
+#     else:
+#         prefixSize = len("- ")
 
-    rowText = row.strip()
-    listPrefix = rowText[:prefixSize]
-    itemText = rowText[prefixSize:]
-    outputRow = "\t" * lastIndent + listPrefix + "**" + itemText + "**\n"
-    return outputRow
+#     rowText = row.strip()
+#     listPrefix = rowText[:prefixSize]
+#     itemText = rowText[prefixSize:]
+#     outputRow = "\t" * lastIndent + listPrefix + "**" + itemText + "**\n"
+#     return outputRow
 
 
 def constructFileFromPaths(paths):

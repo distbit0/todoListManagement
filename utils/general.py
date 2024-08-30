@@ -79,7 +79,7 @@ def getAllToDos():
 
         if not subject:
             continue
-        text = readFromFile(filePath).replace("**", "")
+        text = readFromFile(filePath)  # .replace("**", "")
         # print(subject, filePath)
         fileObj = {"text": text, "path": filePath, "subject": subject}
         if isConflictFile:
