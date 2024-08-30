@@ -88,6 +88,7 @@ def constructFileFromPaths(paths):
         currentIndent -= 1
         for element in newPathElements:
             currentIndent += 1
+            ### it is not necessary to make heading rows bolded...
             # if lastIndent < currentIndent:
             #     outputText[-1] = convertRowToHeading(outputText[-1], lastIndent)
             outputText.append("\t" * currentIndent + element + "\n")
