@@ -103,11 +103,12 @@ def getTopNTodosAsText(todoPaths):
     allTodos = [
         (getPriorityOfTodo(path), path)
         for path in todoPaths
-        if getPriorityOfTodo(path) and getPriorityOfTodo(path) != "n"
+        if type(getPriorityOfTodo(path)) is int
     ]
     if len(allTodos) == 0:
         return "\n".join(textOutput)
     sortedTodos = sorted(allTodos, key=lambda x: x[0])
+    print(sortedTodos[:15])
     n = min(n, len(sortedTodos))
     for i in range(n):
         priority, path = sortedTodos[i]
@@ -146,7 +147,7 @@ def shouldTodoBePrioritised(todoPaths, i, mustNotBeAlreadyPrioritised):
 def substitutePriority(prioritySubstitutions, todoPaths):
     for i, task in enumerate(todoPaths):
         taskPriority = getPriorityOfTodo(task)
-        if taskPriority in prioritySubstitutions:
+        if taskPriority in prioritySubstitutions and type(taskPriority) is int:
             if prioritySubstitutions[taskPriority] == "d":
                 todoPaths[i] = completion.markTodoAsDone(task)
                 prioritySubstitutions[taskPriority] = "n"

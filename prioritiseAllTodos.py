@@ -93,7 +93,7 @@ def prioritiseUnprioritisedTodos(
 
 
 def autoCreateNotesFromTodos(todoPaths):
-    return todoPaths  # no longer need this, as I can do it w/ vim shortcut
+    return todoPaths  # no longer need this, as I can do it w/ vim shortcut. advantage of vim shortcut is I only need to link-erise todos if they require seperate file, hence making it easier to see which todos actually have corresponding notes relative to if
     outputTodos = list(todoPaths)
     for i, path in enumerate(todoPaths):
         isATodo = priorityLib.shouldTodoBePrioritised(todoPaths, i, False)[0]
@@ -332,11 +332,15 @@ def main():
             onlyInteractiveTodo = sys.argv[1]
             interactive = False
 
-    toDoFiles = general.getAllToDos()
-    # testFileText = general.readFromFile("testFile.md")
-    # toDoFiles = {
-    #     "testFile": {"master": {"text": testFileText, "path": "modifiedTestFile.md"}}
-    # }
+    # toDoFiles = general.getAllToDos()
+    toDoFiles = {
+        "testFile": {
+            "master": {
+                "text": general.readFromFile("testFile.md"),
+                "path": "modifiedTestFile.md",
+            }
+        }
+    }
     processedTodos = 0
     toDoFiles = dict(
         sorted(
