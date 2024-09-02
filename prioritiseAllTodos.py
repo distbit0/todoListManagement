@@ -332,15 +332,15 @@ def main():
             onlyInteractiveTodo = sys.argv[1]
             interactive = False
 
-    # toDoFiles = general.getAllToDos()
-    toDoFiles = {
-        "testFile": {
-            "master": {
-                "text": general.readFromFile("testFile.md"),
-                "path": "modifiedTestFile.md",
-            }
-        }
-    }
+    toDoFiles = general.getAllToDos()
+    # toDoFiles = {
+    #     "testFile": {
+    #         "master": {
+    #             "text": general.readFromFile("testFile.md"),
+    #             "path": "modifiedTestFile.md",
+    #         }
+    #     }
+    # }
     processedTodos = 0
     toDoFiles = dict(
         sorted(
