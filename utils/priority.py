@@ -4,8 +4,8 @@ from utils.general import *
 import utils.completion as completion
 
 
-tasksToAssignPriority = getConfig()["tasksToAssignPriority"]
-tasksToDisplay = getConfig()["tasksToDisplay"]
+tasksToDisplayInCLI = getConfig()["tasksToDisplay"]
+tasksToDisplayInMD = getConfig()["tasksToDisplayInMd"]
 
 
 # PRIORITISATION
@@ -57,9 +57,9 @@ def askForPriority(todo_path, todo_file, remaining):
     while True:
         priority_input = input(
             f"""\n\n
-"5" > assign task priority 5 (1 to {tasksToDisplay})
+"5" > assign task priority 5 (1 to {tasksToDisplayInCLI})
 "3-4" > swap priorities 3 and 4
-"n" or "3-n" > assign priority lower than top {tasksToDisplay}
+"n" or "3-n" > assign priority lower than top {tasksToDisplayInCLI}
 "d" or "3-d" > mark todo as done
 ________________________________
 "[title of new note]" > create note from todo
@@ -69,7 +69,7 @@ File: {todo_file}
 Remaining: {remaining}
 {' > '.join([getTodoSegmentName(segment) for segment in todo_path])}: """
         )
-        if priority_input.isdigit() and 1 <= int(priority_input) <= tasksToDisplay:
+        if priority_input.isdigit() and 1 <= int(priority_input) <= tasksToDisplayInCLI:
             priority = int(priority_input)
             return priority
         elif "-" in priority_input:
@@ -96,8 +96,7 @@ def removeTopTodosFromText(text):
     return text
 
 
-def getTopNTodosAsText(todoPaths):
-    n = getConfig()["tasksToDisplay"]
+def getTopNTodosAsText(todoPaths, n):
     textOutput = []
     textOutput.append(f"Top {n} todos:")
     allTodos = [
@@ -122,8 +121,9 @@ def getTopNTodosAsText(todoPaths):
 
 
 def printTopNTodos(todoPaths):
+    tasksToDisplayInCLI = getConfig()["tasksToDisplayInCLI"]
     print(f"\n\n\n\n\n\n\n\n\n\n")
-    print(getTopNTodosAsText(todoPaths))
+    print(getTopNTodosAsText(todoPaths, tasksToDisplayInCLI))
 
 
 # PRIORITISATION DETERMINATION
@@ -160,7 +160,7 @@ def substitutePriority(prioritySubstitutions, todoPaths):
 def swapPriorities(todoPaths, priority1, priority2):
     priority1 = int(priority1) if priority1.isdigit() else priority1
     priority2 = int(priority2) if priority2.isdigit() else priority2
-    if priority2 in ["n", "d"] or priority2 > tasksToAssignPriority:
+    if priority2 in ["n", "d"] or priority2 > tasksToDisplayInCLI:
         todoPaths = substitutePriority({priority1: "n"}, todoPaths)
     else:
         todoPaths = substitutePriority({priority1: 1000000}, todoPaths)

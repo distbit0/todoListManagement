@@ -249,7 +249,8 @@ def saveErrorData(newText, oldText):
 
 
 def addTopTodosToText(text, todoPaths):
-    topNTodos = priorityLib.getTopNTodosAsText(todoPaths)
+    tasksToDisplayInMd = general.getConfig()["tasksToDisplayInMd"]
+    topNTodos = priorityLib.getTopNTodosAsText(todoPaths, tasksToDisplayInMd)
     text = "+++++\n" + topNTodos + "\n+++++\n\n" + text
     return text
 
