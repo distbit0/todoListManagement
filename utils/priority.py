@@ -4,7 +4,7 @@ from utils.general import *
 import utils.completion as completion
 
 
-tasksToDisplayInCLI = getConfig()["tasksToDisplay"]
+tasksToDisplayInCLI = getConfig()["tasksToDisplayInCLI"]
 tasksToDisplayInMD = getConfig()["tasksToDisplayInMd"]
 
 
