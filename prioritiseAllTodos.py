@@ -195,7 +195,8 @@ def manageRecurringTasks(todoPaths):
         elif daysUntilNextOccurrence <= 0:
             todo = recurrence.updateTodoNextOccurrence(todo)
             todo = priorityLib.replacePriorityOfTodo(todo, 1)
-        elif completion.isTodoDone(todo):
+
+        if completion.isTodoDone(todo):
             todo = completion.markTodoAsUnDone(todo)
             todo = priorityLib.replacePriorityOfTodo(todo, "n")
         updatedTasks.append(todo)

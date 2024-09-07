@@ -107,7 +107,6 @@ def getTopNTodosAsText(todoPaths, n):
     if len(allTodos) == 0:
         return "\n".join(textOutput)
     sortedTodos = sorted(allTodos, key=lambda x: x[0])
-    print(sortedTodos[:15])
     n = min(n, len(sortedTodos))
     for i in range(n):
         priority, path = sortedTodos[i]
