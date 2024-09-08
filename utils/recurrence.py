@@ -49,9 +49,19 @@ def getTodoSegmentDaysToNextOccurrence(todoSegment):
             return "notRecurring"
         return "noNextOccurrence"
 
-    currentDaysInYear = (datetime.now() - datetime(datetime.now().year, 1, 1)).days + 1
+    currentDaysInYear = (datetime.now() - datetime(datetime.now().year, 1, 1)).days
 
     daysUntilNextOccurrence = nextOccurrence - currentDaysInYear
+    if type(nextOccurrence) is int and daysUntilNextOccurrence <= 0:
+        print(
+            todoSegment,
+            "next occurrence: ",
+            nextOccurrence,
+            "periodInDays: ",
+            periodInDays,
+            "daysUntilNextOccurrence: ",
+            daysUntilNextOccurrence,
+        )
     return daysUntilNextOccurrence
 
 
