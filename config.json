@@ -11,6 +11,7 @@
     "tasksToDisplayInCLI": 10,
     "tasksToDisplayInMd": 2,
     "todosPerPrioritisationSession": 21,
+    "minTasksToTriggerReprioritisation": 3,
     "tempNotesPath": "/home/pimania/notes/zk/temp.md",
     "mp3CaptureFolder": "/home/pimania/memos/",
     "questionFiles": [

@@ -206,6 +206,9 @@ def manageRecurringTasks(todoPaths):
 
 def triggerReprioritisationIfNecessary(todoPaths):
     outputTodoPaths = []
+    minTasksToTriggerReprioritisation = general.getConfig()[
+        "minTasksToTriggerReprioritisation"
+    ]
     try:
         highestPriorityTask = max(
             priorityLib.getPriorityOfTodo(todoPath)
@@ -216,7 +219,7 @@ def triggerReprioritisationIfNecessary(todoPaths):
     except ValueError:
         highestPriorityTask = 0
 
-    if highestPriorityTask == 0:
+    if highestPriorityTask <= minTasksToTriggerReprioritisation:
         print("triggering a reprioritisation")
         outputTodoPaths = [
             (
