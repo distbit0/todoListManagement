@@ -35,18 +35,26 @@ def is_habit_due_today(habit):
 
 
 def get_long_term_habits_due_today():
-    # For testing purposes, we'll use a mock response
-    response = requests.get(url, headers=headers)
-    habits = response.json()
-    long_term_habits_due_today = []
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  # Raise an exception for bad status codes
+        print("Response status code:", response.status_code)
+        print("Response content:", response.text)
+        
+        habits = response.json()
+        long_term_habits_due_today = []
 
-    for habit in habits:
-        print(habit)
-        if is_habit_due_today(habit) and "long term" in habit["name"].lower():
-            long_term_habits_due_today.append(habit["name"])
+        for habit in habits:
+            if is_habit_due_today(habit) and "long term" in habit["name"].lower():
+                long_term_habits_due_today.append(habit["name"])
 
-    return long_term_habits_due_today
-
+        return long_term_habits_due_today
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred while making the request: {e}")
+    except json.JSONDecodeError as e:
+        print(f"Failed to parse JSON response: {e}")
+        print("Response content:", response.text)
+    return []
 
 # Main execution
 if __name__ == "__main__":
@@ -57,4 +65,4 @@ if __name__ == "__main__":
         for habit in long_term_habits:
             print(f"- {habit}")
     else:
-        print("No long-term habits due today.")
+        print("No long-term habits due today or an error occurred.")
