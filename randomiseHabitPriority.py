@@ -1,6 +1,6 @@
 import requests
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import random
 import re
 from dotenv import load_dotenv
@@ -75,12 +75,17 @@ def remove_existing_prefix(name):
     return re.sub(r"^\d+\.\s*", "", name)
 
 
+def get_current_day():
+    now = datetime.now()
+    if now.hour < 3:
+        return (now - timedelta(days=1)).date()
+    return now.date()
+
 def has_run_today():
     if not LAST_RUN_FILE.exists():
         return False
-    last_run = datetime.fromtimestamp(LAST_RUN_FILE.stat().st_mtime).date()
-    return last_run == datetime.now().date()
-
+    last_run = datetime.fromtimestamp(LAST_RUN_FILE.stat().st_mtime)
+    return get_current_day() == get_current_day(last_run)
 
 def update_last_run():
     LAST_RUN_FILE.touch()
