@@ -46,13 +46,8 @@ def get_long_term_habits_due_today():
     return []
 
 def update_habit_name(habit, new_name):
-    habit_update = {
-        "id": habit["id"],
-        "name": new_name,
-    }
-    for key in ["color", "iconRes", "createdTime", "encouragement", "etag", "goal", "modifiedTime", "recordEnable", "reminders", "repeatRule", "sortOrder", "status", "step", "totalCheckIns", "type", "unit", "sectionId", "targetDays", "targetStartDate", "completedCycles", "exDates", "currentStreak", "style"]:
-        if key in habit:
-            habit_update[key] = habit[key]
+    habit_update = habit.copy()  # Create a copy of the original habit
+    habit_update["name"] = new_name  # Update the name
 
     payload = {
         "add": [],
