@@ -3,15 +3,20 @@ import json
 from datetime import datetime
 import random
 import re
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 url = "https://api.ticktick.com/api/v2/habits"
 update_url = "https://api.ticktick.com/api/v2/habits/batch"
 headers = {
-    "cookie": "t=154BB8FE914467838857B098038B43ADE8D4CFA313919A5258BA01F2FD72D4174C2A88FC19EAB910E616597C001200739D669527A4028751DCE594F7B15330C90E02762C06FF5B514BFFD847418A24060BCD97B425F8548635B3618E533D013082BEE463B1431075BC4DD36207DCA5A80BCD97B425F85486E947B995C87843B0C2851F2CBA770F39841478DC8FC39A65FA8D5F4EBDB4BD7CC0C3DF9840B21D81; _csrf_token=Q_Dju_sOzCh8NkqXsrG3N488vTAgnHMsdZ9jujyYpg-1725609570; oai=34EA9AAC90BF370BC55434AFDE8962B179F4528958F3E69482F493E737EBB3014BF88D2F137EBC5FF9F8EFE12EC76D4CFCB7DF6DDAB5723EA043F02B57F1D40E2AC536DBCB019EDB56C93C04D2DA22BAA800BBDA56CE8AC417E0313C075F2BA4D3056E5F14F482704582A4C3495C72EDC945FD92BCBDCC7AE72A62B62D375827234F632BE7281B9E2BC9DE612A818BFC; ",
+    "cookie": os.environ.get("tiktikCookie"),
     "User-Agent": "curl/7.64.1",
     "Accept": "*/*",
     "Content-Type": "application/json",
 }
+
 
 def is_habit_due_today(habit):
     today = datetime.now().date()
@@ -21,9 +26,12 @@ def is_habit_due_today(habit):
         return False
 
     days_of_week = repeat_rule.split("BYDAY=")[1].split(",")
-    today_abbr = today.strftime("%a").upper()[:2]  # Get first two letters of day name (e.g., 'MO' for Monday)
+    today_abbr = today.strftime("%a").upper()[
+        :2
+    ]  # Get first two letters of day name (e.g., 'MO' for Monday)
 
     return today_abbr in days_of_week
+
 
 def get_long_term_habits_due_today():
     try:
@@ -45,15 +53,12 @@ def get_long_term_habits_due_today():
         print(f"Failed to parse JSON response: {e}")
     return []
 
+
 def update_habit_name(habit, new_name):
     habit_update = habit.copy()  # Create a copy of the original habit
     habit_update["name"] = new_name  # Update the name
 
-    payload = {
-        "add": [],
-        "update": [habit_update],
-        "delete": []
-    }
+    payload = {"add": [], "update": [habit_update], "delete": []}
 
     try:
         response = requests.post(update_url, headers=headers, json=payload)
@@ -62,8 +67,10 @@ def update_habit_name(habit, new_name):
     except requests.exceptions.RequestException as e:
         print(f"An error occurred while updating the habit: {e}")
 
+
 def remove_existing_prefix(name):
-    return re.sub(r'^\d+\.\s*', '', name)
+    return re.sub(r"^\d+\.\s*", "", name)
+
 
 def main():
     long_term_habits = get_long_term_habits_due_today()
@@ -79,6 +86,7 @@ def main():
             print(f"Updated: {old_name} -> {new_name}")
     else:
         print("No long-term habits due today or an error occurred.")
+
 
 if __name__ == "__main__":
     main()
