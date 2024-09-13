@@ -17,18 +17,21 @@ def is_habit_due_today(habit):
     if start_date > today:
         return False
 
-    repeat_rule = habit["repeatRule"]
-    if "FREQ=DAILY" in repeat_rule:
-        interval = (
-            int(repeat_rule.split("INTERVAL=")[1]) if "INTERVAL=" in repeat_rule else 1
-        )
+    repeat_rule = habit["repeatRule"].split(":")[-1]  # Get the part after "RRULE:"
+    freq = repeat_rule.split(";")[0].split("=")[-1]
+
+    if freq == "DAILY":
+        interval = int(repeat_rule.split("INTERVAL=")[1]) if "INTERVAL=" in repeat_rule else 1
         days_since_start = (today - start_date).days
         return days_since_start % interval == 0
-    elif "FREQ=WEEKLY" in repeat_rule:
+    elif freq == "WEEKLY":
         if "TT_TIMES=" in repeat_rule:
             times_per_week = int(repeat_rule.split("TT_TIMES=")[1])
             days_since_start = (today - start_date).days
             return days_since_start % (7 // times_per_week) == 0
+        else:
+            # If TT_TIMES is not specified, assume it's due once a week
+            return (today - start_date).days % 7 == 0
 
     return False
 
@@ -42,8 +45,10 @@ def get_long_term_habits_due_today():
         long_term_habits_due_today = []
 
         for habit in habits:
-            print(habit["name"].lower())
-            if is_habit_due_today(habit) and "long term" in habit["name"].lower():
+            is_due = is_habit_due_today(habit)
+            is_long_term = "long term" in habit["name"].lower()
+            print(f"Habit: {habit['name']}, Due today: {is_due}, Long term: {is_long_term}")
+            if is_due and is_long_term:
                 long_term_habits_due_today.append(habit["name"])
 
         return long_term_habits_due_today
