@@ -5,8 +5,11 @@ import random
 import re
 from dotenv import load_dotenv
 import os
+import pathlib
 
 load_dotenv()
+
+LAST_RUN_FILE = pathlib.Path(__file__).parent / ".last_run"
 
 url = "https://api.ticktick.com/api/v2/habits"
 update_url = "https://api.ticktick.com/api/v2/habits/batch"
@@ -72,7 +75,21 @@ def remove_existing_prefix(name):
     return re.sub(r"^\d+\.\s*", "", name)
 
 
+def has_run_today():
+    if not LAST_RUN_FILE.exists():
+        return False
+    last_run = datetime.fromtimestamp(LAST_RUN_FILE.stat().st_mtime).date()
+    return last_run == datetime.now().date()
+
+
+def update_last_run():
+    LAST_RUN_FILE.touch()
+
+
 def main():
+    if has_run_today():
+        print("Script has already run today. Exiting.")
+        return
     long_term_habits = get_long_term_habits_due_today()
 
     if long_term_habits:
