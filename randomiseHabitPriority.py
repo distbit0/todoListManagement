@@ -75,17 +75,18 @@ def remove_existing_prefix(name):
     return re.sub(r"^\d+\.\s*", "", name)
 
 
-def get_current_day():
-    now = datetime.now()
-    if now.hour < 3:
+def get_current_day(now=datetime.now()):
+    if now.hour < 6:
         return (now - timedelta(days=1)).date()
     return now.date()
+
 
 def has_run_today():
     if not LAST_RUN_FILE.exists():
         return False
     last_run = datetime.fromtimestamp(LAST_RUN_FILE.stat().st_mtime)
     return get_current_day() == get_current_day(last_run)
+
 
 def update_last_run():
     LAST_RUN_FILE.touch()
@@ -106,7 +107,7 @@ def main():
             new_name = f"{i}. {remove_existing_prefix(old_name)}"
             update_habit_name(habit, new_name)
             print(f"Updated: {old_name} -> {new_name}")
-        
+
         update_last_run()
         print("Script execution completed and last run time updated.")
     else:
