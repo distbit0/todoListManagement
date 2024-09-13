@@ -92,11 +92,13 @@ def has_run_today():
 def update_last_run():
     LAST_RUN_FILE.touch()
 
+
 def save_habits_json(habits):
     HABITS_JSON_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with open(HABITS_JSON_FILE, 'w') as f:
+    with open(HABITS_JSON_FILE, "w") as f:
         json.dump(habits, f, indent=2)
     print(f"Habits JSON saved to {HABITS_JSON_FILE}")
+
 
 def main():
     if has_run_today():
@@ -107,11 +109,15 @@ def main():
         response = requests.get(url, headers=headers)
         response.raise_for_status()
         all_habits = response.json()
-        
+
         # Save all habits to JSON file
         save_habits_json(all_habits)
-        
-        long_term_habits = [habit for habit in all_habits if is_habit_due_today(habit) and "long term" in habit["name"].lower()]
+
+        long_term_habits = [
+            habit
+            for habit in all_habits
+            if is_habit_due_today(habit) and "long term" in habit["name"].lower()
+        ]
 
         if long_term_habits:
             print(f"Found {len(long_term_habits)} long-term habits due today.")
