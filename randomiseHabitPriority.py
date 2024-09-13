@@ -101,6 +101,9 @@ def main():
             new_name = f"{i}. {remove_existing_prefix(old_name)}"
             update_habit_name(habit, new_name)
             print(f"Updated: {old_name} -> {new_name}")
+        
+        update_last_run()
+        print("Script execution completed and last run time updated.")
     else:
         print("No long-term habits due today or an error occurred.")
 
