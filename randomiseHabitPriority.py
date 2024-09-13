@@ -12,28 +12,15 @@ headers = {
 
 def is_habit_due_today(habit):
     today = datetime.now().date()
-    start_date = datetime.strptime(str(habit["targetStartDate"]), "%Y%m%d").date()
+    repeat_rule = habit.get("repeatRule", "")
 
-    if start_date > today:
+    if not repeat_rule.startswith("RRULE:FREQ=WEEKLY;BYDAY="):
         return False
 
-    repeat_rule = habit["repeatRule"].split(":")[-1]  # Get the part after "RRULE:"
-    freq = repeat_rule.split(";")[0].split("=")[-1]
+    days_of_week = repeat_rule.split("BYDAY=")[1].split(",")
+    today_abbr = today.strftime("%a").upper()[:2]  # Get first two letters of day name (e.g., 'MO' for Monday)
 
-    if freq == "DAILY":
-        interval = int(repeat_rule.split("INTERVAL=")[1]) if "INTERVAL=" in repeat_rule else 1
-        days_since_start = (today - start_date).days
-        return days_since_start % interval == 0
-    elif freq == "WEEKLY":
-        if "TT_TIMES=" in repeat_rule:
-            times_per_week = int(repeat_rule.split("TT_TIMES=")[1])
-            days_since_start = (today - start_date).days
-            return days_since_start % (7 // times_per_week) == 0
-        else:
-            # If TT_TIMES is not specified, assume it's due once a week
-            return (today - start_date).days % 7 == 0
-
-    return False
+    return today_abbr in days_of_week
 
 
 def get_long_term_habits_due_today():
