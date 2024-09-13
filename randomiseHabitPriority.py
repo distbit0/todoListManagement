@@ -10,6 +10,7 @@ import pathlib
 load_dotenv()
 
 LAST_RUN_FILE = pathlib.Path(__file__).parent / ".last_run"
+HABITS_JSON_FILE = pathlib.Path("/home/pimania/miscSyncs/habits/habits.json")
 
 url = "https://api.ticktick.com/api/v2/habits"
 update_url = "https://api.ticktick.com/api/v2/habits/batch"
@@ -91,27 +92,45 @@ def has_run_today():
 def update_last_run():
     LAST_RUN_FILE.touch()
 
+def save_habits_json(habits):
+    HABITS_JSON_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with open(HABITS_JSON_FILE, 'w') as f:
+        json.dump(habits, f, indent=2)
+    print(f"Habits JSON saved to {HABITS_JSON_FILE}")
 
 def main():
     if has_run_today():
         print("Script has already run today. Exiting.")
         return
-    long_term_habits = get_long_term_habits_due_today()
 
-    if long_term_habits:
-        print(f"Found {len(long_term_habits)} long-term habits due today.")
-        random.shuffle(long_term_habits)
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        all_habits = response.json()
+        
+        # Save all habits to JSON file
+        save_habits_json(all_habits)
+        
+        long_term_habits = [habit for habit in all_habits if is_habit_due_today(habit) and "long term" in habit["name"].lower()]
 
-        for i, habit in enumerate(long_term_habits, 1):
-            old_name = habit["name"]
-            new_name = f"{i}. {remove_existing_prefix(old_name)}"
-            update_habit_name(habit, new_name)
-            print(f"Updated: {old_name} -> {new_name}")
+        if long_term_habits:
+            print(f"Found {len(long_term_habits)} long-term habits due today.")
+            random.shuffle(long_term_habits)
 
-        update_last_run()
-        print("Script execution completed and last run time updated.")
-    else:
-        print("No long-term habits due today or an error occurred.")
+            for i, habit in enumerate(long_term_habits, 1):
+                old_name = habit["name"]
+                new_name = f"{i}. {remove_existing_prefix(old_name)}"
+                update_habit_name(habit, new_name)
+                print(f"Updated: {old_name} -> {new_name}")
+
+            update_last_run()
+            print("Script execution completed and last run time updated.")
+        else:
+            print("No long-term habits due today.")
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred while making the request: {e}")
+    except json.JSONDecodeError as e:
+        print(f"Failed to parse JSON response: {e}")
 
 
 if __name__ == "__main__":
