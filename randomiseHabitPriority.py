@@ -76,9 +76,8 @@ def remove_existing_prefix(name):
     return re.sub(r"^\d+\.\s*", "", name)
 
 
-def get_current_day(now=datetime.now()):
-    if now.hour < 6:
-        return (now - timedelta(days=1)).date()
+def get_current_day():
+    now = datetime.now()
     return now.date()
 
 
@@ -86,7 +85,7 @@ def has_run_today():
     if not LAST_RUN_FILE.exists():
         return False
     last_run = datetime.fromtimestamp(LAST_RUN_FILE.stat().st_mtime)
-    return get_current_day() == get_current_day(last_run)
+    return get_current_day() == last_run.date()
 
 
 def update_last_run():
