@@ -56,7 +56,7 @@ def delete_duplicate_files(directory):
             if file_hash in hashes:
                 # This file is a duplicate; send it to the trash
                 send2trash(file_path)
-                print(f"Moved to trash: {file_path}")
+                print(f"Moved to trash due to duplicate hash: {file_path}")
             else:
                 # Record the hash of this unique file
                 hashes[file_hash] = file_path
