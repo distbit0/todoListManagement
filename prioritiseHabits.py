@@ -198,6 +198,19 @@ def save_habits_json(habits):
     print(f"Habits JSON saved to {HABITS_JSON_FILE}")
 
 
+def weighted_shuffle(habits, weight_func):
+    # Assign weights and add some randomness
+    weighted_habits = [
+        (habit, weight_func(habit) + random.random()) for habit in habits
+    ]
+
+    # Sort based on weights (descending order)
+    weighted_habits.sort(key=lambda x: x[1], reverse=True)
+
+    # Return only the habits, without the weights
+    return [habit for habit, _ in weighted_habits]
+
+
 def main():
     if has_run_today():
         print("Script has already run today. Exiting.")
@@ -232,7 +245,9 @@ def main():
 
         if due_habits_today:
             print(f"Found {len(due_habits_today)} long-term habits due today.")
-            random.shuffle(due_habits_today)
+            due_habits_today = weighted_shuffle(
+                due_habits_today, lambda habit: "!" in habit.get("name", "")
+            )
 
             update_habits(due_habits_today)
 
