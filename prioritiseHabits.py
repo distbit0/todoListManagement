@@ -205,12 +205,10 @@ def main():
         save_habits_json(all_habits)
 
         # Extract habit IDs from all_habits
-        habit_ids = [habit['id'] for habit in all_habits]
+        habit_ids = [habit["id"] for habit in all_habits]
 
         # Prepare JSON data for the checkins request
-        json_data = {
-            'habitIds': habit_ids
-        }
+        json_data = {"habitIds": habit_ids}
 
         # Make the POST request with the JSON data
         checkins_response = requests.post(checkins_url, headers=headers, json=json_data)
@@ -220,6 +218,9 @@ def main():
 
         # Get habits due today
         due_habits_today = get_habits_due_today(all_habits, checkins)
+        due_habits_today = [
+            habit for habit in due_habits_today if "^" not in habit["name"]
+        ]
 
         if due_habits_today:
             print(f"Found {len(due_habits_today)} long-term habits due today.")
@@ -228,10 +229,10 @@ def main():
             for i, habit in enumerate(due_habits_today, 1):
                 old_name = habit["name"]
                 new_name = f"{i}. {remove_existing_prefix(old_name)}"
-                # update_habit_name(habit, new_name)
+                update_habit_name(habit, new_name)
                 print(f"Updated: {old_name} -> {new_name}")
 
-            # update_last_run()
+            update_last_run()
             print("Script execution completed and last run time updated.")
         else:
             print("No long-term habits due today.")
