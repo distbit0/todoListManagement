@@ -246,7 +246,7 @@ def main():
 
         if due_habits_today:
             print(f"Found {len(due_habits_today)} long-term habits due today.")
-            due_habits_today = weighted_shuffle(due_habits_today, 0.25)
+            due_habits_today = weighted_shuffle(due_habits_today, 0.3)
 
             update_habits(due_habits_today)
 
