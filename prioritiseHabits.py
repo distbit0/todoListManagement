@@ -86,8 +86,8 @@ def get_habits_due_today(list_of_habits, checkins):
         else:
             raise TypeError(f"Unsupported date input type: {type(date_input)}")
 
-    # Get today's date
-    today = datetime.utcnow().date()
+    # Get today's date in local tz
+    today = datetime.now().astimezone().date()
 
     due_today = []
 
@@ -198,10 +198,11 @@ def save_habits_json(habits):
     print(f"Habits JSON saved to {HABITS_JSON_FILE}")
 
 
-def weighted_shuffle(habits, weight_func):
+def weighted_shuffle(habits, bias):
     # Assign weights and add some randomness
     weighted_habits = [
-        (habit, weight_func(habit) + random.random()) for habit in habits
+        (habit, random.random() + (bias if "!" in habit.get("name", "") else 0))
+        for habit in habits
     ]
 
     # Sort based on weights (descending order)
@@ -212,9 +213,9 @@ def weighted_shuffle(habits, weight_func):
 
 
 def main():
-    if has_run_today():
-        print("Script has already run today. Exiting.")
-        return
+    # if has_run_today():
+    #     print("Script has already run today. Exiting.")
+    #     return
 
     try:
         # Fetch all habits
@@ -245,9 +246,7 @@ def main():
 
         if due_habits_today:
             print(f"Found {len(due_habits_today)} long-term habits due today.")
-            due_habits_today = weighted_shuffle(
-                due_habits_today, lambda habit: "!" in habit.get("name", "")
-            )
+            due_habits_today = weighted_shuffle(due_habits_today, 0.25)
 
             update_habits(due_habits_today)
 
