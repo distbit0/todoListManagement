@@ -153,11 +153,19 @@ def get_habits_due_today(list_of_habits, checkins):
     return due_today
 
 
-def update_habit_name(habit, new_name):
-    habit_update = habit.copy()  # Create a copy of the original habit
-    habit_update["name"] = new_name  # Update the name
+def update_habits(habits):
+    updatedHabits = []
+    for priority, habit in enumerate(habits):
+        priority += 1
+        old_name = habit["name"]
+        new_name = f"{priority}. {remove_existing_prefix(old_name)}"
+        print(f"Updated: {old_name} -> {new_name}")
+        habit_update = habit.copy()  # Create a copy of the original habit
+        habit_update["name"] = new_name  # Update the name
+        habit_update["sortOrder"] = priority * 1000000000
+        updatedHabits.append(habit_update)
 
-    payload = {"add": [], "update": [habit_update], "delete": []}
+    payload = {"add": [], "update": updatedHabits, "delete": []}
 
     try:
         response = requests.post(update_url, headers=headers, json=payload)
@@ -226,11 +234,7 @@ def main():
             print(f"Found {len(due_habits_today)} long-term habits due today.")
             random.shuffle(due_habits_today)
 
-            for i, habit in enumerate(due_habits_today, 1):
-                old_name = habit["name"]
-                new_name = f"{i}. {remove_existing_prefix(old_name)}"
-                update_habit_name(habit, new_name)
-                print(f"Updated: {old_name} -> {new_name}")
+            update_habits(due_habits_today)
 
             update_last_run()
             print("Script execution completed and last run time updated.")
