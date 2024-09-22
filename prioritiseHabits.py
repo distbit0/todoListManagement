@@ -204,7 +204,16 @@ def main():
         # Save all habits to JSON file
         save_habits_json(all_habits)
 
-        checkins_response = requests.post(checkins_url, headers=headers)
+        # Extract habit IDs from all_habits
+        habit_ids = [habit['id'] for habit in all_habits]
+
+        # Prepare JSON data for the checkins request
+        json_data = {
+            'habitIds': habit_ids
+        }
+
+        # Make the POST request with the JSON data
+        checkins_response = requests.post(checkins_url, headers=headers, json=json_data)
         checkins_response.raise_for_status()
         checkins_data = checkins_response.json()
         checkins = checkins_data.get("checkins", {})
