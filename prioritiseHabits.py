@@ -245,7 +245,7 @@ def weighted_shuffle(habits, bias):
 def main():
     if has_run_today():
         print("Script has already run today. Exiting.")
-        # return
+        return
 
     try:
         # Fetch all habits
