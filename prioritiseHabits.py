@@ -156,6 +156,8 @@ def get_habits_due_today(list_of_habits, checkins):
 def update_habit_text(habits):
     updatedHabits = []
     for priority, habit in enumerate(habits):
+        if "^" in habit["name"]:
+            continue
         priority += 1
         old_name = habit["name"]
         new_name = f"{priority}. {remove_existing_prefix(old_name)}"
@@ -197,7 +199,7 @@ def update_habit_sort_order(habits):
     try:
         response = requests.post(update_url, headers=headers, json=payload)
         response.raise_for_status()
-        print("Successfully updated habits")
+        print("Successfully updated habit sort order")
     except requests.exceptions.RequestException as e:
         print(f"An error occurred while updating the habits: {e}")
 
@@ -243,7 +245,7 @@ def weighted_shuffle(habits, bias):
 def main():
     if has_run_today():
         print("Script has already run today. Exiting.")
-        return
+        # return
 
     try:
         # Fetch all habits
