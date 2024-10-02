@@ -153,7 +153,7 @@ def get_habits_due_today(list_of_habits, checkins):
     return due_today
 
 
-def update_habits(habits):
+def update_habit_text(habits):
     updatedHabits = []
     for priority, habit in enumerate(habits):
         priority += 1
@@ -162,7 +162,6 @@ def update_habits(habits):
         print(f"Updated: {old_name} -> {new_name}")
         habit_update = habit.copy()  # Create a copy of the original habit
         habit_update["name"] = new_name  # Update the name
-        habit_update["sortOrder"] = priority * 1000000000
         updatedHabits.append(habit_update)
 
     payload = {"add": [], "update": updatedHabits, "delete": []}
@@ -173,7 +172,36 @@ def update_habits(habits):
         print(f"Successfully updated habit: {new_name}")
     except requests.exceptions.RequestException as e:
         print(f"An error occurred while updating the habit: {e}")
+    
+    return updatedHabits
 
+
+def update_habit_sort_order(habits):
+    updatedHabits = []
+    for habit in habits:
+        habit_update = habit.copy()  
+        # Check for priority in the habit name
+        priority_match = re.match(r"^(\d+)\.\s", habit["name"])
+        if priority_match:
+            priority = int(priority_match.group(1))
+        elif "^" in habit["name"]:
+            priority = 0
+        else:
+            priority = len(updatedHabits) + 1  # Default priority
+        
+        habit_update["sortOrder"] = priority * 1000000000
+        updatedHabits.append(habit_update)
+
+    payload = {"add": [], "update": updatedHabits, "delete": []}
+
+    try:
+        response = requests.post(update_url, headers=headers, json=payload)
+        response.raise_for_status()
+        print("Successfully updated habits")
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred while updating the habits: {e}")
+
+    return updatedHabits
 
 def remove_existing_prefix(name):
     return re.sub(r"^\d+\.\s*", "", name)
@@ -240,15 +268,13 @@ def main():
 
         # Get habits due today
         due_habits_today = get_habits_due_today(all_habits, checkins)
-        due_habits_today = [
-            habit for habit in due_habits_today if "^" not in habit["name"]
-        ]
 
         if due_habits_today:
             print(f"Found {len(due_habits_today)} long-term habits due today.")
             due_habits_today = weighted_shuffle(due_habits_today, 0.3)
 
-            update_habits(due_habits_today)
+            due_habits_today = update_habit_text(due_habits_today)
+            update_habit_sort_order(due_habits_today)
 
             update_last_run()
             print("Script execution completed and last run time updated.")
