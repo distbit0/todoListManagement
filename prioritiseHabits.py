@@ -245,7 +245,7 @@ def weighted_shuffle(habits, bias):
 def main():
     if has_run_today():
         print("Script has already run today. Exiting.")
-        # return
+        return
 
     try:
         # Fetch all habits
@@ -273,8 +273,8 @@ def main():
 
         if due_habits_today:
             print(f"Found {len(due_habits_today)} long-term habits due today.")
-            due_habits_today = weighted_shuffle(due_habits_today, 0.3)
 
+            due_habits_today = weighted_shuffle(due_habits_today, 0.3)
             due_habits_today = update_habit_text(due_habits_today)
             update_habit_sort_order(due_habits_today)
 
