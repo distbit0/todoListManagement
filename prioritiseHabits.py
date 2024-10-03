@@ -157,6 +157,7 @@ def update_habit_text(habits):
     updatedHabits = []
     for priority, habit in enumerate(habits):
         if "^" in habit["name"]:
+            updatedHabits.append(habit.copy())
             continue
         priority += 1
         old_name = habit["name"]
@@ -171,7 +172,6 @@ def update_habit_text(habits):
     try:
         response = requests.post(update_url, headers=headers, json=payload)
         response.raise_for_status()
-        print(f"Successfully updated habit: {new_name}")
     except requests.exceptions.RequestException as e:
         print(f"An error occurred while updating the habit: {e}")
     
@@ -245,7 +245,7 @@ def weighted_shuffle(habits, bias):
 def main():
     if has_run_today():
         print("Script has already run today. Exiting.")
-        return
+        # return
 
     try:
         # Fetch all habits
