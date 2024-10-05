@@ -155,7 +155,7 @@ def get_habits_due_today(list_of_habits, checkins):
 
 def update_habit_text(habits):
     updatedHabits = [habit for habit in habits if "^" in habit["name"]]
-    habits = [habit for habit in habits if not "^" in habit["name"]]
+    habits = [habit for habit in habits if not habit in updatedHabits]
     for priority, habit in enumerate(habits):
         priority += 1
         old_name = habit["name"]
