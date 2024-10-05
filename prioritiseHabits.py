@@ -154,11 +154,9 @@ def get_habits_due_today(list_of_habits, checkins):
 
 
 def update_habit_text(habits):
-    updatedHabits = []
+    updatedHabits = [habit for habit in habits if "^" in habit["name"]]
+    habits = [habit for habit in habits if not "^" in habit["name"]]
     for priority, habit in enumerate(habits):
-        if "^" in habit["name"]:
-            updatedHabits.append(habit.copy())
-            continue
         priority += 1
         old_name = habit["name"]
         new_name = f"{priority}. {remove_existing_prefix(old_name)}"
