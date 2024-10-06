@@ -49,9 +49,8 @@ def prioritiseUnprioritisedTodos(
                 remaining = noOfTodosToPrioritise - prioritisedSoFar - 1
                 if not receivedCtrlC:
                     while True:
-                        priorityLib.printTopNTodos(prioritisedPaths)
                         priority = priorityLib.askForPriority(
-                            path, todoFileName, remaining
+                            path, todoFileName, remaining, prioritisedPaths
                         )
                         if priority == "back" and i > 0:
                             prioritisedPaths[i - 1] = (

@@ -53,8 +53,9 @@ def replacePriorityOfTodo(todoPath, newPriority):
 # PRIORITISATION INTERFACE
 
 
-def askForPriority(todo_path, todo_file, remaining):
+def askForPriority(todo_path, todo_file, remaining, prioritisedPaths):
     while True:
+        printTopNTodos(prioritisedPaths)
         priority_input = input(
             f"""\n\n
 "5" > assign task priority 5 (1 to {tasksToDisplayInCLI})
