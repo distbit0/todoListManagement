@@ -368,7 +368,10 @@ def main():
             todosPerPrioritisationSession -= processedTodos
             todosPerPrioritisationSession = int(todosPerPrioritisationSession)
         else:
-            todosPerPrioritisationSession = 0 if str(onlyInteractiveTodo).lower() not in file.lower() else todosPerPrioritisationSession
+            if str(onlyInteractiveTodo).lower() in file.lower():
+                todosPerPrioritisationSession = todosPerPrioritisationSession - processedTodos
+            else:
+                todosPerPrioritisationSession = 0
         if "conflict" in toDoFiles[file]:
             continue
         fileObj = toDoFiles[file]["master"]
