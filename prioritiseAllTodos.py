@@ -41,6 +41,7 @@ def prioritiseUnprioritisedTodos(
     prioritisedPaths = list(todoPaths)
     i = 0
     while i < len(todoPaths):
+        print("i at start: ", i)
         path = todoPaths[i]
         goBack = False
         shouldBePrioritised = priorityLib.shouldTodoBePrioritised(todoPaths, i, True)[0]
@@ -59,9 +60,11 @@ def prioritiseUnprioritisedTodos(
                                     prioritisedPaths[i - 1]
                                 )
                             )
+                            prioritisedPaths[i-1] = completion.markTodoAsUnDone(prioritisedPaths[i-1])
                             i -= 2
                             prioritisedSoFar -= 2
                             goBack = True
+                            print("finished executing", i)
                             break
                         elif type(priority) == list:
                             prioritisedPaths = priorityLib.swapPriorities(
