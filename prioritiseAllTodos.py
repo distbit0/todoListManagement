@@ -363,9 +363,12 @@ def main():
         todosPerPrioritisationSession = general.getConfig()[
             "todosPerPrioritisationSession"
         ]
-        todosPerPrioritisationSession *= (i + 1) / len(toDoFiles)
-        todosPerPrioritisationSession -= processedTodos
-        todosPerPrioritisationSession = int(todosPerPrioritisationSession)
+        if onlyInteractiveTodo == None:
+            todosPerPrioritisationSession *= (i + 1) / len(toDoFiles)
+            todosPerPrioritisationSession -= processedTodos
+            todosPerPrioritisationSession = int(todosPerPrioritisationSession)
+        else:
+            todosPerPrioritisationSession = 0 if str(onlyInteractiveTodo).lower() not in file.lower() else todosPerPrioritisationSession
         if "conflict" in toDoFiles[file]:
             continue
         fileObj = toDoFiles[file]["master"]
