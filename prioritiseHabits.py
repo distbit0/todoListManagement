@@ -154,7 +154,7 @@ def get_habits_due_today(list_of_habits, checkins):
 
 
 def update_habit_text(habits):
-    updatedHabits = [habit for habit in habits if "^" in habit["name"]]
+    updatedHabits = [habit for habit in habits if "^" in habit["name"] or "@" in habit["name"]]
     habits = [habit for habit in habits if not habit in updatedHabits]
     for priority, habit in enumerate(habits):
         priority += 1
@@ -184,8 +184,10 @@ def update_habit_sort_order(habits):
         priority_match = re.match(r"^(\d+)\.\s", habit["name"])
         if priority_match:
             priority = int(priority_match.group(1))
-        elif "^" in habit["name"]:
+        elif "@" in habit["name"]:
             priority = 0
+        elif "^" in habit["name"]:
+            priority = 1
         else:
             priority = len(updatedHabits) + 1  # Default priority
         
