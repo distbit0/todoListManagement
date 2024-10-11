@@ -189,9 +189,9 @@ def update_habit_sort_order(habits):
         elif "^" in habit["name"]:
             priority = 1
         else:
-            priority = len(updatedHabits) + 1  # Default priority
+            priority = (len(updatedHabits) + 1) * 1000000000  
         
-        habit_update["sortOrder"] = priority * 1000000000
+        habit_update["sortOrder"] = priority
         updatedHabits.append(habit_update)
 
     payload = {"add": [], "update": updatedHabits, "delete": []}
@@ -245,7 +245,7 @@ def weighted_shuffle(habits, bias):
 def main():
     if has_run_today():
         print("Script has already run today. Exiting.")
-        return
+        # return
 
     try:
         # Fetch all habits
