@@ -1,7 +1,6 @@
 import requests
 from datetime import datetime, timedelta
 import json
-import random
 import re
 from dotenv import load_dotenv
 import os
@@ -162,10 +161,10 @@ def calculate_completion_rate(habit, checkins):
     if not habit_checkins:
         return 0
 
-    startDate = parse_date(habit['modifiedTime'])
+    today = datetime.now().astimezone().date()
+    startDate = today - timedelta(days=7)
     habit_checkins = [checkin for checkin in habit_checkins if parse_date(checkin['checkinStamp']) >= startDate]
     
-    today = datetime.now().astimezone().date()
     total_days = (today - startDate).days + 1
 
     scheduled_count = sum(1 for day in range(total_days) if is_habit_due_on_date(habit, startDate + timedelta(days=day), checkins))
