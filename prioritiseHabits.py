@@ -162,14 +162,18 @@ def calculate_completion_rate(habit, checkins):
     if not habit_checkins:
         return 0
 
-    earliest_checkin = min(parse_date(checkin['checkinStamp']) for checkin in habit_checkins)
+    startDate = parse_date(habit['modifiedTime'])
+    habit_checkins = [checkin for checkin in habit_checkins if parse_date(checkin['checkinStamp']) >= startDate]
+    
     today = datetime.now().astimezone().date()
-    total_days = (today - earliest_checkin).days + 1
+    total_days = (today - startDate).days + 1
 
-    scheduled_count = sum(1 for day in range(total_days) if is_habit_due_on_date(habit, earliest_checkin + timedelta(days=day), checkins))
+    scheduled_count = sum(1 for day in range(total_days) if is_habit_due_on_date(habit, startDate + timedelta(days=day), checkins))
     completed_count = len(habit_checkins)
 
-    return completed_count / scheduled_count if scheduled_count > 0 else 0
+    completionRate = completed_count / scheduled_count if scheduled_count > 0 else 0
+    print(f"Habit: {habit['name'][:10]}, Rate: {completionRate}, Scheduled: {scheduled_count}, Completed: {completed_count}")
+    return completionRate
 
 def sort_habits_by_completion_rate(habits, checkins):
     """
@@ -256,19 +260,6 @@ def save_habits_json(habits):
         json.dump(habits, f, indent=2)
     print(f"Habits JSON saved to {HABITS_JSON_FILE}")
 
-
-def weighted_shuffle(habits, bias):
-    # Assign weights and add some randomness
-    weighted_habits = [
-        (habit, random.random() + (bias if "!" in habit.get("name", "") else 0))
-        for habit in habits
-    ]
-
-    # Sort based on weights (descending order)
-    weighted_habits.sort(key=lambda x: x[1], reverse=True)
-
-    # Return only the habits, without the weights
-    return [habit for habit, _ in weighted_habits]
 
 
 def main():
