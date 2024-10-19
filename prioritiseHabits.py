@@ -79,13 +79,14 @@ def parse_date(date_input):
     else:
         raise TypeError(f"Unsupported date input type: {type(date_input)}")
 
-def is_habit_due_on_date(habit, date, checkins):
+def is_habit_due_on_date(habit, date, checkins, strict=False):
     """
     Determines if a habit is due on a specific date.
 
     :param habit: Habit dictionary.
     :param date: datetime.date object to check.
     :param checkins: Dictionary mapping habit IDs to lists of checkin dictionaries.
+    :param strict: Boolean, if True, only return True for DAILY habits on the exact due date.
     :return: Boolean indicating if the habit is due on the given date.
     """
     if habit.get("archivedTime"):
@@ -122,13 +123,19 @@ def is_habit_due_on_date(habit, date, checkins):
 
         if latest_checkin_date:
             days_since_last_checkin = (date - latest_checkin_date).days
-            return days_since_last_checkin >= interval
+            if strict:
+                return days_since_last_checkin == interval
+            else:
+                return days_since_last_checkin >= interval
         else:
             target_start = habit.get("targetStartDate")
             if target_start:
                 try:
                     target_start_date = parse_date(target_start)
-                    return target_start_date <= date
+                    if strict:
+                        return target_start_date == date
+                    else:
+                        return target_start_date <= date
                 except (ValueError, TypeError):
                     return False
             else:
@@ -167,7 +174,7 @@ def calculate_completion_rate(habit, checkins):
     
     total_days = (today - startDate).days + 1
 
-    scheduled_count = sum(1 for day in range(total_days) if is_habit_due_on_date(habit, startDate + timedelta(days=day), checkins))
+    scheduled_count = sum(1 for day in range(total_days) if is_habit_due_on_date(habit, startDate + timedelta(days=day), checkins, strict=True))
     completed_count = len(habit_checkins)
 
     completionRate = completed_count / scheduled_count if scheduled_count > 0 else 0
