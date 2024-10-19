@@ -189,11 +189,13 @@ def sort_habits_by_completion_rate(habits, checkins):
     :param checkins: Dictionary mapping habit IDs to lists of checkin dictionaries.
     :return: List of habits sorted by completion rate (ascending).
     """
-    return sorted(habits, key=lambda h: calculate_completion_rate(h, checkins))
+    habits = sorted(habits, key=lambda h: calculate_completion_rate(h, checkins))
+    habits = sorted(habits, key=lambda h: 0 if "^" in h["name"] else 1) # sort habits containing ^ to the top
+    return habits   
 
 
 def update_habit_text(habits):
-    updatedHabits = [habit for habit in habits if "^" in habit["name"] or "@" in habit["name"]]
+    updatedHabits = [habit for habit in habits if "@" in habit["name"]]
     habits = [habit for habit in habits if not habit in updatedHabits]
     for priority, habit in enumerate(habits):
         priority += 1
@@ -225,8 +227,6 @@ def update_habit_sort_order(habits):
             priority = int(priority_match.group(1))
         elif "@" in habit["name"]:
             priority = -1
-        elif "^" in habit["name"]:
-            priority = 0
         else:
             priority = (len(updatedHabits) + 1) * 1000000000  
         
