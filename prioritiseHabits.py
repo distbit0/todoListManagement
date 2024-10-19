@@ -24,6 +24,113 @@ headers = {
 }
 
 
+def parse_repeat_rule(rrule_str):
+    """
+    Parses an RRULE string into a dictionary.
+
+    :param rrule_str: RRULE string (e.g., "RRULE:FREQ=DAILY;INTERVAL=20")
+    :return: Dictionary of RRULE components.
+    """
+    rrule = {}
+    if rrule_str.startswith("RRULE:"):
+        rrule_str = rrule_str[len("RRULE:"):]
+    parts = rrule_str.split(";")
+    for part in parts:
+        if "=" in part:
+            key, value = part.split("=", 1)
+            rrule[key] = value
+    return rrule
+
+def byday_to_weekdays(byday_str):
+    """
+    Converts BYDAY values to Python weekday numbers.
+
+    :param byday_str: String of BYDAY values (e.g., "SU,MO,TU,WE,TH,FR,SA")
+    :return: List of integers representing weekdays (0=Monday, 6=Sunday)
+    """
+    day_mapping = {"MO": 0, "TU": 1, "WE": 2, "TH": 3, "FR": 4, "SA": 5, "SU": 6}
+    days = byday_str.split(",")
+    weekdays = [day_mapping[day] for day in days if day in day_mapping]
+    return weekdays
+
+def parse_date(date_input):
+    """
+    Parses a date from various formats to a datetime.date object.
+
+    :param date_input: Integer in YYYYMMDD or string in ISO format.
+    :return: datetime.date object.
+    """
+    if isinstance(date_input, int):
+        return datetime.strptime(str(date_input), "%Y%m%d").date()
+    elif isinstance(date_input, str):
+        # Attempt to parse ISO format
+        try:
+            return datetime.strptime(date_input, "%Y-%m-%dT%H:%M:%S.%f%z").date()
+        except ValueError:
+            try:
+                return datetime.strptime(date_input, "%Y-%m-%d").date()
+            except ValueError:
+                raise ValueError(f"Unrecognized date format: {date_input}")
+    else:
+        raise TypeError(f"Unsupported date input type: {type(date_input)}")
+
+def is_habit_due_on_date(habit, date, checkins):
+    """
+    Determines if a habit is due on a specific date.
+
+    :param habit: Habit dictionary.
+    :param date: datetime.date object to check.
+    :param checkins: Dictionary mapping habit IDs to lists of checkin dictionaries.
+    :return: Boolean indicating if the habit is due on the given date.
+    """
+    if habit.get("archivedTime"):
+        return False
+
+    repeat_rule = habit.get("repeatRule", "")
+    if not repeat_rule:
+        return False
+
+    rrule = parse_repeat_rule(repeat_rule)
+    freq = rrule.get("FREQ", "").upper()
+
+    if freq == "WEEKLY":
+        byday = rrule.get("BYDAY", "")
+        if not byday:
+            return False
+        weekdays = byday_to_weekdays(byday)
+        return date.weekday() in weekdays
+    elif freq == "DAILY":
+        interval = int(rrule.get("INTERVAL", "1"))
+        habit_id = habit.get("id")
+        habit_checkins = checkins.get(habit_id, [])
+
+        latest_checkin_date = None
+        for checkin in habit_checkins:
+            checkin_stamp = checkin.get("checkinStamp")
+            if checkin_stamp:
+                try:
+                    checkin_date = parse_date(checkin_stamp)
+                    if (latest_checkin_date is None) or (checkin_date > latest_checkin_date):
+                        latest_checkin_date = checkin_date
+                except (ValueError, TypeError):
+                    continue
+
+        if latest_checkin_date:
+            days_since_last_checkin = (date - latest_checkin_date).days
+            return days_since_last_checkin >= interval
+        else:
+            target_start = habit.get("targetStartDate")
+            if target_start:
+                try:
+                    target_start_date = parse_date(target_start)
+                    return target_start_date <= date
+                except (ValueError, TypeError):
+                    return False
+            else:
+                return True
+    else:
+        return False
+
 def get_habits_due_today(list_of_habits, checkins):
     """
     Returns a list of habits due today based on the provided habits and checkins.
@@ -32,125 +139,41 @@ def get_habits_due_today(list_of_habits, checkins):
     :param checkins: Dictionary mapping habit IDs to lists of checkin dictionaries.
     :return: List of habit dictionaries that are due today.
     """
-
-    # Helper function to parse the RRULE string
-    def parse_repeat_rule(rrule_str):
-        """
-        Parses an RRULE string into a dictionary.
-
-        :param rrule_str: RRULE string (e.g., "RRULE:FREQ=DAILY;INTERVAL=20")
-        :return: Dictionary of RRULE components.
-        """
-        rrule = {}
-        if rrule_str.startswith("RRULE:"):
-            rrule_str = rrule_str[len("RRULE:") :]
-        parts = rrule_str.split(";")
-        for part in parts:
-            if "=" in part:
-                key, value = part.split("=", 1)
-                rrule[key] = value
-        return rrule
-
-    # Helper function to convert BYDAY to Python's weekday numbers
-    def byday_to_weekdays(byday_str):
-        """
-        Converts BYDAY values to Python weekday numbers.
-
-        :param byday_str: String of BYDAY values (e.g., "SU,MO,TU,WE,TH,FR,SA")
-        :return: List of integers representing weekdays (0=Monday, 6=Sunday)
-        """
-        day_mapping = {"MO": 0, "TU": 1, "WE": 2, "TH": 3, "FR": 4, "SA": 5, "SU": 6}
-        days = byday_str.split(",")
-        weekdays = [day_mapping[day] for day in days if day in day_mapping]
-        return weekdays
-
-    # Helper function to parse dates
-    def parse_date(date_input):
-        """
-        Parses a date from various formats to a datetime.date object.
-
-        :param date_input: Integer in YYYYMMDD or string in ISO format.
-        :return: datetime.date object.
-        """
-        if isinstance(date_input, int):
-            return datetime.strptime(str(date_input), "%Y%m%d").date()
-        elif isinstance(date_input, str):
-            # Attempt to parse ISO format
-            try:
-                return datetime.strptime(date_input, "%Y-%m-%dT%H:%M:%S.%f%z").date()
-            except ValueError:
-                try:
-                    return datetime.strptime(date_input, "%Y-%m-%d").date()
-                except ValueError:
-                    raise ValueError(f"Unrecognized date format: {date_input}")
-        else:
-            raise TypeError(f"Unsupported date input type: {type(date_input)}")
-
-    # Get today's date in local tz
     today = datetime.now().astimezone().date()
+    return [habit for habit in list_of_habits if is_habit_due_on_date(habit, today, checkins)]
 
-    due_today = []
+def calculate_completion_rate(habit, checkins):
+    """
+    Calculates the completion rate for a habit.
 
-    for habit in list_of_habits:
-        # Skip archived habits
-        if habit.get("archivedTime"):
-            continue
+    :param habit: Habit dictionary.
+    :param checkins: Dictionary mapping habit IDs to lists of checkin dictionaries.
+    :return: Float representing the completion rate (0 to 1).
+    """
+    habit_id = habit.get("id")
+    habit_checkins = checkins.get(habit_id, [])
 
-        repeat_rule = habit.get("repeatRule", "")
-        if not repeat_rule:
-            continue  # Skip if no repeat rule
+    if not habit_checkins:
+        return 0
 
-        rrule = parse_repeat_rule(repeat_rule)
-        freq = rrule.get("FREQ", "").upper()
+    earliest_checkin = min(parse_date(checkin['checkinStamp']) for checkin in habit_checkins)
+    today = datetime.now().astimezone().date()
+    total_days = (today - earliest_checkin).days + 1
 
-        if freq == "WEEKLY":
-            byday = rrule.get("BYDAY", "")
-            if not byday:
-                continue  # Skip if no BYDAY specified
-            weekdays = byday_to_weekdays(byday)
-            if today.weekday() in weekdays:
-                due_today.append(habit)
-        elif freq == "DAILY":
-            interval = int(rrule.get("INTERVAL", "1"))
-            habit_id = habit.get("id")
-            habit_checkins = checkins.get(habit_id, [])
+    scheduled_count = sum(1 for day in range(total_days) if is_habit_due_on_date(habit, earliest_checkin + timedelta(days=day), checkins))
+    completed_count = len(habit_checkins)
 
-            # Find the latest checkin date
-            latest_checkin_date = None
-            for checkin in habit_checkins:
-                checkin_stamp = checkin.get("checkinStamp")
-                if checkin_stamp:
-                    try:
-                        checkin_date = parse_date(checkin_stamp)
-                        if (latest_checkin_date is None) or (
-                            checkin_date > latest_checkin_date
-                        ):
-                            latest_checkin_date = checkin_date
-                    except (ValueError, TypeError):
-                        continue  # Skip invalid checkin dates
+    return completed_count / scheduled_count if scheduled_count > 0 else 0
 
-            if latest_checkin_date:
-                days_since_last_checkin = (today - latest_checkin_date).days
-                if days_since_last_checkin >= interval:
-                    due_today.append(habit)
-            else:
-                # No checkins, check targetStartDate
-                target_start = habit.get("targetStartDate")
-                if target_start:
-                    try:
-                        target_start_date = parse_date(target_start)
-                        if target_start_date <= today:
-                            due_today.append(habit)
-                    except (ValueError, TypeError):
-                        continue  # Skip if targetStartDate is invalid
-                else:
-                    # If no targetStartDate, assume due
-                    due_today.append(habit)
-        else:
-            # Handle other frequencies if necessary
-            continue
+def sort_habits_by_completion_rate(habits, checkins):
+    """
+    Sorts habits based on their completion rate.
 
-    return due_today
+    :param habits: List of habit dictionaries.
+    :param checkins: Dictionary mapping habit IDs to lists of checkin dictionaries.
+    :return: List of habits sorted by completion rate (ascending).
+    """
+    return sorted(habits, key=lambda h: calculate_completion_rate(h, checkins))
 
 
 def update_habit_text(habits):
@@ -245,7 +268,7 @@ def weighted_shuffle(habits, bias):
 def main():
     if has_run_today():
         print("Script has already run today. Exiting.")
-        # return
+        return
 
     try:
         # Fetch all habits
@@ -274,9 +297,10 @@ def main():
         if due_habits_today:
             print(f"Found {len(due_habits_today)} long-term habits due today.")
 
-            due_habits_today = weighted_shuffle(due_habits_today, 0.3)
-            due_habits_today = update_habit_text(due_habits_today)
-            update_habit_sort_order(due_habits_today)
+            # Sort habits by completion rate
+            sorted_habits = sort_habits_by_completion_rate(due_habits_today, checkins)
+            sorted_habits = update_habit_text(sorted_habits)
+            update_habit_sort_order(sorted_habits)
 
             update_last_run()
             print("Script execution completed and last run time updated.")
