@@ -6,8 +6,14 @@ import re
 from dotenv import load_dotenv
 import os
 import pathlib
+import argparse
 
 load_dotenv()
+
+# Add command line argument parser
+parser = argparse.ArgumentParser(description="Prioritize habits")
+parser.add_argument('--test', action='store_true', help='Run in test mode (skip has_run_today check)')
+args = parser.parse_args()
 
 LAST_RUN_FILE = pathlib.Path(__file__).parent / ".last_run"
 HABITS_JSON_FILE = pathlib.Path("/home/pimania/miscSyncs/habits/habits.json")
@@ -266,7 +272,7 @@ def weighted_shuffle(habits, bias):
 
 
 def main():
-    if has_run_today():
+    if not args.test and has_run_today():
         print("Script has already run today. Exiting.")
         return
 
