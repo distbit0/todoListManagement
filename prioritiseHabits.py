@@ -185,9 +185,9 @@ def update_habit_sort_order(habits):
         if priority_match:
             priority = int(priority_match.group(1))
         elif "@" in habit["name"]:
-            priority = 0
+            priority = -1
         elif "^" in habit["name"]:
-            priority = 1
+            priority = 0
         else:
             priority = (len(updatedHabits) + 1) * 1000000000  
         
