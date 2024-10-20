@@ -124,7 +124,9 @@ def is_habit_due_on_date(habit, date, checkins, strict=False):
         if latest_checkin_date:
             days_since_last_checkin = (date - latest_checkin_date).days
             if strict:
-                return days_since_last_checkin % interval == 0
+                isMultiple = days_since_last_checkin % interval == 0
+                isDue = days_since_last_checkin >= interval
+                return isMultiple and isDue
             else:
                 return days_since_last_checkin >= interval
         else:
@@ -133,7 +135,9 @@ def is_habit_due_on_date(habit, date, checkins, strict=False):
                 try:
                     target_start_date = parse_date(target_start)
                     if strict:
-                        return (target_start_date - date).days % interval == 0
+                        isMultiple = (target_start_date - date).days % interval == 0
+                        isDue = target_start_date <= date
+                        return isMultiple and isDue
                     else:
                         return target_start_date <= date
                 except (ValueError, TypeError):
@@ -174,7 +178,7 @@ def calculate_completion_rate(habit, checkins):
     
     total_days = (today - startDate).days + 1
 
-    scheduled_count = sum(1 for day in range(total_days) if is_habit_due_on_date(habit, startDate + timedelta(days=day), checkins, strict=True))
+    scheduled_count = sum(1 for day in range(total_days) if is_habit_due_on_date(habit, startDate + timedelta(days=day), checkins, strict=False))
     completed_count = len(habit_checkins) + 0.1 ## incase len(habit_checkins) is 0, so that the output still relfects scheduled_count
 
     completionRate = completed_count / scheduled_count if scheduled_count > 0 else 0
