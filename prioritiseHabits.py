@@ -193,8 +193,21 @@ def sort_habits_by_completion_rate(habits, checkins):
     :param checkins: Dictionary mapping habit IDs to lists of checkin dictionaries.
     :return: List of habits sorted by completion rate (ascending).
     """
+    def get_sort_key(habit):
+        name = habit["name"]
+        # Check for @ character first
+        if '@' in name:
+            return (2, 0)  # Highest first value to sort to bottom
+        match = re.search(r'\^(\d*)', name)
+        if match:
+            number = match.group(1)
+            if number == '':
+                return (0, 1)  # Treat ^ without a number as ^1
+            return (0, int(number))
+        return (1, 0)  # Habits without ^ or @ come in the middle
+
     habits = sorted(habits, key=lambda h: calculate_completion_rate(h, checkins))
-    habits = sorted(habits, key=lambda h: 0 if "^" in h["name"] else 1) # sort habits containing ^ to the top
+    habits = sorted(habits, key=get_sort_key)
     return habits   
 
 
@@ -229,8 +242,6 @@ def update_habit_sort_order(habits):
         priority_match = re.match(r"^(\d+)\.\s", habit["name"])
         if priority_match:
             priority = int(priority_match.group(1))
-        elif "@" in habit["name"]:
-            priority = -1
         else:
             priority = (len(updatedHabits) + 1) * 1000000000  
         
