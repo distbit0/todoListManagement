@@ -197,7 +197,7 @@ def sort_habits_by_completion_rate(habits, checkins):
         name = habit["name"]
         # Check for @ character first
         if '@' in name:
-            return (2, 0)  # Highest first value to sort to bottom
+            return (-1, 0)  # Lowest first value to sort to top
         match = re.search(r'\^(\d*)', name)
         if match:
             number = match.group(1)
