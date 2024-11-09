@@ -204,7 +204,7 @@ def writeToFile(filePath, textToAddToFile):
 
 
 keep = gkeepapi.Keep()
-keep.resume(
+keep.authenticate(
     os.environ["username"],
     os.environ["masterKey"],
 )
