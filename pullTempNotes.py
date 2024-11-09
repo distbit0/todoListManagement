@@ -1,4 +1,5 @@
 import gkeepapi
+from pydub.utils import mediainfo
 import shutil
 import os
 import re
@@ -108,6 +109,14 @@ def tryDeleteFile(path, fileText):
 
 
 def processMp3File(mp3FileName):
+    # Get the duration of the audio file
+    info = mediainfo(mp3FileName)
+    duration = float(info['duration'])
+    
+    # Check if the duration is greater than 10 minutes
+    if duration > 600:
+        return "FILE TOO LARGE"
+    
     apiKey = os.environ["openaiApiKey"]
     client = OpenAI(api_key=apiKey)
     api_response = client.audio.transcriptions.create(
@@ -139,6 +148,10 @@ def saveNotesFromMp3s():
         fileName = mp3File.split("/")[-1]
         print("processing {}".format(fileName))
         textFromMp3 = processMp3File(mp3File)
+        if textFromMp3 == "FILE TOO LARGE":
+            print("skipping file due to it being too large: {}".format(fileName))
+            processedMp3s[fileName] = textFromMp3
+            continue
         textFromMp3 = formatIncomingText(textFromMp3, True)
         if textFromMp3:
             textToAddToFile += "\n\n" + textFromMp3
