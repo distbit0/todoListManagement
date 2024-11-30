@@ -156,7 +156,7 @@ def saveNotesFromMp3s():
         # Check if we've already processed this file hash
         if processed_hashes.is_hash_processed(file_hash):
             print(f"Skipping already processed file: {fileName}")
-            processedMp3s[fileName] = "ALREADY_PROCESSED"
+            processedMp3s[fileName] = "ALREADY PROCESSED"
             continue
 
         print("processing {}".format(fileName))
