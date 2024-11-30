@@ -1,6 +1,5 @@
 import gkeepapi
 from pydub.utils import mediainfo
-import shutil
 import os
 import re
 import glob
@@ -12,6 +11,9 @@ from send2trash import send2trash
 
 load_dotenv()
 
+
+#### this should be moved to a separate repo that also contains findQuestions.py
+# also move prioritiseHabits to separate repo
 
 def formatIncomingText(text, isTranscription):
     pattern = re.compile(r"(^\d+\.\s*)http")
@@ -111,12 +113,9 @@ def tryDeleteFile(path, fileText):
 def processMp3File(mp3FileName):
     # Get the duration of the audio file
     info = mediainfo(mp3FileName)
-    duration = float(info['duration'])
-    
-    # Check if the duration is greater than 10 minutes
-    if duration > 600:
+    if "duration" not in info or float(info['duration']) > 600:
         return "FILE TOO LARGE"
-    
+     
     apiKey = os.environ["openaiApiKey"]
     client = OpenAI(api_key=apiKey)
     api_response = client.audio.transcriptions.create(
