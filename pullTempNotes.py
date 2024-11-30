@@ -3,13 +3,19 @@ from pydub.utils import mediainfo
 import os
 import re
 import glob
+import datetime
 import utils.general as general
 from openai import OpenAI
 import hashlib
 from dotenv import load_dotenv
 from send2trash import send2trash
+from processed_hashes import ProcessedHashes
 
 load_dotenv()
+
+# Initialize the hash tracker
+HASH_FILE = os.path.join(os.path.dirname(__file__), 'audio_hashes.json')
+processed_hashes = ProcessedHashes(HASH_FILE)
 
 
 #### this should be moved to a separate repo that also contains findQuestions.py
@@ -145,16 +151,34 @@ def saveNotesFromMp3s():
     )
     for mp3File in musicFiles:
         fileName = mp3File.split("/")[-1]
+        file_hash = calculate_file_hash(mp3File)
+        
+        # Check if we've already processed this file hash
+        if processed_hashes.is_hash_processed(file_hash):
+            print(f"Skipping already processed file: {fileName}")
+            processedMp3s[fileName] = "ALREADY_PROCESSED"
+            continue
+
         print("processing {}".format(fileName))
         textFromMp3 = processMp3File(mp3File)
+        
         if textFromMp3 == "FILE TOO LARGE":
             print("skipping file due to it being too large: {}".format(fileName))
             processedMp3s[fileName] = textFromMp3
             continue
+            
         textFromMp3 = formatIncomingText(textFromMp3, True)
         if textFromMp3:
             textToAddToFile += "\n\n" + textFromMp3
             print("text from mp3: {}".format(textFromMp3))
+            
+        # Record the processed file hash
+        processed_hashes.add_hash(file_hash, {
+            'filename': fileName,
+            'processed_date': str(datetime.datetime.now()),
+            'text_length': len(textFromMp3) if textFromMp3 else 0
+        })
+        
         processedMp3s[fileName] = textFromMp3
 
     return textToAddToFile, processedMp3s
