@@ -176,7 +176,6 @@ def saveNotesFromMp3s():
         processed_hashes.add_hash(file_hash, {
             'filename': fileName,
             'processed_date': str(datetime.datetime.now()),
-            'text_length': len(textFromMp3) if textFromMp3 else 0
         })
         
         processedMp3s[fileName] = textFromMp3
