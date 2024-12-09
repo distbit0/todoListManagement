@@ -125,6 +125,7 @@ def processMp3File(mp3FileName):
         return "DURATION UNKNOWN"
         
     duration = float(info['duration'])
+    temp_file = None
     if duration > 800:
         print(f"Cropping {mp3FileName} to 800 seconds")
         from pydub import AudioSegment
@@ -135,6 +136,7 @@ def processMp3File(mp3FileName):
         mp3FileName = temp_file
 
     apiKey = os.environ["openaiApiKey"]
+    try:
     client = OpenAI(api_key=apiKey)
     api_response = client.audio.transcriptions.create(
         model="whisper-1",
@@ -142,7 +144,15 @@ def processMp3File(mp3FileName):
         language="en",
         prompt="the transcription of my idea is as follows:",
     )
-    return api_response.text
+    transcribed_text = api_response.text
+    
+    if temp_file:
+        try:
+            os.remove(temp_file)
+        except Exception as e:
+            print(f"Error removing temporary file {temp_file}: {e}")
+    
+    return transcribed_text
 
 
 def sort_key(filename):
