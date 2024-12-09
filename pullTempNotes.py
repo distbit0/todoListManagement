@@ -119,10 +119,21 @@ def tryDeleteFile(path, fileText):
 def processMp3File(mp3FileName):
     # Get the duration of the audio file
     info = mediainfo(mp3FileName)
-    if "duration" not in info or float(info['duration']) > 800:
-        print(f"skipping file {mp3FileName} because it is too long")
-        return "FILE TOO LARGE"
-     
+    
+    if "duration" not in info:
+        print(f"Could not determine duration for {mp3FileName}")
+        return "DURATION UNKNOWN"
+        
+    duration = float(info['duration'])
+    if duration > 800:
+        print(f"Cropping {mp3FileName} to 800 seconds")
+        from pydub import AudioSegment
+        audio = AudioSegment.from_file(mp3FileName)
+        audio = audio[:800*1000]  # pydub works in milliseconds
+        temp_file = mp3FileName + ".temp.mp3"
+        audio.export(temp_file, format="mp3")
+        mp3FileName = temp_file
+
     apiKey = os.environ["openaiApiKey"]
     client = OpenAI(api_key=apiKey)
     api_response = client.audio.transcriptions.create(
