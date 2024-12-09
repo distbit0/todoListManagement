@@ -119,7 +119,8 @@ def tryDeleteFile(path, fileText):
 def processMp3File(mp3FileName):
     # Get the duration of the audio file
     info = mediainfo(mp3FileName)
-    if "duration" not in info or float(info['duration']) > 600:
+    if "duration" not in info or float(info['duration']) > 800:
+        print(f"skipping file {mp3FileName} because it is too long")
         return "FILE TOO LARGE"
      
     apiKey = os.environ["openaiApiKey"]
@@ -161,12 +162,6 @@ def saveNotesFromMp3s():
 
         print("processing {}".format(fileName))
         textFromMp3 = processMp3File(mp3File)
-        
-        if textFromMp3 == "FILE TOO LARGE":
-            print("skipping file due to it being too large: {}".format(fileName))
-            processedMp3s[fileName] = textFromMp3
-            continue
-            
         textFromMp3 = formatIncomingText(textFromMp3, True)
         if textFromMp3:
             textToAddToFile += "\n\n" + textFromMp3
