@@ -3,5 +3,393 @@
     "filename": "My recording 1.mp3",
     "processed_date": "2024-11-30 13:54:57.529951",
     "text_length": 3
+  },
+  "4d819e2fddb788f12e252b9a1953191a419da2b8aac9d518e93c4e8dc1bb9296": {
+    "filename": "My recording 1 (1).mp3",
+    "processed_date": "2024-11-30 21:02:36.169875"
+  },
+  "e80826777d1d151f873a58c28a3eeb1b9e4d678b84659fdbde6d0414b2e2c58d": {
+    "filename": "My recording 3 (3).mp3",
+    "processed_date": "2024-11-30 21:02:39.420292"
+  },
+  "44376cacbc3d8008c13a5e3ecb87051d07989fb1f0edfccf8bd08a67dc30194e": {
+    "filename": "My recording 3 (2).mp3",
+    "processed_date": "2024-11-30 21:02:54.051983"
+  },
+  "358e150b9d3445221f4654d8652f55b545b8024c397119cedfec6b872c91b73c": {
+    "filename": "My recording 3 (1).mp3",
+    "processed_date": "2024-11-30 21:02:59.557088"
+  },
+  "babe2db9ac78ad3769eb61eb29e88fcb18a67042f0f931e7c2a4def2e49ffc0b": {
+    "filename": "My recording 3.mp3",
+    "processed_date": "2024-11-30 21:03:02.263653"
+  },
+  "0a0e375e2baa2fe52c207f71d7e488540460cc9856dd9335a216f21ca35c179c": {
+    "filename": "My recording 3 (5).mp3",
+    "processed_date": "2024-11-30 21:08:19.085177"
+  },
+  "f5d69c0988c37f1955ff0bb8a50ae5c5aab926ac5e1d3eb0642c6a0fa4dbcba5": {
+    "filename": "My recording 9.mp3",
+    "processed_date": "2024-11-30 21:14:22.106897"
+  },
+  "a5f9e988448a4f49fe3b1583031694c1018ed04f81b390c8ea772342c55bdaad": {
+    "filename": "My recording 9 (1).mp3",
+    "processed_date": "2024-11-30 21:26:23.632038"
+  },
+  "4f4319f4a1abb495df91ccb984eeea6dfb21a3c697a40e473dd44f89115ec54f": {
+    "filename": "My recording 9 (2).mp3",
+    "processed_date": "2024-11-30 21:28:23.029707"
+  },
+  "3b55db81494c9fd511a3ea3f79a359ff39d5a08f1d329d0066d380d2b17750a6": {
+    "filename": "My recording 12.m4a",
+    "processed_date": "2024-12-01 00:05:18.531447"
+  },
+  "27335a0bbeb3993286896a878f5e5d0baf968e7b2d4865e498d84b813d5640b0": {
+    "filename": "My recording 13.m4a",
+    "processed_date": "2024-12-01 00:05:21.508352"
+  },
+  "d2a75d53f9b327648d700c2fc3e708edb566d9bf8c545fafb39acc070b5518dd": {
+    "filename": "My recording 14.m4a",
+    "processed_date": "2024-12-01 00:08:18.777175"
+  },
+  "eb0c5381598ee597a9ee4dc0a1503174044ef59d1f4e5d1048c92370a8c960ce": {
+    "filename": "My recording 15.m4a",
+    "processed_date": "2024-12-01 09:35:39.886251"
+  },
+  "dc6e45fefa42fdd57d30e0efc8d50556ccb9eb404d95d166604997e36c2789f9": {
+    "filename": "My recording 16.m4a",
+    "processed_date": "2024-12-01 09:35:42.122429"
+  },
+  "d568496c9e0822e89ce6862500160df21ecde040186fee1b141710daca9ad703": {
+    "filename": "My recording 17.m4a",
+    "processed_date": "2024-12-01 09:35:44.366471"
+  },
+  "b861fa793c3ef2ee08bfa8c0c51696fa512f667d4d786abbecb51542ed602f5c": {
+    "filename": "My recording 18.mp3",
+    "processed_date": "2024-12-01 18:22:14.064146"
+  },
+  "8f63677adaded936810d566be99919d3fa3a8b37f0194f9eec11c7bddc4d54b7": {
+    "filename": "My recording 18.m4a",
+    "processed_date": "2024-12-01 18:22:19.016558"
+  },
+  "f1603db575d873c86b9381575050d7d74d3aa430545660ed0be4668e7c2e9a28": {
+    "filename": "My recording 18 (1).mp3",
+    "processed_date": "2024-12-01 19:21:29.706222"
+  },
+  "4952084e479049fed1314313121c19cf039784f1d3dcbd70748bed691e66c6e7": {
+    "filename": "My recording 18 (2).mp3",
+    "processed_date": "2024-12-01 19:21:33.541921"
+  },
+  "261f87417eb562319709cf93fc8ec2a8f8fffdd590af632cb9531c83373b4711": {
+    "filename": "My recording 18 (3).mp3",
+    "processed_date": "2024-12-01 19:58:30.059940"
+  },
+  "b41d8d73b4a6905133f2c6483cb18c7e4cc9b88efee51ecbb68b3edbef2920c9": {
+    "filename": "My recording 23.m4a",
+    "processed_date": "2024-12-02 10:41:57.766869"
+  },
+  "5428bb5b8959de84780d8d2813c6acbee0da5aa5bf1362762a9d231bae7f1eea": {
+    "filename": "My recording 24.m4a",
+    "processed_date": "2024-12-02 10:42:00.479490"
+  },
+  "dc77aa1c883febc4ffcf74615e7507c53fd3956564ba8d5865282162eadff45a": {
+    "filename": "My recording 25.m4a",
+    "processed_date": "2024-12-02 10:42:03.419838"
+  },
+  "bb85bd3fe81e499cb47f349f2451eaadb85a33af87377367f7fcfabd175ce14d": {
+    "filename": "My recording 26.m4a",
+    "processed_date": "2024-12-02 10:42:05.182010"
+  },
+  "435534e616ed477be0944e0148c684811cb49f4078f4af61ea888b40c1868c0d": {
+    "filename": "My recording 27.m4a",
+    "processed_date": "2024-12-02 10:42:07.545457"
+  },
+  "8297d5861c7b3e78f1d1f12427998a2394d002800f4a2d6198c9505ba7869dbc": {
+    "filename": "My recording 3 (4).mp3",
+    "processed_date": "2024-12-02 10:48:20.019733"
+  },
+  "bddedbc062b259a9ab122729cc196f8bf0ebb5ba8ec66ebd63b72827e330a645": {
+    "filename": "My recording 27.mp3",
+    "processed_date": "2024-12-02 11:40:19.500647"
+  },
+  "494d3c31ebfd7d328c9aa9617527f9b0ffda97351b948ab0ac51948ed52ae5fd": {
+    "filename": "My recording 4.mp3",
+    "processed_date": "2024-12-03 08:00:28.022086"
+  },
+  "30506cfa31c09e1c177472e9aa7f8b1d4e7149b0c70bcc028c73a5dfccae2723": {
+    "filename": "My recording 5.mp3",
+    "processed_date": "2024-12-03 08:00:30.674054"
+  },
+  "c46f36186242202c3c08d632e8a8a94e5e944bae282c28be24d79e711feaab65": {
+    "filename": "My recording 6.mp3",
+    "processed_date": "2024-12-03 08:00:33.254334"
+  },
+  "bdef2b2c704532fa9e7bd9014ab27fd3ad61dc37fba80492524c504a21ef7287": {
+    "filename": "My recording 7.mp3",
+    "processed_date": "2024-12-03 08:00:36.476535"
+  },
+  "ddf515a1cee3ccb170b654189183e8a22371bbf176ba089332ea013d47495193": {
+    "filename": "My recording 8.mp3",
+    "processed_date": "2024-12-03 08:00:38.826733"
+  },
+  "8dc635116961764d3aa720ec09278fb40404828187adf15cf607431349d03844": {
+    "filename": "My recording 9.mp3",
+    "processed_date": "2024-12-03 08:00:43.907122"
+  },
+  "b525e3b66a3724bbdf802e801c0c77137ff76b81469667e7197836302c3f56b9": {
+    "filename": "My recording 10.m4a",
+    "processed_date": "2024-12-03 08:00:46.748274"
+  },
+  "cdfa966ad9c02b98cc181b7af471160b9d09c0885295f04ddb2c85c97aaf7fcb": {
+    "filename": "My recording 11.mp3",
+    "processed_date": "2024-12-03 08:00:49.662857"
+  },
+  "e45809d8f001376b2c0c6e1dcc42a48334fecb0ecffa87cc6e432d3adbfd8de6": {
+    "filename": "My recording 27 (2).mp3",
+    "processed_date": "2024-12-03 08:00:53.140413"
+  },
+  "76ed471ec5a437f4b3775297812db774b10a64ef4f1cfc2efab97b9c3058facf": {
+    "filename": "My recording 27 (1).mp3",
+    "processed_date": "2024-12-03 08:00:58.507291"
+  },
+  "2028d1fea572153f2602604b059585c3b481ccb5be92009b3dfc5940ea7b5a5a": {
+    "filename": "My recording 27.mp3",
+    "processed_date": "2024-12-03 08:01:03.043189"
+  },
+  "52f983f3ebc6e50ad48903af0b3b69a42f79d8af5fb58ae97a323feed9e578f6": {
+    "filename": "My recording 1.m4a",
+    "processed_date": "2024-12-04 10:08:17.929664"
+  },
+  "288b4641efadaaae7374606422e6912bf4f65f9e1e3f1fd0ace268409f5f4098": {
+    "filename": "My recording 3.mp3",
+    "processed_date": "2024-12-04 21:24:19.745893"
+  },
+  "8d78ddc6ec04ed29e8acb978496e069756be035a2b0ed4951e2e809ed9f6c86d": {
+    "filename": "My recording 4.mp3",
+    "processed_date": "2024-12-05 00:40:20.569234"
+  },
+  "589b872a9e0d8ae6879fcb8fb8daa041af0fa6d0f7269dbd9ee48934027aa448": {
+    "filename": "My recording 5.mp3",
+    "processed_date": "2024-12-05 01:00:18.992075"
+  },
+  "617cc75f959cc0c633c88d8b0c59bcd4c2b06f87fe4f38ce83612d158970db01": {
+    "filename": "My recording 6.m4a",
+    "processed_date": "2024-12-05 08:40:23.029562"
+  },
+  "0559314df666e92f4677464e1a31bf593649a675419b25c916b7d5a74204d2d9": {
+    "filename": "My recording 6.mp3",
+    "processed_date": "2024-12-05 12:24:23.090702"
+  },
+  "d81e7bc6a95a9129703bc5c39251eeb05004da46552b9b0a207e0c0d9281b6cf": {
+    "filename": "My recording 8.mp3",
+    "processed_date": "2024-12-05 14:48:27.849165"
+  },
+  "488585a664af9e9db81fcab6768489e0a5f1c2ab9a0afa1388586a191b437a6e": {
+    "filename": "My recording 9.m4a",
+    "processed_date": "2024-12-05 23:08:20.479621"
+  },
+  "0011a9da32d0d5c27a359082db76f8d40bdf4b128b7fb9a04b8a58e461f7c006": {
+    "filename": "My recording 10.m4a",
+    "processed_date": "2024-12-06 10:08:19.463145"
+  },
+  "1265cbf14e0db39bb42d1edf52a4eb99e068d276f0ad28081cc1a4134b3496de": {
+    "filename": "My recording 11.mp3",
+    "processed_date": "2024-12-06 10:56:21.695927"
+  },
+  "5ffe3822d4c4af52d75a74270bfe767720d8def5f5974a293f06e66a946e9aa7": {
+    "filename": "My recording 12.mp3",
+    "processed_date": "2024-12-06 22:16:26.172645"
+  },
+  "47cdf142d50827315c052c3c8d094babac8a73f2763ec9a468994896e2b7f020": {
+    "filename": "My recording 13.mp3",
+    "processed_date": "2024-12-06 22:32:20.780567"
+  },
+  "9879a36f7e36832d65f7fb20eb5b9f6cc95a92ecf7abb082aa27e80debac97ff": {
+    "filename": "My recording 14.m4a",
+    "processed_date": "2024-12-07 09:48:21.715997"
+  },
+  "e6c4037a1c0bfa59a8c46d3d2e4e21e2cde34ae1c2e8d630027830757d4ef8c1": {
+    "filename": "My recording 15.m4a",
+    "processed_date": "2024-12-07 09:48:24.863113"
+  },
+  "8fec2b979ba953cd9a3a696f3f505f7b4bc0c832fab38f86c6de32fe3a377245": {
+    "filename": "My recording 16.mp3",
+    "processed_date": "2024-12-07 22:40:23.214132"
+  },
+  "abf2c49437938088c841623e317b2260d35475da432aa32ba3623fc18d5e5e51": {
+    "filename": "My recording 17.mp3",
+    "processed_date": "2024-12-07 22:40:25.435573"
+  },
+  "4f567c3fcb19c366bf4c39fcb9803ca5358f38c95e78b64a6f924d9cbfc0ca63": {
+    "filename": "My recording 18.mp3",
+    "processed_date": "2024-12-07 22:55:06.888043"
+  },
+  "1bf7635893ff5f97d72b4f046d48695e487af542fd4e3eefced19201d146afc4": {
+    "filename": "My recording 19.mp3",
+    "processed_date": "2024-12-07 22:55:13.926014"
+  },
+  "734112f6147c35d96fa98b654ebcf735f51958a6fe3b535a2ac244a91ef5e92e": {
+    "filename": "My recording 20.mp3",
+    "processed_date": "2024-12-07 22:55:19.145076"
+  },
+  "39813c3e38d8e3bd20844823c4479811524553f0eef460b2ff904c87061473a1": {
+    "filename": "My recording 21.mp3",
+    "processed_date": "2024-12-07 22:55:22.525096"
+  },
+  "2633a519f6899acd5567cd18e62e9a91ab5c752f9e3c571fbd40948a36c9af4f": {
+    "filename": "My recording 22.mp3",
+    "processed_date": "2024-12-07 22:55:28.557913"
+  },
+  "f0dbc2d6b0c22f90beb9ae4e783c067437bdff0516ca4a4d006240c5620454b7": {
+    "filename": "My recording 23.mp3",
+    "processed_date": "2024-12-07 22:55:30.493042"
+  },
+  "1b623e9fcb1d36e6255e7e40efc24e1504f468bc32c633719189f12ba3fe71e4": {
+    "filename": "My recording 24.mp3",
+    "processed_date": "2024-12-07 22:55:33.479511"
+  },
+  "c064b00c9aefae3320d4ba531c1f9e9a48aede00dd8d252f98f856097d291ba8": {
+    "filename": "My recording 25.mp3",
+    "processed_date": "2024-12-07 22:56:16.169776"
+  },
+  "cd0fcbd10b22315915fe4e3ca2403bf85f5e455a608e0d0023ce6829453ada34": {
+    "filename": "My recording 26.mp3",
+    "processed_date": "2024-12-07 23:00:18.260083"
+  },
+  "133cb3616377f21343605bee1e68075f5117ff8390065e6bdd19edfdec95912d": {
+    "filename": "My recording 27.mp3",
+    "processed_date": "2024-12-07 23:08:25.596017"
+  },
+  "045d22dd57764a434f820841158f367edf633545bcb46e2c1350356798ae7d20": {
+    "filename": "My recording 28.mp3",
+    "processed_date": "2024-12-07 23:16:19.167147"
+  },
+  "1503432ad2aa94201f5115e8f951d2ee303532b91ca862ab7ffd99ece3accc7a": {
+    "filename": "My recording 29.mp3",
+    "processed_date": "2024-12-07 23:24:22.426040"
+  },
+  "cf977f2bfc7464d5be496336f285e6439c2649d1fdc6f4147d09dab8784593b9": {
+    "filename": "My recording 30.m4a",
+    "processed_date": "2024-12-07 23:40:20.174740"
+  },
+  "8d69daab4a8fc5df17bcedc997f7969dc94f8173a78dd956e4a7c12b94aee2fa": {
+    "filename": "My recording 31.m4a",
+    "processed_date": "2024-12-07 23:40:23.306401"
+  },
+  "94b86c2ffcfb8fdad6f3ff1b49d17b0a9deeaa41d383ea5180ae8c8043afd96d": {
+    "filename": "My recording 32.mp3",
+    "processed_date": "2024-12-08 09:24:20.811567"
+  },
+  "8a4b572b5b8e294f847ab7bdf3099e8424f6c78e898f384ee508a274ecbb318d": {
+    "filename": "My recording 33.mp3",
+    "processed_date": "2024-12-08 09:24:22.638240"
+  },
+  "e826c842ab6297ed0784eb93f56788360f232faccbae619b7851548433f59121": {
+    "filename": "My recording 34.mp3",
+    "processed_date": "2024-12-08 09:24:26.125981"
+  },
+  "01f0cc1f0535ab67604e1345056bb3684b39ea67a86e46907dfdf5c61e1fd99f": {
+    "filename": "My recording 35.mp3",
+    "processed_date": "2024-12-08 09:24:29.647420"
+  },
+  "6743c6c677bce27f5fc926947d5b82e447b6ad422be8da44a9880c07552a54f4": {
+    "filename": "My recording 36.mp3",
+    "processed_date": "2024-12-08 11:08:20.591005"
+  },
+  "4e496cd63288c59cbda2b0be48bd7de0aeeebc65d7053e56672892cdddc38088": {
+    "filename": "My recording 37.mp3",
+    "processed_date": "2024-12-08 11:40:21.352038"
+  },
+  "97ef5c7c8922ca89d758f48a5a09842106ca280a8ce95c43f24dbab0a767cabe": {
+    "filename": "My recording 38.mp3",
+    "processed_date": "2024-12-08 12:02:06.821735"
+  },
+  "c946d2104a100475051beb97e84ea874fd6ce2596bdc4e16f974d6223e8b5582": {
+    "filename": "My recording 39.mp3",
+    "processed_date": "2024-12-08 14:40:20.901444"
+  },
+  "c1bee1fec3f62257cab2ae854ed5d10b79261b1d7ed544e9b589793c0a737243": {
+    "filename": "My recording 40.mp3",
+    "processed_date": "2024-12-08 14:40:24.190994"
+  },
+  "3aedef78ad7e16ab47e4489482f60904f1f9a82e9673e55a4843318d6f0dcf1a": {
+    "filename": "My recording 41.mp3",
+    "processed_date": "2024-12-08 14:48:23.058718"
+  },
+  "e9fb7dd145bdcc0a99c73b7e38732e5142bd6770b3159149edd283fbc5a6e5ff": {
+    "filename": "My recording 42.mp3",
+    "processed_date": "2024-12-08 14:48:29.034146"
+  },
+  "7945ee470382bf6e940ca1eb8422b6f33f800439dc135129730c7ee8b34e0f5a": {
+    "filename": "My recording 43.mp3",
+    "processed_date": "2024-12-08 14:48:35.569217"
+  },
+  "193818eafd0be23788bf95fd269f24f8486c5384d0fd1f416ce81e583a8fe9ad": {
+    "filename": "My recording 45.mp3",
+    "processed_date": "2024-12-08 20:15:01.761175"
+  },
+  "5c45c4442efe7efb59d4187cea57b33470c39fdba5427d3f75b2f136c2fc9974": {
+    "filename": "My recording 46.mp3",
+    "processed_date": "2024-12-08 20:15:04.335845"
+  },
+  "53b74f6d6a16342fcc053339d7588219c905e5e413a04fc755bc8531512dc5b5": {
+    "filename": "My recording 47.mp3",
+    "processed_date": "2024-12-08 21:56:20.676748"
+  },
+  "b65eed20aff57a8053ce56a21cf1b4a5cc4cfc26f7d870469bec8fa2a6b60383": {
+    "filename": "My recording 48.mp3",
+    "processed_date": "2024-12-08 23:24:21.498557"
+  },
+  "7c9b9e3af450bd1a4bf257b8c2a45d1bd7bbcc564f2d9cde11b7c21abec7e22e": {
+    "filename": "My recording 49.m4a",
+    "processed_date": "2024-12-08 23:24:24.137887"
+  },
+  "914154d1bc29b767ef42540fcf699384a624d218b3fc71dc880c9aaf68b0b70c": {
+    "filename": "My recording 50.m4a",
+    "processed_date": "2024-12-08 23:24:25.987712"
+  },
+  "8ece5fe0f840663ece9a6777092508e10b8b3c72cb8d69b0ad9b9dbf77e42639": {
+    "filename": "My recording 51.m4a",
+    "processed_date": "2024-12-08 23:24:28.754119"
+  },
+  "719635c1b129d58a636348da6332fdbb4a047d78b9a8622bb93dcfb59bb2ff79": {
+    "filename": "My recording 52.m4a",
+    "processed_date": "2024-12-08 23:24:30.622483"
+  },
+  "857a4ebe19d73751b35e94d5887f7383f3bfcfd6fe66bb6c999f54c0e3f1b364": {
+    "filename": "My recording 53.m4a",
+    "processed_date": "2024-12-09 09:16:22.453942"
+  },
+  "fe727c52d27d066a06df35d4b241f7d3b0d74f2d8468b5cab7bab1a1ea0ca4de": {
+    "filename": "My recording 53.mp3",
+    "processed_date": "2024-12-09 19:32:43.037608"
+  },
+  "85f962eac4fc67e8a14327822765d2f8e4ef0890852086a7c75b8d34cf6d7e31": {
+    "filename": "My recording 55.mp3",
+    "processed_date": "2024-12-09 19:32:45.792226"
+  },
+  "37247a288792be888ec524e7d63155acbcace2fe2e134c250518bf10ef20b2ff": {
+    "filename": "My recording 55.m4a",
+    "processed_date": "2024-12-09 19:32:48.467840"
+  },
+  "6d1be07ed18c2a3417dd8ffe2abc41258511a0d491b0bb48e5b31d09bd252262": {
+    "filename": "My recording 57.mp3",
+    "processed_date": "2024-12-09 19:32:50.763327"
+  },
+  "15ad2d13bcccefcc5c6d5b29f8d00014b611310172aa21332650c1a9dce0feb4": {
+    "filename": "My recording 57.m4a",
+    "processed_date": "2024-12-09 19:32:52.811304"
+  },
+  "baad4e6dda367a58c4355b63ace0c69a948dff27c0ba3417a2137a6791ae7258": {
+    "filename": "My recording 59.mp3",
+    "processed_date": "2024-12-09 19:32:55.737855"
+  },
+  "0e2117f7e7a4de69b9b30c295d6add09f6719d3bd01776814ddc22c5cde55a32": {
+    "filename": "My recording 60.mp3",
+    "processed_date": "2024-12-09 19:32:58.325750"
+  },
+  "adfb558be6612569931b799e94deb45e49ec13f9e0fd42203a20ab2b0689f7ef": {
+    "filename": "My recording 61.m4a",
+    "processed_date": "2024-12-09 21:24:38.445876"
   }
 }

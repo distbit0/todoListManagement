@@ -135,16 +135,19 @@ def processMp3File(mp3FileName):
         audio.export(temp_file, format="mp3")
         mp3FileName = temp_file
 
-    apiKey = os.environ["openaiApiKey"]
     try:
-    client = OpenAI(api_key=apiKey)
-    api_response = client.audio.transcriptions.create(
-        model="whisper-1",
-        file=open(mp3FileName, "rb"),
-        language="en",
-        prompt="the transcription of my idea is as follows:",
-    )
-    transcribed_text = api_response.text
+        apiKey = os.environ["openaiApiKey"]
+        client = OpenAI(api_key=apiKey)
+        api_response = client.audio.transcriptions.create(
+            model="whisper-1",
+            file=open(mp3FileName, "rb"),
+            language="en",
+            prompt="the transcription of my idea is as follows:",
+        )
+        transcribed_text = api_response.text
+    except:
+        transcribed_text = "transcription api error"
+        print(f"Error transcribing {mp3FileName}")
     
     if temp_file:
         try:
