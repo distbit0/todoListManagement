@@ -11,6 +11,23 @@ import toml
 load_dotenv()
 markAsReadString = "[[read]]"
 
+# Persistent storage for read wikilinks
+read_wikilinks_file = os.path.join(os.path.dirname(__file__), "read_wikilinks.txt")
+
+def load_read_wikilinks():
+    try:
+        with open(read_wikilinks_file, "r") as f:
+            return set(line.strip() for line in f if line.strip())
+    except FileNotFoundError:
+        return set()
+
+def append_read_wikilinks(new_links):
+    existing = load_read_wikilinks()
+    with open(read_wikilinks_file, "a") as f:
+        for link in new_links:
+            if link not in existing:
+                f.write(link + "\n")
+                existing.add(link)
 
 def checkParagraphSatisfiesConstraints(paragraph, matchingWords):
     validParagraph = not (
@@ -116,7 +133,7 @@ def get_gist_url(path):
 
 def find_wikilinked_notes(file_list, num_matches):
     notes = []
-    seen = set()
+    seen = load_read_wikilinks()
     for file in file_list:
         try:
             text = open(file, "r").read()
@@ -142,7 +159,6 @@ def find_wikilinked_notes(file_list, num_matches):
             url = get_gist_url(target)
             if url:
                 notes.append(f"{link}: {url}")
-                seen.add(link)
     notes = list(set(notes))
     random.shuffle(notes)
     print(f"Notes: {len(notes)}")
@@ -179,6 +195,10 @@ def main():
                     checked_sentences.append(item.text)
                 item.delete()
             mark_as_read(file_list, list(set(checked_sentences)))
+            if noteName == "Notes" and checked_sentences:
+                # persist checked wikilinks
+                links_to_save = [s.split(':', 1)[0] for s in set(checked_sentences)]
+                append_read_wikilinks(links_to_save)
 
         for paragraph in paragraphs[noteName]:
             note.add(paragraph, False)
