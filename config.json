@@ -24,7 +24,8 @@
         "zk/say's law notes.md",
         "zk/assasination markets work even if target can hide.md",
         "**/*tmp.md",
-        "**/*[?].md"
+        "**/*[?].md",
+        "**/*index.md"
     ],
     "questionWords": [
         "when",

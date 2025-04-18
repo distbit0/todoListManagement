@@ -77,7 +77,7 @@ def saveNotesFromKeep(keep):
     textToAddToFile = ""
 
     for gnote in gnotes:
-        isWatchNote = gnote.title in ["Questions", "Statements"]
+        isWatchNote = gnote.title in ["Questions", "Statements", "Notes"]
         isEmpty = (gnote.text + gnote.title).strip() == ""
         if isEmpty:
             gnote.trash()

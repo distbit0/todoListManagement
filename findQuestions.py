@@ -5,6 +5,8 @@ import glob
 import utils.general as general
 from dotenv import load_dotenv
 import os
+import frontmatter
+import toml
 
 load_dotenv()
 markAsReadString = "[[read]]"
@@ -90,14 +92,61 @@ def getFileList():
     filterList = general.getConfig()["questionFiles"]
     file_list = []
     for fileFilter in filterList:
-        file_list += [
-            path
-            for path in glob.glob(
-                general.getConfig()["toDoFolderPath"] + fileFilter,
-                recursive=True,
-            )
-        ]
+        for path in glob.glob(
+            general.getConfig()["toDoFolderPath"] + fileFilter,
+            recursive=True,
+        ):
+            file_list.append(path)
     return file_list
+
+
+def get_gist_url(path):
+    with open(path, "r") as f:
+        content = f.read()
+    try:
+        post = frontmatter.loads(content)
+    except toml.decoder.TomlDecodeError:
+        parts = content.split("+++++")
+        if len(parts) >= 3:
+            post = frontmatter.loads(parts[2])
+        else:
+            return None
+    return post.metadata.get("gist_url")
+
+
+def find_wikilinked_notes(file_list, num_matches):
+    notes = []
+    seen = set()
+    for file in file_list:
+        try:
+            text = open(file, "r").read()
+        except:
+            continue
+        print(f"Processing {file}")
+        for link in re.findall(r"\[\[([^\]]+)\]\]", text):
+            if link in seen:
+                continue
+            # locate the note file matching this wikilink via os.walk
+            wikilink_without_ext = link.replace(".md", "")
+            target = None
+            base_dir = general.getConfig()["toDoFolderPath"]
+            for root, _, files in os.walk(base_dir):
+                for file_name in files:
+                    if file_name.lower().endswith(".md") and file_name[:-3].lower() == wikilink_without_ext.lower():
+                        target = os.path.join(root, file_name)
+                        break
+                if target:
+                    break
+            if not target:
+                continue
+            url = get_gist_url(target)
+            if url:
+                notes.append(f"{link}: {url}")
+                seen.add(link)
+    notes = list(set(notes))
+    random.shuffle(notes)
+    print(f"Notes: {len(notes)}")
+    return notes[:num_matches]
 
 
 def main():
@@ -106,19 +155,20 @@ def main():
     # Call the function to find random matches from the files
     file_list = getFileList()
     paragraphs = {
-        "Questions": find_random_matches(
-            file_list, general.getConfig()["questionWords"], num_matches
-        ),
+        # "Questions": find_random_matches(
+        #     file_list, general.getConfig()["questionWords"], num_matches
+        # ),
         "Statements": find_random_matches(file_list, [], num_matches),
+        "Notes": find_wikilinked_notes(file_list, num_matches),
     }
 
     keep = gkeepapi.Keep()
-    keep.resume(
+    keep.authenticate(
         os.environ["username"],
         os.environ["masterKey"],
     )
     gnotes = list(keep.find(archived=False, trashed=False))
-    for noteName in ["Questions", "Statements"]:
+    for noteName in ["Statements", "Notes"]: # deleted questions
         note = next((note for note in gnotes if note.title == noteName), None)
         if not note:
             note = keep.createList(noteName, [])
