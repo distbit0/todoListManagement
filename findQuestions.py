@@ -23,6 +23,7 @@ def load_read_wikilinks():
 
 def append_read_wikilinks(new_links):
     existing = load_read_wikilinks()
+    print("path of read_wikilinks_file: " + read_wikilinks_file)
     with open(read_wikilinks_file, "a") as f:
         for link in new_links:
             if link not in existing:
@@ -194,11 +195,13 @@ def main():
                 if item.checked:
                     checked_sentences.append(item.text)
                 item.delete()
-            mark_as_read(file_list, list(set(checked_sentences)))
             if noteName == "Notes" and checked_sentences:
+                print("found checked sentences in Notes")
                 # persist checked wikilinks
                 links_to_save = [s.split(':', 1)[0] for s in set(checked_sentences)]
                 append_read_wikilinks(links_to_save)
+            else:
+                mark_as_read(file_list, list(set(checked_sentences)))
 
         for paragraph in paragraphs[noteName]:
             note.add(paragraph, False)
