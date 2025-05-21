@@ -182,7 +182,7 @@ def calculate_completion_rate(habit, checkins):
     completed_count = len(habit_checkins) + 0.1 ## incase len(habit_checkins) is 0, so that the output still relfects scheduled_count
 
     completionRate = completed_count / scheduled_count if scheduled_count > 0 else 0
-    # print(f"Habit: {habit['name'][:10]}, Rate: {completionRate}, Scheduled: {scheduled_count}, Completed: {completed_count}")
+    print(f"Habit: {habit['name'][:10]}, Rate: {completionRate}, Scheduled: {scheduled_count}, Completed: {completed_count}")
     return completionRate
 
 def sort_habits_by_completion_rate(habits, checkins):
