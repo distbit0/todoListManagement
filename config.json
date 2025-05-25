@@ -12,7 +12,7 @@
     "tasksToDisplayInMd": 2,
     "todosPerPrioritisationSession": 21,
     "minTasksToTriggerReprioritisation": 3,
-    "tempNotesPath": "/home/pimania/notes/zk/temp.md",
+    "tempNotesPath": "/home/pimania/notes/zk/temp index.md",
     "mp3CaptureFolder": "/home/pimania/memos/",
     "questionFiles": [
         "zk/attention questions.md",
@@ -23,9 +23,8 @@
         "zk/OTK ECG.md",
         "zk/say's law notes.md",
         "zk/assasination markets work even if target can hide.md",
-        "**/*tmp.md",
-        "**/*[?].md",
-        "**/*index.md"
+        "**/*index.md",
+        "**/*[?].md"
     ],
     "questionWords": [
         "when",
