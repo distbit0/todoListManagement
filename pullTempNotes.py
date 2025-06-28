@@ -1,4 +1,5 @@
 import gkeepapi
+import sys
 from pydub.utils import mediainfo
 import os
 import re
@@ -144,10 +145,12 @@ def processMp3File(mp3FileName):
         api_response = client.audio.transcriptions.create(
             model="gpt-4o-transcribe",
             file=open(mp3FileName, "rb"),
+            
             response_format="text"
         )
         transcribed_text = api_response
-    except:
+    except Exception as e:
+        print(sys.exc_info())
         transcribed_text = "transcription api error" + str(time.time()) 
         print(f"Error transcribing {mp3FileName}")
     
