@@ -129,11 +129,11 @@ def processMp3File(mp3FileName):
         
     duration = float(info['duration'])
     temp_file = None
-    if duration > 1000:
-        print(f"Cropping {mp3FileName} to 1000 seconds")
+    if duration > 1100:
+        print(f"Cropping {mp3FileName} to 1100 seconds")
         from pydub import AudioSegment
         audio = AudioSegment.from_file(mp3FileName)
-        audio = audio[:1000*1000]  # pydub works in milliseconds
+        audio = audio[:1100*1000]  # pydub works in milliseconds
         temp_file = mp3FileName + ".temp.mp3"
         audio.export(temp_file, format="mp3")
         mp3FileName = temp_file
