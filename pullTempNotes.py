@@ -4,6 +4,7 @@ import os
 import re
 import glob
 import datetime
+import time
 import utils.general as general
 from openai import OpenAI
 import hashlib
@@ -145,7 +146,7 @@ def processMp3File(mp3FileName):
         )
         transcribed_text = api_response
     except:
-        transcribed_text = "transcription api error"
+        transcribed_text = "transcription api error" + str(time.time()) 
         print(f"Error transcribing {mp3FileName}")
     
     if temp_file:
