@@ -197,11 +197,10 @@ def saveNotesFromMp3s():
             print("text from mp3: {}".format(textFromMp3))
             
         # Record the processed file hash
-        if "transcription api error" not in textFromMp3:
-            processed_hashes.add_hash(file_hash, {
-                'filename': fileName,
-                'processed_date': str(datetime.datetime.now()),
-            })
+        processed_hashes.add_hash(file_hash, {
+            'filename': fileName,
+            'processed_date': str(datetime.datetime.now()),
+        })
         
         processedMp3s[fileName] = textFromMp3
 
