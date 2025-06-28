@@ -103,6 +103,8 @@ def saveNotesFromKeep(keep):
 def tryDeleteFile(path, fileText):
     fileExt = path.split(".")[-1]
     oldFileName = path.split("/")[-1]
+    if "transcription api error" in fileText:
+        return
     newFileName = (
         "".join([char for char in fileText if char.isalnum() or char == " "][:120])
         + "."
@@ -127,11 +129,11 @@ def processMp3File(mp3FileName):
         
     duration = float(info['duration'])
     temp_file = None
-    if duration > 800:
-        print(f"Cropping {mp3FileName} to 800 seconds")
+    if duration > 1000:
+        print(f"Cropping {mp3FileName} to 1000 seconds")
         from pydub import AudioSegment
         audio = AudioSegment.from_file(mp3FileName)
-        audio = audio[:800*1000]  # pydub works in milliseconds
+        audio = audio[:1000*1000]  # pydub works in milliseconds
         temp_file = mp3FileName + ".temp.mp3"
         audio.export(temp_file, format="mp3")
         mp3FileName = temp_file
