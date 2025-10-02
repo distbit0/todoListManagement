@@ -16,12 +16,13 @@ from processed_hashes import ProcessedHashes
 load_dotenv()
 
 # Initialize the hash tracker
-HASH_FILE = os.path.join(os.path.dirname(__file__), 'audio_hashes.json')
+HASH_FILE = os.path.join(os.path.dirname(__file__), "audio_hashes.json")
 processed_hashes = ProcessedHashes(HASH_FILE)
 
 
 #### this should be moved to a separate repo that also contains findQuestions.py
 # also move prioritiseHabits to separate repo
+
 
 def formatIncomingText(text, isTranscription):
     pattern = re.compile(r"(^\d+\.\s*)http")
@@ -123,43 +124,43 @@ def tryDeleteFile(path, fileText):
 def processMp3File(mp3FileName):
     # Get the duration of the audio file
     info = mediainfo(mp3FileName)
-    
+
     if "duration" not in info:
         print(f"Could not determine duration for {mp3FileName}")
         return "DURATION UNKNOWN"
-        
-    duration = float(info['duration'])
+
+    duration = float(info["duration"])
     temp_file = None
     if duration > 1100:
         print(f"Cropping {mp3FileName} to 1100 seconds")
         from pydub import AudioSegment
+
         audio = AudioSegment.from_file(mp3FileName)
-        audio = audio[:1100*1000]  # pydub works in milliseconds
+        audio = audio[: 1100 * 1000]  # pydub works in milliseconds
         temp_file = mp3FileName + ".temp.mp3"
         audio.export(temp_file, format="mp3")
         mp3FileName = temp_file
 
     try:
-        apiKey = os.environ["openaiApiKey"]
+        apiKey = os.environ["OPENAI_API_KEY"]
         client = OpenAI(api_key=apiKey)
         api_response = client.audio.transcriptions.create(
             model="gpt-4o-transcribe",
             file=open(mp3FileName, "rb"),
-            
-            response_format="text"
+            response_format="text",
         )
         transcribed_text = api_response
     except Exception as e:
         print(sys.exc_info())
-        transcribed_text = "transcription api error" + str(time.time()) 
+        transcribed_text = "transcription api error" + str(time.time())
         print(f"Error transcribing {mp3FileName}")
-    
+
     if temp_file:
         try:
             os.remove(temp_file)
         except Exception as e:
             print(f"Error removing temporary file {temp_file}: {e}")
-    
+
     return transcribed_text
 
 
@@ -182,7 +183,7 @@ def saveNotesFromMp3s():
     for mp3File in musicFiles:
         fileName = mp3File.split("/")[-1]
         file_hash = calculate_file_hash(mp3File)
-        
+
         # Check if we've already processed this file hash
         if processed_hashes.is_hash_processed(file_hash):
             print(f"Skipping already processed file: {fileName}")
@@ -195,13 +196,16 @@ def saveNotesFromMp3s():
         if textFromMp3:
             textToAddToFile += "\n\n" + textFromMp3
             print("text from mp3: {}".format(textFromMp3))
-            
+
         # Record the processed file hash
-        processed_hashes.add_hash(file_hash, {
-            'filename': fileName,
-            'processed_date': str(datetime.datetime.now()),
-        })
-        
+        processed_hashes.add_hash(
+            file_hash,
+            {
+                "filename": fileName,
+                "processed_date": str(datetime.datetime.now()),
+            },
+        )
+
         processedMp3s[fileName] = textFromMp3
 
     return textToAddToFile, processedMp3s
