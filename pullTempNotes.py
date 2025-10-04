@@ -197,14 +197,14 @@ def saveNotesFromMp3s():
             textToAddToFile += "\n\n" + textFromMp3
             print("text from mp3: {}".format(textFromMp3))
 
-        # Record the processed file hash
-        processed_hashes.add_hash(
-            file_hash,
-            {
-                "filename": fileName,
-                "processed_date": str(datetime.datetime.now()),
-            },
-        )
+            # Record the processed file hash
+            processed_hashes.add_hash(
+                file_hash,
+                {
+                    "filename": fileName,
+                    "processed_date": str(datetime.datetime.now()),
+                },
+            )
 
         processedMp3s[fileName] = textFromMp3
 
