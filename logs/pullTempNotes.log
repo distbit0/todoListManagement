@@ -1,0 +1,6 @@
+2025-10-06 19:50:09.462 | INFO     | __main__:saveNotesFromMp3s:213 - Processing My recording 2.mp3
+2025-10-06 19:50:12.750 | INFO     | __main__:processMp3File:167 - Transcription completed for /home/pimania/memos/My recording 2.mp3
+2025-10-06 19:50:12.750 | DEBUG    | __main__:saveNotesFromMp3s:220 - Transcription output for My recording 2.mp3: this is a test. testing one two three. this is a test. hello hello hello
+
+2025-10-06 19:50:13.190 | INFO     | __main__:<module>:316 - Deleting My recording 2.mp3
+2025-10-06 19:50:13.192 | INFO     | __main__:tryDeleteFile:131 - Moved /home/pimania/memos/this is a test testing one two three this is a test hello hello hello.mp3 to trash after successful transcription
