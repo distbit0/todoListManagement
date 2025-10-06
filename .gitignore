@@ -8,3 +8,7 @@ utils/errorOldText.txt
 habits.json
 read_wikilinks.txt
 audio_hashes.json
+
+logs/*
+
+logs/
