@@ -1,5 +1,5 @@
 import gkeepapi
-import sys
+from loguru import logger
 from pydub.utils import mediainfo
 import os
 import re
@@ -18,6 +18,18 @@ load_dotenv()
 # Initialize the hash tracker
 HASH_FILE = os.path.join(os.path.dirname(__file__), "audio_hashes.json")
 processed_hashes = ProcessedHashes(HASH_FILE)
+
+LOG_DIR = os.path.join(os.path.dirname(__file__), "logs")
+os.makedirs(LOG_DIR, exist_ok=True)
+LOG_FILE = os.path.join(LOG_DIR, "pullTempNotes.log")
+logger.add(
+    LOG_FILE,
+    rotation="10 MB",
+    retention="10 days",
+    enqueue=True,
+    backtrace=True,
+    diagnose=True,
+)
 
 
 #### this should be moved to a separate repo that also contains findQuestions.py
@@ -68,7 +80,7 @@ def delete_duplicate_files(directory):
             if file_hash in hashes:
                 # This file is a duplicate; send it to the trash
                 send2trash(file_path)
-                print(f"Moved to trash due to duplicate hash: {file_path}")
+                logger.info(f"Moved to trash due to duplicate hash: {file_path}")
             else:
                 # Record the hash of this unique file
                 hashes[file_hash] = file_path
@@ -90,7 +102,9 @@ def saveNotesFromKeep(keep):
             formatIncomingText(gnote.text.strip(), False),
             gnote.title.strip(),
         )
-        print("text from keep: {}".format(noteTitle + "\n" + noteText))
+        logger.debug(
+            f"Text from keep note {noteTitle if noteTitle else '[untitled]'}: {noteText}"
+        )
         if noteText or noteTitle:
             textToAddToFile += "\n"
         if "http" not in noteText:
@@ -105,8 +119,6 @@ def saveNotesFromKeep(keep):
 def tryDeleteFile(path, fileText):
     fileExt = path.split(".")[-1]
     oldFileName = path.split("/")[-1]
-    if "transcription api error" in fileText:
-        return
     newFileName = (
         "".join([char for char in fileText if char.isalnum() or char == " "][:120])
         + "."
@@ -116,9 +128,9 @@ def tryDeleteFile(path, fileText):
     os.rename(path, newFilePath)
     try:
         send2trash(newFilePath)
-    except Exception as e:
-        print(f"Error moving {newFilePath} to trash: {e}")
-        pass
+        logger.info(f"Moved {newFilePath} to trash after successful transcription")
+    except Exception as error:
+        logger.exception(f"Failed moving {newFilePath} to trash: {error}")
 
 
 def processMp3File(mp3FileName):
@@ -126,13 +138,13 @@ def processMp3File(mp3FileName):
     info = mediainfo(mp3FileName)
 
     if "duration" not in info:
-        print(f"Could not determine duration for {mp3FileName}")
-        return "DURATION UNKNOWN"
+        logger.error(f"Could not determine duration for {mp3FileName}")
+        return "DURATION UNKNOWN", False
 
     duration = float(info["duration"])
     temp_file = None
     if duration > 1100:
-        print(f"Cropping {mp3FileName} to 1100 seconds")
+        logger.info(f"Cropping {mp3FileName} to 1100 seconds")
         from pydub import AudioSegment
 
         audio = AudioSegment.from_file(mp3FileName)
@@ -144,24 +156,28 @@ def processMp3File(mp3FileName):
     try:
         apiKey = os.environ["OPENAI_API_KEY"]
         client = OpenAI(api_key=apiKey)
-        api_response = client.audio.transcriptions.create(
-            model="gpt-4o-transcribe",
-            file=open(mp3FileName, "rb"),
-            response_format="text",
-        )
+        with open(mp3FileName, "rb") as audio_file:
+            api_response = client.audio.transcriptions.create(
+                model="gpt-4o-transcribe",
+                file=audio_file,
+                response_format="text",
+            )
         transcribed_text = api_response
-    except Exception as e:
-        print(sys.exc_info())
-        transcribed_text = "transcription api error" + str(time.time())
-        print(f"Error transcribing {mp3FileName}")
+        success = True
+        logger.info(f"Transcription completed for {mp3FileName}")
+    except Exception as error:
+        transcribed_text = f"transcription api error {time.time()}"
+        success = False
+        logger.exception(f"Transcription failed for {mp3FileName}: {error}")
 
     if temp_file:
         try:
             os.remove(temp_file)
-        except Exception as e:
-            print(f"Error removing temporary file {temp_file}: {e}")
+            logger.debug(f"Removed temporary audio file {temp_file}")
+        except Exception as error:
+            logger.exception(f"Error removing temporary file {temp_file}: {error}")
 
-    return transcribed_text
+    return transcribed_text, success
 
 
 def sort_key(filename):
@@ -186,16 +202,22 @@ def saveNotesFromMp3s():
 
         # Check if we've already processed this file hash
         if processed_hashes.is_hash_processed(file_hash):
-            print(f"Skipping already processed file: {fileName}")
-            processedMp3s[fileName] = "ALREADY PROCESSED"
+            logger.info(f"Skipping already processed file: {fileName}")
+            processedMp3s[fileName] = {
+                "raw_text": "ALREADY PROCESSED",
+                "formatted_text": "ALREADY PROCESSED",
+                "transcription_successful": True,
+            }
             continue
 
-        print("processing {}".format(fileName))
-        textFromMp3 = processMp3File(mp3File)
-        textFromMp3 = formatIncomingText(textFromMp3, True)
-        if textFromMp3:
-            textToAddToFile += "\n\n" + textFromMp3
-            print("text from mp3: {}".format(textFromMp3))
+        logger.info(f"Processing {fileName}")
+        raw_text, transcription_successful = processMp3File(mp3File)
+        formatted_text = formatIncomingText(raw_text, True) if raw_text else ""
+
+        if transcription_successful:
+            if formatted_text:
+                textToAddToFile += "\n\n" + formatted_text
+                logger.debug(f"Transcription output for {fileName}: {formatted_text}")
 
             # Record the processed file hash
             processed_hashes.add_hash(
@@ -205,8 +227,16 @@ def saveNotesFromMp3s():
                     "processed_date": str(datetime.datetime.now()),
                 },
             )
+        else:
+            logger.info(
+                f"Transcription failed for {fileName}; leaving file in source folder for retry"
+            )
 
-        processedMp3s[fileName] = textFromMp3
+        processedMp3s[fileName] = {
+            "raw_text": raw_text,
+            "formatted_text": formatted_text,
+            "transcription_successful": transcription_successful,
+        }
 
     return textToAddToFile, processedMp3s
 
@@ -271,7 +301,17 @@ writeToFile(tempFilePath, textToAddToFile)
 
 # only now do we delete/archive synced notes and mp3s
 keep.sync()
-for mp3File in processedMp3s:
-    fileText = processedMp3s[mp3File]
-    print(f"Deleting {mp3File}")
+for mp3File, mp3Outcome in processedMp3s.items():
+    if not mp3Outcome["transcription_successful"]:
+        logger.info(
+            f"Skipping deletion for {mp3File} because transcription failed; leaving for retry"
+        )
+        continue
+
+    fileText = (
+        mp3Outcome["formatted_text"]
+        or mp3Outcome["raw_text"]
+        or os.path.splitext(mp3File)[0]
+    )
+    logger.info(f"Deleting {mp3File}")
     tryDeleteFile(os.path.join(mp3FolderPath, mp3File), fileText)
