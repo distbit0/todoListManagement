@@ -45,6 +45,7 @@ def formatIncomingText(text, isTranscription):
         line = " ".join(
             word.lower() if isTranscription else word for word in line.split()
         )  # only convert transcribed text to lowercase. otherwise could clobber case sensitive text such as urls from gkeep
+        line = line[0].lower() + line[1:]  # lowercase first caps letter
         line = line.strip(".!?") if isTranscription else line
         modified_lines.append(line)
 
