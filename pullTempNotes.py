@@ -27,7 +27,7 @@ logger.add(
     LOG_FILE,
     rotation="10 MB",
     retention="10 days",
-    enqueue=True,
+    enqueue=False,
     backtrace=True,
     diagnose=True,
 )
