@@ -9,6 +9,7 @@ import time
 import utils.general as general
 from openai import OpenAI
 import hashlib
+import subprocess
 from dotenv import load_dotenv
 from send2trash import send2trash
 from processed_hashes import ProcessedHashes
@@ -45,7 +46,8 @@ def formatIncomingText(text, isTranscription):
         line = " ".join(
             word.lower() if isTranscription else word for word in line.split()
         )  # only convert transcribed text to lowercase. otherwise could clobber case sensitive text such as urls from gkeep
-        line = line[0].lower() + line[1:]  # lowercase first caps letter
+        if line:
+            line = line[0].lower() + line[1:]  # lowercase first caps letter
         line = line.strip(".!?") if isTranscription else line
         modified_lines.append(line)
 
@@ -91,6 +93,8 @@ def saveNotesFromKeep(keep):
     gnotes = list(keep.find(archived=False, trashed=False))
     gnotes = sorted(gnotes, key=lambda x: x.timestamps.edited.timestamp())
     textToAddToFile = ""
+    urls_from_keep = []
+    url_pattern = re.compile(r"https?://\S+")
 
     for gnote in gnotes:
         isWatchNote = gnote.title in ["Questions", "Statements", "Notes"]
@@ -103,6 +107,13 @@ def saveNotesFromKeep(keep):
             formatIncomingText(gnote.text.strip(), False),
             gnote.title.strip(),
         )
+        combined_text = f"{noteTitle}\n{noteText}".strip()
+        urls = url_pattern.findall(combined_text)
+        is_url_only_note = urls and url_pattern.sub("", combined_text).strip() == ""
+        if is_url_only_note:
+            urls_from_keep.extend(urls)
+            gnote.trash()
+            continue
         logger.debug(
             f"Text from keep note {noteTitle if noteTitle else '[untitled]'}: {noteText}"
         )
@@ -114,7 +125,31 @@ def saveNotesFromKeep(keep):
         textToAddToFile += "\n" + noteText if noteText else ""
         gnote.trash()
 
-    return textToAddToFile
+    return textToAddToFile, urls_from_keep
+
+
+def run_lineate_for_urls(urls):
+    if not urls:
+        return
+    urls_text = " ".join(urls)
+    command = [
+        "/home/pimania/dev/misc/uvrun.sh",
+        "/home/pimania/dev/lineate/src/lineate.py",
+        "--force-convert-all",
+        "--summarise",
+        urls_text,
+    ]
+    logger.info(f"Running lineate for {len(urls)} urls")
+    subprocess.run(command, check=True)
+
+
+def append_opened_urls(urls, file_path):
+    if not urls:
+        return
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open(file_path, "a") as file:
+        for url in urls:
+            file.write(f"{timestamp} {url}\n")
 
 
 def tryDeleteFile(path, fileText):
@@ -297,8 +332,11 @@ tempFilePath, mp3FolderPath = (
 delete_duplicate_files(mp3FolderPath)
 
 textToAddToFile, processedMp3s = saveNotesFromMp3s()
-textToAddToFile += saveNotesFromKeep(keep)
+textToAddToFile_from_keep, keep_urls = saveNotesFromKeep(keep)
+textToAddToFile += textToAddToFile_from_keep
 writeToFile(tempFilePath, textToAddToFile)
+run_lineate_for_urls(keep_urls)
+append_opened_urls(keep_urls, "/home/pimania/notes/opened_urls.md")
 
 # only now do we delete/archive synced notes and mp3s
 keep.sync()
