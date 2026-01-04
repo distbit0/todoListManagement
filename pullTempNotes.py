@@ -147,7 +147,12 @@ def append_opened_urls(urls, file_path):
     if not urls:
         return
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with open(file_path, "a") as file:
+    with open(file_path, "a+") as file:
+        file.seek(0, os.SEEK_END)
+        if file.tell() > 0:
+            file.seek(file.tell() - 1)
+            if file.read(1) != "\n":
+                file.write("\n")
         for url in urls:
             file.write(f"{timestamp} {url}\n")
 
