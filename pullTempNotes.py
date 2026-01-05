@@ -107,9 +107,8 @@ def saveNotesFromKeep(keep):
             formatIncomingText(gnote.text.strip(), False),
             gnote.title.strip(),
         )
-        combined_text = f"{noteTitle}\n{noteText}".strip()
-        urls = url_pattern.findall(combined_text)
-        is_url_only_note = urls and url_pattern.sub("", combined_text).strip() == ""
+        urls = url_pattern.findall(noteText.strip())
+        is_url_only_note = urls and url_pattern.sub("", noteText.strip()).strip() == ""
         if is_url_only_note:
             urls_from_keep.extend(urls)
             gnote.trash()
