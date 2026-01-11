@@ -139,7 +139,9 @@ def run_lineate_for_urls(urls):
         urls_text,
     ]
     logger.info(f"Running lineate for {len(urls)} urls")
-    subprocess.run(command, check=True)
+    env = os.environ.copy()
+    env["DISPLAY"] = ":0"
+    subprocess.run(command, check=True, env=env)
 
 
 def append_opened_urls(urls, file_path):
