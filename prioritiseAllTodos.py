@@ -58,7 +58,9 @@ def prioritiseUnprioritisedTodos(
                                     prioritisedPaths[i - 1]
                                 )
                             )
-                            prioritisedPaths[i-1] = completion.markTodoAsUnDone(prioritisedPaths[i-1])
+                            prioritisedPaths[i - 1] = completion.markTodoAsUnDone(
+                                prioritisedPaths[i - 1]
+                            )
                             i -= 2
                             prioritisedSoFar -= 2
                             goBack = True
@@ -369,7 +371,9 @@ def main():
             todosPerPrioritisationSession = int(todosPerPrioritisationSession)
         else:
             if str(onlyInteractiveTodo).lower() in file.lower():
-                todosPerPrioritisationSession = todosPerPrioritisationSession - processedTodos
+                todosPerPrioritisationSession = (
+                    todosPerPrioritisationSession - processedTodos
+                )
             else:
                 todosPerPrioritisationSession = 0
         if "conflict" in toDoFiles[file]:
