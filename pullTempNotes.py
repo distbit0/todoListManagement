@@ -108,9 +108,14 @@ def saveNotesFromKeep(keep):
             gnote.title.strip(),
         )
         urls = url_pattern.findall(noteText.strip())
+        slack_urls = [url for url in urls if "slack.com" in url]
+        non_slack_urls = [url for url in urls if "slack.com" not in url]
         is_url_only_note = urls and url_pattern.sub("", noteText.strip()).strip() == ""
         if is_url_only_note:
-            urls_from_keep.extend(urls)
+            if non_slack_urls:
+                urls_from_keep.extend(non_slack_urls)
+            if slack_urls:
+                textToAddToFile += "\n\n" + "\n".join(slack_urls)
             gnote.trash()
             continue
         logger.debug(
