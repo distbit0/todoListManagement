@@ -123,6 +123,7 @@ def saveNotesFromKeep(keep):
         )
         if noteText or noteTitle:
             textToAddToFile += "\n"
+        noteTitle = ""
         if "http" not in noteText:
             textToAddToFile += "\n" + noteTitle if noteTitle else ""
             textToAddToFile += ":" if noteText and noteTitle else ""
