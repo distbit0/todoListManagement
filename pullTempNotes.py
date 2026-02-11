@@ -94,13 +94,14 @@ def saveNotesFromKeep(keep):
     gnotes = sorted(gnotes, key=lambda x: x.timestamps.edited.timestamp())
     textToAddToFile = ""
     urls_from_keep = []
+    notes_to_trash = []
     url_pattern = re.compile(r"https?://\S+")
 
     for gnote in gnotes:
         isWatchNote = gnote.title in ["Questions", "Statements", "Notes"]
         isEmpty = (gnote.text + gnote.title).strip() == ""
         if isEmpty:
-            gnote.trash()
+            notes_to_trash.append(gnote)
         if isEmpty or isWatchNote:
             continue
         noteText, noteTitle = (
@@ -116,7 +117,7 @@ def saveNotesFromKeep(keep):
                 urls_from_keep.extend(non_slack_urls)
             if slack_urls:
                 textToAddToFile += "\n\n" + "\n".join(slack_urls)
-            gnote.trash()
+            notes_to_trash.append(gnote)
             continue
         logger.debug(
             f"Text from keep note {noteTitle if noteTitle else '[untitled]'}: {noteText}"
@@ -128,9 +129,9 @@ def saveNotesFromKeep(keep):
             textToAddToFile += "\n" + noteTitle if noteTitle else ""
             textToAddToFile += ":" if noteText and noteTitle else ""
         textToAddToFile += "\n" + noteText if noteText else ""
-        gnote.trash()
+        notes_to_trash.append(gnote)
 
-    return textToAddToFile, urls_from_keep
+    return textToAddToFile, urls_from_keep, notes_to_trash
 
 
 def run_lineate_for_urls(urls):
@@ -344,11 +345,14 @@ tempFilePath, mp3FolderPath = (
 delete_duplicate_files(mp3FolderPath)
 
 textToAddToFile, processedMp3s = saveNotesFromMp3s()
-textToAddToFile_from_keep, keep_urls = saveNotesFromKeep(keep)
+textToAddToFile_from_keep, keep_urls, keep_notes_to_trash = saveNotesFromKeep(keep)
 textToAddToFile += textToAddToFile_from_keep
 writeToFile(tempFilePath, textToAddToFile)
 
-# Sync immediately so trashed Keep notes are not re-fetched by overlapping cron runs.
+for gnote in keep_notes_to_trash:
+    gnote.trash()
+
+# Sync immediately after successful write so overlapping cron runs do not re-fetch.
 keep.sync()
 
 run_lineate_for_urls(keep_urls)
