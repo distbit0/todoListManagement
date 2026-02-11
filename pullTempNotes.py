@@ -347,11 +347,14 @@ textToAddToFile, processedMp3s = saveNotesFromMp3s()
 textToAddToFile_from_keep, keep_urls = saveNotesFromKeep(keep)
 textToAddToFile += textToAddToFile_from_keep
 writeToFile(tempFilePath, textToAddToFile)
+
+# Sync immediately so trashed Keep notes are not re-fetched by overlapping cron runs.
+keep.sync()
+
 run_lineate_for_urls(keep_urls)
 append_opened_urls(keep_urls, "/home/pimania/notes/opened_urls.md")
 
 # only now do we delete/archive synced notes and mp3s
-keep.sync()
 for mp3File, mp3Outcome in processedMp3s.items():
     if not mp3Outcome["transcription_successful"]:
         logger.info(
