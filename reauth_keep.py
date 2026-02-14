@@ -50,9 +50,13 @@ def generate_master_token(username: str, app_password: str, device_id: str) -> s
 def main() -> None:
     load_dotenv()
 
-    username = (os.environ.get("username") or input("Google username/email: ")).strip()
+    username = (os.environ.get("username") or "").strip()
+    if "@" not in username:
+        username = input("Google account email: ").strip()
     if not username:
         raise RuntimeError("Username is required.")
+    if "@" not in username:
+        raise RuntimeError("Google account email must include '@'.")
 
     app_password = (os.environ.get("GOOGLE_APP_PASSWORD") or "").strip().replace(" ", "")
     if not app_password:
@@ -63,7 +67,17 @@ def main() -> None:
         raise RuntimeError("Google app password is required.")
 
     device_id = resolve_device_id()
-    master_token = generate_master_token(username, app_password, device_id)
+    try:
+        master_token = generate_master_token(username, app_password, device_id)
+    except RuntimeError as error:
+        message = str(error)
+        if "BadAuthentication" in message:
+            raise RuntimeError(
+                "Google login failed: BadAuthentication. "
+                "Most common causes are wrong account email (must be full address), "
+                "wrong app password, or app passwords not enabled on the account."
+            ) from error
+        raise
 
     upsert_env_var(ENV_PATH, "username", username)
     upsert_env_var(ENV_PATH, "masterKey", master_token)
