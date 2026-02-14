@@ -43,7 +43,9 @@ def generate_master_token(username: str, app_password: str, device_id: str) -> s
     if not token:
         error = result.get("Error", "unknown-error")
         detail = result.get("ErrorDetail", "")
-        raise RuntimeError(f"Google login failed: {error} {detail}".strip())
+        url = result.get("Url", "")
+        extras = " ".join(part for part in [detail, url] if part).strip()
+        raise RuntimeError(f"Google login failed: {error} {extras}".strip())
     return token
 
 

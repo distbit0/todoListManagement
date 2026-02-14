@@ -5,8 +5,12 @@ import gkeepapi
 
 
 def resolve_device_id() -> str:
-    """Return the Keep device id, defaulting to host MAC in hex."""
-    return os.environ.get("KEEP_DEVICE_ID", f"{get_mac():x}")
+    """Return a stable 16-char hex Android device id for gpsoauth."""
+    device_id = os.environ.get("KEEP_DEVICE_ID")
+    if device_id:
+        return device_id
+    # gpsoauth examples typically use 16 hex chars; pad MAC-derived id for shape.
+    return f"{get_mac():x}".zfill(16)
 
 
 def authenticate_keep() -> gkeepapi.Keep:
