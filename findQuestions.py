@@ -1,12 +1,12 @@
 import re
 import random
-import gkeepapi
 import glob
 import utils.general as general
 from dotenv import load_dotenv
 import os
 import frontmatter
 import toml
+from keep_auth import authenticate_keep
 
 load_dotenv()
 markAsReadString = "[[read]]"
@@ -179,11 +179,7 @@ def main():
         "Notes": find_wikilinked_notes(file_list, num_matches),
     }
 
-    keep = gkeepapi.Keep()
-    keep.authenticate(
-        os.environ["username"],
-        os.environ["masterKey"],
-    )
+    keep = authenticate_keep()
     gnotes = list(keep.find(archived=False, trashed=False))
     for noteName in ["Statements", "Notes"]: # deleted questions
         note = next((note for note in gnotes if note.title == noteName), None)

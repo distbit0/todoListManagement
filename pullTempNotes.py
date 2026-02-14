@@ -1,4 +1,3 @@
-import gkeepapi
 from loguru import logger
 from pydub.utils import mediainfo
 import os
@@ -13,6 +12,7 @@ import subprocess
 from dotenv import load_dotenv
 from send2trash import send2trash
 from processed_hashes import ProcessedHashes
+from keep_auth import authenticate_keep
 
 load_dotenv()
 
@@ -332,11 +332,7 @@ def writeToFile(filePath, textToAddToFile):
         f.write(existingText)
 
 
-keep = gkeepapi.Keep()
-keep.authenticate(
-    os.environ["username"],
-    os.environ["masterKey"],
-)
+keep = authenticate_keep()
 
 tempFilePath, mp3FolderPath = (
     general.getConfig()["tempNotesPath"],
