@@ -1,3 +1,4 @@
+import argparse
 import getpass
 import os
 import re
@@ -49,7 +50,26 @@ def generate_master_token(username: str, app_password: str, device_id: str) -> s
     return token
 
 
+def exchange_master_token(username: str, oauth_token: str, device_id: str) -> str:
+    result = gpsoauth.exchange_token(username, oauth_token, device_id)
+    token = result.get("Token")
+    if not token:
+        error = result.get("Error", "unknown-error")
+        detail = result.get("ErrorDetail", "")
+        raise RuntimeError(f"OAuth token exchange failed: {error} {detail}".strip())
+    return token
+
+
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Refresh Google Keep master token")
+    parser.add_argument(
+        "--oauth-token",
+        dest="oauth_token",
+        default="",
+        help="oauth_token cookie value from accounts.google.com/EmbeddedSetup",
+    )
+    args = parser.parse_args()
+
     load_dotenv()
 
     username = (os.environ.get("username") or "").strip()
@@ -69,17 +89,21 @@ def main() -> None:
         raise RuntimeError("Google app password is required.")
 
     device_id = resolve_device_id()
-    try:
-        master_token = generate_master_token(username, app_password, device_id)
-    except RuntimeError as error:
-        message = str(error)
-        if "BadAuthentication" in message:
-            raise RuntimeError(
-                "Google login failed: BadAuthentication. "
-                "Most common causes are wrong account email (must be full address), "
-                "wrong app password, or app passwords not enabled on the account."
-            ) from error
-        raise
+    oauth_token = args.oauth_token.strip() or os.environ.get("GOOGLE_OAUTH_TOKEN", "").strip()
+    if oauth_token:
+        master_token = exchange_master_token(username, oauth_token, device_id)
+    else:
+        try:
+            master_token = generate_master_token(username, app_password, device_id)
+        except RuntimeError as error:
+            message = str(error)
+            if "BadAuthentication" in message:
+                raise RuntimeError(
+                    "Google login failed: BadAuthentication. "
+                    "Try the alternative flow by passing --oauth-token from "
+                    "https://accounts.google.com/EmbeddedSetup (oauth_token cookie)."
+                ) from error
+            raise
 
     upsert_env_var(ENV_PATH, "username", username)
     upsert_env_var(ENV_PATH, "masterKey", master_token)
