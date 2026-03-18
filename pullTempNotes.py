@@ -139,7 +139,7 @@ def run_lineate_for_urls(urls):
         return
     urls_text = " ".join(urls)
     command = [
-        "/home/pimania/dev/misc/uvrun.sh",
+        "/home/pimania/dev/misc/automation/uvrun.sh",
         "/home/pimania/dev/lineate/src/lineate.py",
         "--force-convert-all",
         "--summarise",

@@ -12,3 +12,4 @@ audio_hashes.json
 logs/*
 
 logs/
+**/node_modules/
