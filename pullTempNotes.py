@@ -1,5 +1,6 @@
 from loguru import logger
 from pydub.utils import mediainfo
+import fcntl
 import os
 import re
 import glob
@@ -23,6 +24,7 @@ processed_hashes = ProcessedHashes(HASH_FILE)
 LOG_DIR = os.path.join(os.path.dirname(__file__), "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
 LOG_FILE = os.path.join(LOG_DIR, "pullTempNotes.log")
+LOCK_FILE = os.path.join(LOG_DIR, "pullTempNotes.lock")
 logger.add(
     LOG_FILE,
     rotation="10 MB",
@@ -332,40 +334,66 @@ def writeToFile(filePath, textToAddToFile):
         f.write(existingText)
 
 
-keep = authenticate_keep()
+def acquire_script_lock():
+    lock_handle = open(LOCK_FILE, "a+")
+    try:
+        fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        logger.info("Another pullTempNotes.py run is active; exiting without work")
+        lock_handle.close()
+        raise SystemExit(0)
+    return lock_handle
 
-tempFilePath, mp3FolderPath = (
-    general.getConfig()["tempNotesPath"],
-    general.getConfig()["mp3CaptureFolder"],
-)
-delete_duplicate_files(mp3FolderPath)
 
-textToAddToFile, processedMp3s = saveNotesFromMp3s()
-textToAddToFile_from_keep, keep_urls, keep_notes_to_trash = saveNotesFromKeep(keep)
-textToAddToFile += textToAddToFile_from_keep
-writeToFile(tempFilePath, textToAddToFile)
+def sync_keep_notes(keep, temp_file_path, opened_urls_path):
+    keep_text, keep_urls, keep_notes_to_trash = saveNotesFromKeep(keep)
+    # Keep notes are only committed after all URL side effects succeed, so a
+    # failing lineate/opened_urls step leaves the source notes retryable.
+    run_lineate_for_urls(keep_urls)
+    append_opened_urls(keep_urls, opened_urls_path)
+    writeToFile(temp_file_path, keep_text)
 
-for gnote in keep_notes_to_trash:
-    gnote.trash()
+    for gnote in keep_notes_to_trash:
+        gnote.trash()
 
-# Sync immediately after successful write so overlapping cron runs do not re-fetch.
-keep.sync()
+    keep.sync()
 
-run_lineate_for_urls(keep_urls)
-append_opened_urls(keep_urls, "/home/pimania/notes/opened_urls.md")
 
-# only now do we delete/archive synced notes and mp3s
-for mp3File, mp3Outcome in processedMp3s.items():
-    if not mp3Outcome["transcription_successful"]:
-        logger.info(
-            f"Skipping deletion for {mp3File} because transcription failed; leaving for retry"
+def delete_processed_mp3s(processed_mp3s, mp3_folder_path):
+    for mp3File, mp3Outcome in processed_mp3s.items():
+        if not mp3Outcome["transcription_successful"]:
+            logger.info(
+                f"Skipping deletion for {mp3File} because transcription failed; leaving for retry"
+            )
+            continue
+
+        fileText = (
+            mp3Outcome["formatted_text"]
+            or mp3Outcome["raw_text"]
+            or os.path.splitext(mp3File)[0]
         )
-        continue
+        logger.info(f"Deleting {mp3File}")
+        tryDeleteFile(os.path.join(mp3_folder_path, mp3File), fileText)
 
-    fileText = (
-        mp3Outcome["formatted_text"]
-        or mp3Outcome["raw_text"]
-        or os.path.splitext(mp3File)[0]
-    )
-    logger.info(f"Deleting {mp3File}")
-    tryDeleteFile(os.path.join(mp3FolderPath, mp3File), fileText)
+
+def main():
+    lock_handle = acquire_script_lock()
+    try:
+        keep = authenticate_keep()
+        tempFilePath, mp3FolderPath = (
+            general.getConfig()["tempNotesPath"],
+            general.getConfig()["mp3CaptureFolder"],
+        )
+        delete_duplicate_files(mp3FolderPath)
+
+        textToAddToFile, processedMp3s = saveNotesFromMp3s()
+        writeToFile(tempFilePath, textToAddToFile)
+
+        sync_keep_notes(keep, tempFilePath, "/home/pimania/notes/opened_urls.md")
+        delete_processed_mp3s(processedMp3s, mp3FolderPath)
+    finally:
+        lock_handle.close()
+
+
+if __name__ == "__main__":
+    main()
