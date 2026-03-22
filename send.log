@@ -1,0 +1,2 @@
+2026-03-23 00:04:00.594 | INFO     | clipboard_to_phone_send:_send_plain_messages:125 - Sending message 1/1 to https://ntfy.sh/4547836rfhsfwsh43r43wifhghCOPY (attempt 1)
+2026-03-23 00:04:01.407 | INFO     | clipboard_to_phone_send:_send_plain_messages:139 - Sent notification payload.
