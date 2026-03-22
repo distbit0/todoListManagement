@@ -190,7 +190,21 @@ def send_urls_to_phone(urls):
     api_url = send_module._resolve_api_url_from_env()
     if not api_url:
         raise RuntimeError("clipboardToPhone send.py could not resolve NTFY_SEND_TOPIC")
-    if not send_module._send_plain_messages(api_url, urls):
+    lineate = send_module._load_lineate()
+    converted_urls = []
+    for url in urls:
+        converted_url = lineate.process_url(
+            url,
+            openInBrowser=False,
+            forceConvertAllUrls=True,
+            summarise=True,
+            forceNoConvert=False,
+            forceRefreshAll=False,
+        )
+        if not converted_url:
+            raise RuntimeError(f"clipboardToPhone lineate conversion failed for {url}")
+        converted_urls.append(converted_url)
+    if not send_module._send_plain_messages(api_url, converted_urls):
         raise RuntimeError("clipboardToPhone send.py failed to deliver keep URLs")
 
 
