@@ -120,7 +120,7 @@ def test_sync_keep_notes_orders_commit_steps(
 
 
 def test_save_notes_from_keep_sends_double_stop_url_only_notes_to_phone() -> None:
-    note = FakeKeepNote("https://example.com\nhttps://slack.com/example..")
+    note = FakeKeepNote("https://example.com\nhttps://slack.com/example ..")
     keep = type("Keep", (), {"find": lambda self, **kwargs: [note]})()
 
     keep_text, browser_urls, phone_urls, notes_to_trash = pullTempNotes.saveNotesFromKeep(

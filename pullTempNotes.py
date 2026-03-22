@@ -115,16 +115,25 @@ def saveNotesFromKeep(keep):
             formatIncomingText(gnote.text.strip(), False),
             gnote.title.strip(),
         )
+        trimmed_note_text = noteText.rstrip()
+        has_phone_send_marker = trimmed_note_text.endswith("..")
+        note_text_for_url_only_check = (
+            trimmed_note_text.rstrip(".").rstrip()
+            if has_phone_send_marker
+            else trimmed_note_text
+        )
         # The ".." suffix marker often sits directly on the final URL, so trim
         # trailing sentence punctuation off regex matches before routing.
         urls = [
             raw_url.rstrip(".,!?)]")
             for raw_url in url_pattern.findall(noteText.strip())
         ]
-        is_url_only_note = urls and url_pattern.sub("", noteText.strip()).strip() == ""
+        is_url_only_note = (
+            urls and url_pattern.sub("", note_text_for_url_only_check).strip() == ""
+        )
         slack_urls = [url for url in urls if "slack.com" in url]
         non_slack_urls = [url for url in urls if "slack.com" not in url]
-        should_send_urls_to_phone = is_url_only_note and noteText.rstrip().endswith("..")
+        should_send_urls_to_phone = is_url_only_note and has_phone_send_marker
         if should_send_urls_to_phone:
             phone_urls_from_keep.extend(urls)
             notes_to_trash.append(gnote)
