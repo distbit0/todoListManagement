@@ -1,3 +1,6 @@
+import importlib.util
+import sys
+
 from loguru import logger
 from pydub.utils import mediainfo
 import fcntl
@@ -20,6 +23,7 @@ load_dotenv()
 # Initialize the hash tracker
 HASH_FILE = os.path.join(os.path.dirname(__file__), "audio_hashes.json")
 processed_hashes = ProcessedHashes(HASH_FILE)
+SEND_TO_PHONE_SCRIPT_PATH = "/home/pimania/dev/clipboardToPhone/send.py"
 
 LOG_DIR = os.path.join(os.path.dirname(__file__), "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
@@ -96,6 +100,7 @@ def saveNotesFromKeep(keep):
     gnotes = sorted(gnotes, key=lambda x: x.timestamps.edited.timestamp())
     textToAddToFile = ""
     urls_from_keep = []
+    phone_urls_from_keep = []
     notes_to_trash = []
     url_pattern = re.compile(r"https?://\S+")
 
@@ -110,10 +115,20 @@ def saveNotesFromKeep(keep):
             formatIncomingText(gnote.text.strip(), False),
             gnote.title.strip(),
         )
-        urls = url_pattern.findall(noteText.strip())
+        # The ".." suffix marker often sits directly on the final URL, so trim
+        # trailing sentence punctuation off regex matches before routing.
+        urls = [
+            raw_url.rstrip(".,!?)]")
+            for raw_url in url_pattern.findall(noteText.strip())
+        ]
+        is_url_only_note = urls and url_pattern.sub("", noteText.strip()).strip() == ""
         slack_urls = [url for url in urls if "slack.com" in url]
         non_slack_urls = [url for url in urls if "slack.com" not in url]
-        is_url_only_note = urls and url_pattern.sub("", noteText.strip()).strip() == ""
+        should_send_urls_to_phone = is_url_only_note and noteText.rstrip().endswith("..")
+        if should_send_urls_to_phone:
+            phone_urls_from_keep.extend(urls)
+            notes_to_trash.append(gnote)
+            continue
         if is_url_only_note:
             if non_slack_urls:
                 urls_from_keep.extend(non_slack_urls)
@@ -133,7 +148,41 @@ def saveNotesFromKeep(keep):
         textToAddToFile += "\n" + noteText if noteText else ""
         notes_to_trash.append(gnote)
 
-    return textToAddToFile, urls_from_keep, notes_to_trash
+    return textToAddToFile, urls_from_keep, phone_urls_from_keep, notes_to_trash
+
+
+def load_send_to_phone_module():
+    module_name = "clipboard_to_phone_send"
+    module_spec = importlib.util.spec_from_file_location(
+        module_name, SEND_TO_PHONE_SCRIPT_PATH
+    )
+    if module_spec is None or module_spec.loader is None:
+        raise RuntimeError(f"Could not load send.py from {SEND_TO_PHONE_SCRIPT_PATH}")
+
+    clipboard_to_phone_dir = os.path.dirname(SEND_TO_PHONE_SCRIPT_PATH)
+    added_to_sys_path = clipboard_to_phone_dir not in sys.path
+    if added_to_sys_path:
+        sys.path.insert(0, clipboard_to_phone_dir)
+    try:
+        send_module = importlib.util.module_from_spec(module_spec)
+        module_spec.loader.exec_module(send_module)
+        return send_module
+    finally:
+        if added_to_sys_path:
+            sys.path.pop(0)
+
+
+def send_urls_to_phone(urls):
+    if not urls:
+        return
+    logger.info(f"Sending {len(urls)} keep url(s) to phone")
+    send_module = load_send_to_phone_module()
+    send_module._configure_logging()
+    api_url = send_module._resolve_api_url_from_env()
+    if not api_url:
+        raise RuntimeError("clipboardToPhone send.py could not resolve NTFY_SEND_TOPIC")
+    if not send_module._send_plain_messages(api_url, urls):
+        raise RuntimeError("clipboardToPhone send.py failed to deliver keep URLs")
 
 
 def run_lineate_for_urls(urls):
@@ -346,11 +395,12 @@ def acquire_script_lock():
 
 
 def sync_keep_notes(keep, temp_file_path, opened_urls_path):
-    keep_text, keep_urls, keep_notes_to_trash = saveNotesFromKeep(keep)
+    keep_text, keep_urls, phone_urls, keep_notes_to_trash = saveNotesFromKeep(keep)
     # Keep notes are only committed after all URL side effects succeed, so a
-    # failing lineate/opened_urls step leaves the source notes retryable.
+    # failing browser-send/phone-send step leaves the source notes retryable.
     run_lineate_for_urls(keep_urls)
     append_opened_urls(keep_urls, opened_urls_path)
+    send_urls_to_phone(phone_urls)
     writeToFile(temp_file_path, keep_text)
 
     for gnote in keep_notes_to_trash:

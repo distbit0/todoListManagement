@@ -21,6 +21,22 @@ class FakeKeep:
         self.events.append("sync")
 
 
+class FakeTimestamp:
+    def timestamp(self) -> int:
+        return 0
+
+
+class FakeTimestamps:
+    edited = FakeTimestamp()
+
+
+class FakeKeepNote:
+    def __init__(self, text: str, title: str = "") -> None:
+        self.text = text
+        self.title = title
+        self.timestamps = FakeTimestamps()
+
+
 def test_sync_keep_notes_commits_only_after_url_side_effects(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
@@ -33,12 +49,17 @@ def test_sync_keep_notes_commits_only_after_url_side_effects(
     monkeypatch.setattr(
         pullTempNotes,
         "saveNotesFromKeep",
-        lambda keep_arg: ("\nkeep text", ["https://example.com"], [note]),
+        lambda keep_arg: ("\nkeep text", ["https://example.com"], [], [note]),
     )
     monkeypatch.setattr(
         pullTempNotes,
         "run_lineate_for_urls",
         lambda urls: events.append("lineate"),
+    )
+    monkeypatch.setattr(
+        pullTempNotes,
+        "send_urls_to_phone",
+        lambda urls: events.append("send"),
     )
 
     def fail_append(urls, file_path):
@@ -66,7 +87,7 @@ def test_sync_keep_notes_orders_commit_steps(
     monkeypatch.setattr(
         pullTempNotes,
         "saveNotesFromKeep",
-        lambda keep_arg: ("\nkeep text", ["https://example.com"], [note]),
+        lambda keep_arg: ("\nkeep text", ["https://example.com"], ["https://phone.example"], [note]),
     )
     monkeypatch.setattr(
         pullTempNotes,
@@ -77,6 +98,11 @@ def test_sync_keep_notes_orders_commit_steps(
         pullTempNotes,
         "append_opened_urls",
         lambda urls, file_path: events.append("append"),
+    )
+    monkeypatch.setattr(
+        pullTempNotes,
+        "send_urls_to_phone",
+        lambda urls: events.append("send"),
     )
 
     original_write_to_file = pullTempNotes.writeToFile
@@ -89,8 +115,36 @@ def test_sync_keep_notes_orders_commit_steps(
 
     pullTempNotes.sync_keep_notes(keep, str(temp_notes_path), str(tmp_path / "urls.md"))
 
-    assert events == ["lineate", "append", "write", "trash", "sync"]
+    assert events == ["lineate", "append", "send", "write", "trash", "sync"]
     assert temp_notes_path.read_text() == "existing\nkeep text\n"
+
+
+def test_save_notes_from_keep_sends_double_stop_url_only_notes_to_phone() -> None:
+    note = FakeKeepNote("https://example.com\nhttps://slack.com/example..")
+    keep = type("Keep", (), {"find": lambda self, **kwargs: [note]})()
+
+    keep_text, browser_urls, phone_urls, notes_to_trash = pullTempNotes.saveNotesFromKeep(
+        keep
+    )
+
+    assert keep_text == ""
+    assert browser_urls == []
+    assert phone_urls == ["https://example.com", "https://slack.com/example"]
+    assert notes_to_trash == [note]
+
+
+def test_save_notes_from_keep_keeps_mixed_double_stop_notes_in_markdown() -> None:
+    note = FakeKeepNote("remember https://example.com..")
+    keep = type("Keep", (), {"find": lambda self, **kwargs: [note]})()
+
+    keep_text, browser_urls, phone_urls, notes_to_trash = pullTempNotes.saveNotesFromKeep(
+        keep
+    )
+
+    assert "remember https://example.com.." in keep_text
+    assert browser_urls == []
+    assert phone_urls == []
+    assert notes_to_trash == [note]
 
 
 def test_acquire_script_lock_exits_when_another_run_is_active(
