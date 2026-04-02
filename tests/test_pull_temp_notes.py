@@ -148,6 +148,24 @@ def test_save_notes_from_keep_keeps_mixed_double_stop_notes_in_markdown() -> Non
     assert notes_to_trash == [note]
 
 
+def test_save_notes_from_keep_skips_text_fragment_url_lines() -> None:
+    note = FakeKeepNote(
+        "https://example.com/page#:~:text=skip%20me\nkeep this line\nhttp://ok.example"
+    )
+    keep = type("Keep", (), {"find": lambda self, **kwargs: [note]})()
+
+    keep_text, browser_urls, phone_urls, notes_to_trash = pullTempNotes.saveNotesFromKeep(
+        keep
+    )
+
+    assert "#:~:text=" not in keep_text
+    assert "keep this line" in keep_text
+    assert "http://ok.example" in keep_text
+    assert browser_urls == []
+    assert phone_urls == []
+    assert notes_to_trash == [note]
+
+
 def test_send_urls_to_phone_converts_urls_before_delivery(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

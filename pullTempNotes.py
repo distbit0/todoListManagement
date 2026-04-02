@@ -61,6 +61,16 @@ def formatIncomingText(text, isTranscription):
     return modified_text
 
 
+def remove_keep_text_fragment_url_lines(note_text):
+    kept_lines = []
+    for line in note_text.split("\n"):
+        stripped_line = line.lstrip()
+        if stripped_line.startswith("http") and "#:~:text=" in stripped_line:
+            continue
+        kept_lines.append(line)
+    return "\n".join(kept_lines)
+
+
 def calculate_file_hash(file_path, hash_algo="sha256"):
     """Calculate the hash of a chunk from the middle of a file."""
     hash_func = getattr(hashlib, hash_algo)()
@@ -112,17 +122,19 @@ def saveNotesFromKeep(keep):
         if isEmpty or isWatchNote:
             continue
         noteText, noteTitle = (
-            formatIncomingText(gnote.text.strip(), False),
+            formatIncomingText(
+                remove_keep_text_fragment_url_lines(gnote.text.strip()), False
+            ),
             gnote.title.strip(),
         )
         trimmed_note_text = noteText.rstrip()
-        has_phone_send_marker = trimmed_note_text.endswith("..")
+        has_phone_send_marker = trimmed_note_text.endswith(" .")
         note_text_for_url_only_check = (
-            trimmed_note_text.rstrip(".").rstrip()
+            trimmed_note_text.rstrip(" .").rstrip()
             if has_phone_send_marker
             else trimmed_note_text
         )
-        # The ".." suffix marker often sits directly on the final URL, so trim
+        # The " ." suffix marker often sits directly on the final URL, so trim
         # trailing sentence punctuation off regex matches before routing.
         urls = [
             raw_url.rstrip(".,!?)]")

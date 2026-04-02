@@ -11,3 +11,7 @@
 - URL extraction now strips trailing sentence punctuation before routing. This is necessary because the `..` suffix marker often sits directly on the final URL, and sending the raw regex match would otherwise include those dots in the URL payload.
 - The `..` marker may also appear as whitespace-separated trailing content after the final URL, so the URL-only check must ignore a terminal run of periods before deciding whether the note contains only URLs.
 - The phone-send path converts URLs through lineate with the same no-browser/summarise settings as `clipboardToPhone/send.py`, but does so synchronously instead of using `send.py`'s persistent queue helper. That preserves `pullTempNotes.py`'s commit boundary: the Keep note is only trashed after conversion and delivery have both succeeded in the current run.
+
+## Keep text-fragment URLs
+
+- Keep body lines that begin with `http` and contain `#:~:text=` are dropped before any Keep-note URL routing or markdown formatting. These are browser text-fragment URLs and should not be written into temp notes or treated as URL payloads.
