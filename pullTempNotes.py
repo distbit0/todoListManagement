@@ -1,5 +1,7 @@
 import importlib.util
 import sys
+import json
+from dataclasses import dataclass
 
 from loguru import logger
 from pydub.utils import mediainfo
@@ -29,6 +31,8 @@ LOG_DIR = os.path.join(os.path.dirname(__file__), "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
 LOG_FILE = os.path.join(LOG_DIR, "pullTempNotes.log")
 LOCK_FILE = os.path.join(LOG_DIR, "pullTempNotes.lock")
+KEEP_URL_RETRY_COUNTS_FILE = os.path.join(LOG_DIR, "keep_url_retry_counts.json")
+MAX_KEEP_URL_CONVERSION_ATTEMPTS = 3
 logger.add(
     LOG_FILE,
     rotation="10 MB",
@@ -37,6 +41,16 @@ logger.add(
     backtrace=True,
     diagnose=True,
 )
+
+
+@dataclass
+class KeepUrlAction:
+    note: object
+    note_title: str
+    raw_text: str
+    browser_urls: list[str]
+    phone_urls: list[str]
+    success_text: str = ""
 
 
 #### this should be moved to a separate repo that also contains findQuestions.py
@@ -105,12 +119,71 @@ def delete_duplicate_files(directory):
                 hashes[file_hash] = file_path
 
 
-def saveNotesFromKeep(keep):
+def load_keep_url_retry_counts():
+    if not os.path.exists(KEEP_URL_RETRY_COUNTS_FILE):
+        return {}
+
+    with open(KEEP_URL_RETRY_COUNTS_FILE, "r") as file:
+        retry_counts = json.load(file)
+
+    if not isinstance(retry_counts, dict):
+        raise RuntimeError(
+            f"Expected retry counts dict in {KEEP_URL_RETRY_COUNTS_FILE}"
+        )
+
+    return {str(key): int(value) for key, value in retry_counts.items()}
+
+
+def save_keep_url_retry_counts(retry_counts):
+    with open(KEEP_URL_RETRY_COUNTS_FILE, "w") as file:
+        json.dump(retry_counts, file, indent=2, sort_keys=True)
+
+
+def get_keep_url_retry_key(note, note_title, note_text):
+    note_id = getattr(note, "id", None)
+    if note_id:
+        return str(note_id)
+    note_signature = f"{note_title}\n{note_text}".encode("utf-8")
+    return hashlib.sha256(note_signature).hexdigest()
+
+
+def record_keep_url_conversion_failure(url_action, retry_counts):
+    retry_key = get_keep_url_retry_key(
+        url_action.note, url_action.note_title, url_action.raw_text
+    )
+    failure_count = retry_counts.get(retry_key, 0) + 1
+
+    should_fallback_to_raw_text = failure_count >= MAX_KEEP_URL_CONVERSION_ATTEMPTS
+    if should_fallback_to_raw_text:
+        retry_counts.pop(retry_key, None)
+    else:
+        retry_counts[retry_key] = failure_count
+
+    save_keep_url_retry_counts(retry_counts)
+    return failure_count, should_fallback_to_raw_text
+
+
+def clear_keep_url_retry_count(url_action, retry_counts):
+    retry_key = get_keep_url_retry_key(
+        url_action.note, url_action.note_title, url_action.raw_text
+    )
+    if retry_key not in retry_counts:
+        return
+    retry_counts.pop(retry_key, None)
+    save_keep_url_retry_counts(retry_counts)
+
+
+def append_keep_note_text(existing_text, note_text):
+    if not note_text:
+        return existing_text
+    return existing_text + "\n\n" + note_text
+
+
+def build_keep_sync_plan(keep):
     gnotes = list(keep.find(archived=False, trashed=False))
     gnotes = sorted(gnotes, key=lambda x: x.timestamps.edited.timestamp())
     textToAddToFile = ""
-    urls_from_keep = []
-    phone_urls_from_keep = []
+    url_actions = []
     notes_to_trash = []
     url_pattern = re.compile(r"https?://\S+")
 
@@ -128,7 +201,7 @@ def saveNotesFromKeep(keep):
             gnote.title.strip(),
         )
         trimmed_note_text = noteText.rstrip()
-        has_phone_send_marker = trimmed_note_text.endswith(" .")
+        has_phone_send_marker = bool(re.search(r"\s*\.+$", trimmed_note_text))
         note_text_for_url_only_check = (
             trimmed_note_text.rstrip(" .").rstrip()
             if has_phone_send_marker
@@ -147,12 +220,31 @@ def saveNotesFromKeep(keep):
         non_slack_urls = [url for url in urls if "slack.com" not in url]
         should_send_urls_to_phone = is_url_only_note and has_phone_send_marker
         if should_send_urls_to_phone:
-            phone_urls_from_keep.extend(urls)
-            notes_to_trash.append(gnote)
+            url_actions.append(
+                KeepUrlAction(
+                    note=gnote,
+                    note_title=noteTitle,
+                    raw_text=noteText,
+                    browser_urls=[],
+                    phone_urls=urls,
+                )
+            )
             continue
         if is_url_only_note:
             if non_slack_urls:
-                urls_from_keep.extend(non_slack_urls)
+                url_actions.append(
+                    KeepUrlAction(
+                        note=gnote,
+                        note_title=noteTitle,
+                        raw_text=noteText,
+                        browser_urls=non_slack_urls,
+                        phone_urls=[],
+                        success_text=(
+                            ("\n\n" + "\n".join(slack_urls)) if slack_urls else ""
+                        ),
+                    )
+                )
+                continue
             if slack_urls:
                 textToAddToFile += "\n\n" + "\n".join(slack_urls)
             notes_to_trash.append(gnote)
@@ -168,6 +260,20 @@ def saveNotesFromKeep(keep):
             textToAddToFile += ":" if noteText and noteTitle else ""
         textToAddToFile += "\n" + noteText if noteText else ""
         notes_to_trash.append(gnote)
+
+    return textToAddToFile, url_actions, notes_to_trash
+
+
+def saveNotesFromKeep(keep):
+    textToAddToFile, url_actions, notes_to_trash = build_keep_sync_plan(keep)
+    urls_from_keep = []
+    phone_urls_from_keep = []
+
+    for url_action in url_actions:
+        urls_from_keep.extend(url_action.browser_urls)
+        phone_urls_from_keep.extend(url_action.phone_urls)
+        textToAddToFile += url_action.success_text
+        notes_to_trash.append(url_action.note)
 
     return textToAddToFile, urls_from_keep, phone_urls_from_keep, notes_to_trash
 
@@ -430,12 +536,53 @@ def acquire_script_lock():
 
 
 def sync_keep_notes(keep, temp_file_path, opened_urls_path):
-    keep_text, keep_urls, phone_urls, keep_notes_to_trash = saveNotesFromKeep(keep)
-    # Keep notes are only committed after all URL side effects succeed, so a
-    # failing browser-send/phone-send step leaves the source notes retryable.
-    run_lineate_for_urls(keep_urls)
-    append_opened_urls(keep_urls, opened_urls_path)
-    send_urls_to_phone(phone_urls)
+    keep_text, keep_url_actions, keep_notes_to_trash = build_keep_sync_plan(keep)
+    keep_url_retry_counts = load_keep_url_retry_counts()
+
+    for url_action in keep_url_actions:
+        if url_action.browser_urls:
+            try:
+                run_lineate_for_urls(url_action.browser_urls)
+            except subprocess.CalledProcessError:
+                failure_count, should_fallback_to_raw_text = (
+                    record_keep_url_conversion_failure(
+                        url_action, keep_url_retry_counts
+                    )
+                )
+                logger.warning(
+                    f"Lineate failed for Keep note {url_action.note_title if url_action.note_title else '[untitled]'} "
+                    f"({failure_count}/{MAX_KEEP_URL_CONVERSION_ATTEMPTS})"
+                )
+                if should_fallback_to_raw_text:
+                    keep_text = append_keep_note_text(keep_text, url_action.raw_text)
+                    keep_notes_to_trash.append(url_action.note)
+                continue
+            append_opened_urls(url_action.browser_urls, opened_urls_path)
+
+        if url_action.phone_urls:
+            try:
+                send_urls_to_phone(url_action.phone_urls)
+            except RuntimeError as error:
+                if "clipboardToPhone lineate conversion failed" not in str(error):
+                    raise
+                failure_count, should_fallback_to_raw_text = (
+                    record_keep_url_conversion_failure(
+                        url_action, keep_url_retry_counts
+                    )
+                )
+                logger.warning(
+                    f"Phone URL conversion failed for Keep note {url_action.note_title if url_action.note_title else '[untitled]'} "
+                    f"({failure_count}/{MAX_KEEP_URL_CONVERSION_ATTEMPTS})"
+                )
+                if should_fallback_to_raw_text:
+                    keep_text = append_keep_note_text(keep_text, url_action.raw_text)
+                    keep_notes_to_trash.append(url_action.note)
+                continue
+
+        clear_keep_url_retry_count(url_action, keep_url_retry_counts)
+        keep_text += url_action.success_text
+        keep_notes_to_trash.append(url_action.note)
+
     writeToFile(temp_file_path, keep_text)
 
     for gnote in keep_notes_to_trash:

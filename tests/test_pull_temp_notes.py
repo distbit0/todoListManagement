@@ -1,4 +1,5 @@
 from pathlib import Path
+import subprocess
 from types import SimpleNamespace
 
 import pytest
@@ -32,10 +33,23 @@ class FakeTimestamps:
 
 
 class FakeKeepNote:
-    def __init__(self, text: str, title: str = "") -> None:
+    def __init__(
+        self,
+        text: str,
+        title: str = "",
+        *,
+        note_id: str | None = None,
+        events: list[str] | None = None,
+    ) -> None:
         self.text = text
         self.title = title
+        self.id = note_id
+        self.events = events
         self.timestamps = FakeTimestamps()
+
+    def trash(self) -> None:
+        if self.events is not None:
+            self.events.append("trash")
 
 
 def test_sync_keep_notes_commits_only_after_url_side_effects(
@@ -49,8 +63,20 @@ def test_sync_keep_notes_commits_only_after_url_side_effects(
 
     monkeypatch.setattr(
         pullTempNotes,
-        "saveNotesFromKeep",
-        lambda keep_arg: ("\nkeep text", ["https://example.com"], [], [note]),
+        "build_keep_sync_plan",
+        lambda keep_arg: (
+            "\nkeep text",
+            [
+                pullTempNotes.KeepUrlAction(
+                    note=note,
+                    note_title="",
+                    raw_text="https://example.com",
+                    browser_urls=["https://example.com"],
+                    phone_urls=[],
+                )
+            ],
+            [],
+        ),
     )
     monkeypatch.setattr(
         pullTempNotes,
@@ -87,8 +113,20 @@ def test_sync_keep_notes_orders_commit_steps(
 
     monkeypatch.setattr(
         pullTempNotes,
-        "saveNotesFromKeep",
-        lambda keep_arg: ("\nkeep text", ["https://example.com"], ["https://phone.example"], [note]),
+        "build_keep_sync_plan",
+        lambda keep_arg: (
+            "\nkeep text",
+            [
+                pullTempNotes.KeepUrlAction(
+                    note=note,
+                    note_title="",
+                    raw_text="https://example.com",
+                    browser_urls=["https://example.com"],
+                    phone_urls=["https://phone.example"],
+                )
+            ],
+            [],
+        ),
     )
     monkeypatch.setattr(
         pullTempNotes,
@@ -118,6 +156,66 @@ def test_sync_keep_notes_orders_commit_steps(
 
     assert events == ["lineate", "append", "send", "write", "trash", "sync"]
     assert temp_notes_path.read_text() == "existing\nkeep text\n"
+
+
+def test_sync_keep_notes_writes_raw_text_after_third_lineate_failure(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    events: list[str] = []
+    note = FakeKeepNote(
+        "https://example.com",
+        note_id="keep-note-1",
+        events=events,
+    )
+    keep = FakeKeep(events)
+    temp_notes_path = tmp_path / "temp.md"
+    temp_notes_path.write_text("existing\n")
+    retry_counts_path = tmp_path / "keep_url_retry_counts.json"
+
+    monkeypatch.setattr(
+        pullTempNotes,
+        "KEEP_URL_RETRY_COUNTS_FILE",
+        str(retry_counts_path),
+    )
+    monkeypatch.setattr(
+        pullTempNotes,
+        "build_keep_sync_plan",
+        lambda keep_arg: (
+            "",
+            [
+                pullTempNotes.KeepUrlAction(
+                    note=note,
+                    note_title="",
+                    raw_text="https://example.com",
+                    browser_urls=["https://example.com"],
+                    phone_urls=[],
+                )
+            ],
+            [],
+        ),
+    )
+    monkeypatch.setattr(
+        pullTempNotes,
+        "run_lineate_for_urls",
+        lambda urls: (_ for _ in ()).throw(
+            subprocess.CalledProcessError(1, ["lineate"])
+        ),
+    )
+
+    pullTempNotes.sync_keep_notes(keep, str(temp_notes_path), str(tmp_path / "urls.md"))
+    assert temp_notes_path.read_text() == "existing\n"
+    assert retry_counts_path.read_text().strip() == '{\n  "keep-note-1": 1\n}'
+    assert events == ["sync"]
+
+    pullTempNotes.sync_keep_notes(keep, str(temp_notes_path), str(tmp_path / "urls.md"))
+    assert temp_notes_path.read_text() == "existing\n"
+    assert retry_counts_path.read_text().strip() == '{\n  "keep-note-1": 2\n}'
+    assert events == ["sync", "sync"]
+
+    pullTempNotes.sync_keep_notes(keep, str(temp_notes_path), str(tmp_path / "urls.md"))
+    assert temp_notes_path.read_text() == "existing\n\nhttps://example.com\n"
+    assert retry_counts_path.read_text().strip() == "{}"
+    assert events == ["sync", "sync", "trash", "sync"]
 
 
 def test_save_notes_from_keep_sends_double_stop_url_only_notes_to_phone() -> None:

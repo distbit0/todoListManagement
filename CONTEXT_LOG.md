@@ -15,3 +15,7 @@
 ## Keep text-fragment URLs
 
 - Keep body lines that begin with `http` and contain `#:~:text=` are dropped before any Keep-note URL routing or markdown formatting. These are browser text-fragment URLs and should not be written into temp notes or treated as URL payloads.
+
+## Keep URL conversion retry limit
+
+- URL-only Keep notes that depend on lineate now persist a per-note failure count in `logs/keep_url_retry_counts.json`. After three conversion failures, `pullTempNotes.py` stops retrying, writes the raw Keep note text into the temp notes file, and trashes the source note so it cannot loop forever.
