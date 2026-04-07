@@ -18,7 +18,7 @@ import subprocess
 from dotenv import load_dotenv
 from send2trash import send2trash
 from processed_hashes import ProcessedHashes
-from keep_auth import authenticate_keep
+from keep_auth import authenticate_keep, sync_keep
 
 load_dotenv()
 
@@ -588,7 +588,7 @@ def sync_keep_notes(keep, temp_file_path, opened_urls_path):
     for gnote in keep_notes_to_trash:
         gnote.trash()
 
-    keep.sync()
+    sync_keep(keep)
 
 
 def delete_processed_mp3s(processed_mp3s, mp3_folder_path):
@@ -611,7 +611,9 @@ def delete_processed_mp3s(processed_mp3s, mp3_folder_path):
 def main():
     lock_handle = acquire_script_lock()
     try:
+        logger.info("Authenticating with Google Keep")
         keep = authenticate_keep()
+        logger.info("Authenticated with Google Keep")
         tempFilePath, mp3FolderPath = (
             general.getConfig()["tempNotesPath"],
             general.getConfig()["mp3CaptureFolder"],
@@ -623,6 +625,9 @@ def main():
 
         sync_keep_notes(keep, tempFilePath, "/home/pimania/notes/opened_urls.md")
         delete_processed_mp3s(processedMp3s, mp3FolderPath)
+    except Exception as error:
+        logger.exception(f"pullTempNotes.py failed: {error}")
+        raise
     finally:
         lock_handle.close()
 

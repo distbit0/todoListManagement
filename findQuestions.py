@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import os
 import frontmatter
 import toml
-from keep_auth import authenticate_keep
+from keep_auth import authenticate_keep, sync_keep
 
 load_dotenv()
 markAsReadString = "[[read]]"
@@ -202,7 +202,7 @@ def main():
         for paragraph in paragraphs[noteName]:
             note.add(paragraph, False)
 
-    keep.sync()
+    sync_keep(keep)
 
 
 if __name__ == "__main__":

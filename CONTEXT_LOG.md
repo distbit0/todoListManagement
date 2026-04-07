@@ -19,3 +19,7 @@
 ## Keep URL conversion retry limit
 
 - URL-only Keep notes that depend on lineate now persist a per-note failure count in `logs/keep_url_retry_counts.json`. After three conversion failures, `pullTempNotes.py` stops retrying, writes the raw Keep note text into the temp notes file, and trashes the source note so it cannot loop forever.
+
+## Keep network hangs
+
+- Google Keep auth/sync is now bounded by a hard 120s alarm in `keep_auth.py`. The concrete failure this addresses was a `pullTempNotes.py` process that stayed stuck overnight in an SSL socket read during Keep auth, which kept the file lock open and blocked every later cron/manual run from importing new notes.
