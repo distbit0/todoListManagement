@@ -1,9 +1,11 @@
 from pathlib import Path
 import subprocess
+import time
 from types import SimpleNamespace
 
 import pytest
 
+import keep_auth
 import pullTempNotes
 
 
@@ -156,6 +158,57 @@ def test_sync_keep_notes_orders_commit_steps(
 
     assert events == ["lineate", "append", "send", "write", "trash", "sync"]
     assert temp_notes_path.read_text() == "existing\nkeep text\n"
+
+
+def test_sync_keep_notes_does_not_apply_keep_timeout_to_lineate(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    events: list[str] = []
+    note = FakeNote(events)
+    keep = FakeKeep(events)
+    temp_notes_path = tmp_path / "temp.md"
+    temp_notes_path.write_text("existing\n")
+
+    monkeypatch.setattr(keep_auth, "KEEP_NETWORK_TIMEOUT_SECONDS", 0.05)
+    monkeypatch.setattr(
+        pullTempNotes,
+        "build_keep_sync_plan",
+        lambda keep_arg: (
+            "",
+            [
+                pullTempNotes.KeepUrlAction(
+                    note=note,
+                    note_title="",
+                    raw_text="https://example.com",
+                    browser_urls=["https://example.com"],
+                    phone_urls=[],
+                )
+            ],
+            [],
+        ),
+    )
+
+    def slow_lineate(urls):
+        time.sleep(0.1)
+        events.append("lineate")
+
+    monkeypatch.setattr(pullTempNotes, "run_lineate_for_urls", slow_lineate)
+    monkeypatch.setattr(
+        pullTempNotes,
+        "append_opened_urls",
+        lambda urls, file_path: events.append("append"),
+    )
+    monkeypatch.setattr(
+        pullTempNotes,
+        "sync_keep",
+        lambda keep_arg: keep_auth.run_with_keep_timeout(
+            "Google Keep sync", lambda: events.append("sync")
+        ),
+    )
+
+    pullTempNotes.sync_keep_notes(keep, str(temp_notes_path), str(tmp_path / "urls.md"))
+
+    assert events == ["lineate", "append", "trash", "sync"]
 
 
 def test_sync_keep_notes_writes_raw_text_after_third_lineate_failure(
