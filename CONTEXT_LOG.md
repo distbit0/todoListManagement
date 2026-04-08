@@ -11,7 +11,7 @@
 - A Keep note ending with `..` only diverts to `clipboardToPhone/send.py` when the note already qualifies as URL-only under the existing Keep ingestion rule. Mixed text + URL notes still go to `temp index.md`; the suffix is an extra routing signal, not a new broader URL extractor mode.
 - URL extraction now strips trailing sentence punctuation before routing. This is necessary because the `..` suffix marker often sits directly on the final URL, and sending the raw regex match would otherwise include those dots in the URL payload.
 - The `..` marker may also appear as whitespace-separated trailing content after the final URL, so the URL-only check must ignore a terminal run of periods before deciding whether the note contains only URLs.
- - The phone-send path now calls `clipboardToPhone/send.py`'s queue helper directly, so URL conversion, batching, queue claims, and ntfy delivery all stay under the same shared queue logic as normal clipboard sends.
+- The phone-send path now calls `clipboardToPhone/send.py`'s queue helper directly, so URL conversion, batching, queue claims, and ntfy delivery all stay under the same shared queue logic as normal clipboard sends.
 
 ## Keep text-fragment URLs
 
