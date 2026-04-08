@@ -317,24 +317,18 @@ def test_save_notes_from_keep_skips_text_fragment_url_lines() -> None:
     assert notes_to_trash == [note]
 
 
-def test_send_urls_to_phone_converts_urls_before_delivery(
+def test_send_urls_to_phone_uses_clipboard_queue_helper(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    process_calls: list[tuple[str, dict[str, object]]] = []
-    sent_payloads: list[tuple[str, list[str]]] = []
-
-    def fake_process_url(url: str, **kwargs):
-        process_calls.append((url, kwargs))
-        return f"https://converted.example/?src={url.rsplit('/', 1)[-1]}"
+    helper_calls: list[tuple[object, list[str], bool]] = []
+    dummy_lineate = object()
 
     dummy_send_module = SimpleNamespace(
         _configure_logging=lambda: None,
-        _resolve_api_url_from_env=lambda: "https://ntfy.sh/topic-name",
-        _load_lineate=lambda: SimpleNamespace(process_url=fake_process_url),
-        _send_plain_messages=lambda api_url, payloads: sent_payloads.append(
-            (api_url, payloads)
-        )
-        or True,
+        _load_lineate=lambda: dummy_lineate,
+        _enqueue_and_send_url_jobs=lambda lineate, urls, *, convert: helper_calls.append(
+            (lineate, urls, convert)
+        ),
     )
     monkeypatch.setattr(
         pullTempNotes, "load_send_to_phone_module", lambda: dummy_send_module
@@ -344,35 +338,14 @@ def test_send_urls_to_phone_converts_urls_before_delivery(
         ["https://example.com/one", "https://example.com/two"]
     )
 
-    assert process_calls == [
+    assert helper_calls == [
         (
-            "https://example.com/one",
-            {
-                "openInBrowser": False,
-                "forceConvertAllUrls": True,
-                "summarise": True,
-                "forceNoConvert": False,
-                "forceRefreshAll": False,
-            },
-        ),
-        (
-            "https://example.com/two",
-            {
-                "openInBrowser": False,
-                "forceConvertAllUrls": True,
-                "summarise": True,
-                "forceNoConvert": False,
-                "forceRefreshAll": False,
-            },
-        ),
-    ]
-    assert sent_payloads == [
-        (
-            "https://ntfy.sh/topic-name",
+            dummy_lineate,
             [
-                "https://converted.example/?src=one",
-                "https://converted.example/?src=two",
+                "https://example.com/one",
+                "https://example.com/two",
             ],
+            True,
         )
     ]
 

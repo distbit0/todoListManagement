@@ -302,28 +302,11 @@ def load_send_to_phone_module():
 def send_urls_to_phone(urls):
     if not urls:
         return
-    logger.info(f"Sending {len(urls)} keep url(s) to phone")
+    logger.info(f"Queueing {len(urls)} keep url(s) for phone delivery")
     send_module = load_send_to_phone_module()
     send_module._configure_logging()
-    api_url = send_module._resolve_api_url_from_env()
-    if not api_url:
-        raise RuntimeError("clipboardToPhone send.py could not resolve NTFY_SEND_TOPIC")
     lineate = send_module._load_lineate()
-    converted_urls = []
-    for url in urls:
-        converted_url = lineate.process_url(
-            url,
-            openInBrowser=False,
-            forceConvertAllUrls=True,
-            summarise=True,
-            forceNoConvert=False,
-            forceRefreshAll=False,
-        )
-        if not converted_url:
-            raise RuntimeError(f"clipboardToPhone lineate conversion failed for {url}")
-        converted_urls.append(converted_url)
-    if not send_module._send_plain_messages(api_url, converted_urls):
-        raise RuntimeError("clipboardToPhone send.py failed to deliver keep URLs")
+    send_module._enqueue_and_send_url_jobs(lineate, urls, convert=True)
 
 
 def run_lineate_for_urls(urls):
@@ -560,24 +543,7 @@ def sync_keep_notes(keep, temp_file_path, opened_urls_path):
             append_opened_urls(url_action.browser_urls, opened_urls_path)
 
         if url_action.phone_urls:
-            try:
-                send_urls_to_phone(url_action.phone_urls)
-            except RuntimeError as error:
-                if "clipboardToPhone lineate conversion failed" not in str(error):
-                    raise
-                failure_count, should_fallback_to_raw_text = (
-                    record_keep_url_conversion_failure(
-                        url_action, keep_url_retry_counts
-                    )
-                )
-                logger.warning(
-                    f"Phone URL conversion failed for Keep note {url_action.note_title if url_action.note_title else '[untitled]'} "
-                    f"({failure_count}/{MAX_KEEP_URL_CONVERSION_ATTEMPTS})"
-                )
-                if should_fallback_to_raw_text:
-                    keep_text = append_keep_note_text(keep_text, url_action.raw_text)
-                    keep_notes_to_trash.append(url_action.note)
-                continue
+            send_urls_to_phone(url_action.phone_urls)
 
         clear_keep_url_retry_count(url_action, keep_url_retry_counts)
         keep_text += url_action.success_text
