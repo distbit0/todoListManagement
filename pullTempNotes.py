@@ -179,6 +179,16 @@ def append_keep_note_text(existing_text, note_text):
     return existing_text + "\n\n" + note_text
 
 
+def commit_keep_sync_batch(keep, temp_file_path, keep_text, notes_to_trash):
+    if not keep_text and not notes_to_trash:
+        return
+
+    writeToFile(temp_file_path, keep_text)
+    for gnote in notes_to_trash:
+        gnote.trash()
+    sync_keep(keep)
+
+
 def build_keep_sync_plan(keep):
     gnotes = list(keep.find(archived=False, trashed=False))
     gnotes = sorted(gnotes, key=lambda x: x.timestamps.edited.timestamp())
@@ -520,7 +530,12 @@ def acquire_script_lock():
 
 def sync_keep_notes(keep, temp_file_path, opened_urls_path):
     keep_text, keep_url_actions, keep_notes_to_trash = build_keep_sync_plan(keep)
+    # Plain Keep text should land promptly even when downstream URL conversion is slow.
+    commit_keep_sync_batch(keep, temp_file_path, keep_text, keep_notes_to_trash)
+
     keep_url_retry_counts = load_keep_url_retry_counts()
+    deferred_keep_text = ""
+    deferred_notes_to_trash = []
 
     for url_action in keep_url_actions:
         if url_action.browser_urls:
@@ -537,8 +552,10 @@ def sync_keep_notes(keep, temp_file_path, opened_urls_path):
                     f"({failure_count}/{MAX_KEEP_URL_CONVERSION_ATTEMPTS})"
                 )
                 if should_fallback_to_raw_text:
-                    keep_text = append_keep_note_text(keep_text, url_action.raw_text)
-                    keep_notes_to_trash.append(url_action.note)
+                    deferred_keep_text = append_keep_note_text(
+                        deferred_keep_text, url_action.raw_text
+                    )
+                    deferred_notes_to_trash.append(url_action.note)
                 continue
             append_opened_urls(url_action.browser_urls, opened_urls_path)
 
@@ -546,15 +563,10 @@ def sync_keep_notes(keep, temp_file_path, opened_urls_path):
             send_urls_to_phone(url_action.phone_urls)
 
         clear_keep_url_retry_count(url_action, keep_url_retry_counts)
-        keep_text += url_action.success_text
-        keep_notes_to_trash.append(url_action.note)
+        deferred_keep_text += url_action.success_text
+        deferred_notes_to_trash.append(url_action.note)
 
-    writeToFile(temp_file_path, keep_text)
-
-    for gnote in keep_notes_to_trash:
-        gnote.trash()
-
-    sync_keep(keep)
+    commit_keep_sync_batch(keep, temp_file_path, deferred_keep_text, deferred_notes_to_trash)
 
 
 def delete_processed_mp3s(processed_mp3s, mp3_folder_path):

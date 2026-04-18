@@ -10,11 +10,12 @@ import pullTempNotes
 
 
 class FakeNote:
-    def __init__(self, events: list[str]) -> None:
+    def __init__(self, events: list[str], trash_event: str = "trash") -> None:
         self.events = events
+        self.trash_event = trash_event
 
     def trash(self) -> None:
-        self.events.append("trash")
+        self.events.append(self.trash_event)
 
 
 class FakeKeep:
@@ -54,11 +55,12 @@ class FakeKeepNote:
             self.events.append("trash")
 
 
-def test_sync_keep_notes_commits_only_after_url_side_effects(
+def test_sync_keep_notes_commits_plain_keep_text_before_url_side_effects(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     events: list[str] = []
-    note = FakeNote(events)
+    plain_keep_note = FakeNote(events, "plain_trash")
+    url_note = FakeNote(events, "url_trash")
     keep = FakeKeep(events)
     temp_notes_path = tmp_path / "temp.md"
     temp_notes_path.write_text("existing\n")
@@ -70,14 +72,14 @@ def test_sync_keep_notes_commits_only_after_url_side_effects(
             "\nkeep text",
             [
                 pullTempNotes.KeepUrlAction(
-                    note=note,
+                    note=url_note,
                     note_title="",
                     raw_text="https://example.com",
                     browser_urls=["https://example.com"],
                     phone_urls=[],
                 )
             ],
-            [],
+            [plain_keep_note],
         ),
     )
     monkeypatch.setattr(
@@ -96,12 +98,19 @@ def test_sync_keep_notes_commits_only_after_url_side_effects(
         raise RuntimeError("append failed")
 
     monkeypatch.setattr(pullTempNotes, "append_opened_urls", fail_append)
+    original_write_to_file = pullTempNotes.writeToFile
+
+    def track_write(file_path, text):
+        events.append("write")
+        original_write_to_file(file_path, text)
+
+    monkeypatch.setattr(pullTempNotes, "writeToFile", track_write)
 
     with pytest.raises(RuntimeError, match="append failed"):
         pullTempNotes.sync_keep_notes(keep, str(temp_notes_path), str(tmp_path / "urls.md"))
 
-    assert events == ["lineate", "append"]
-    assert temp_notes_path.read_text() == "existing\n"
+    assert events == ["write", "plain_trash", "sync", "lineate", "append"]
+    assert temp_notes_path.read_text() == "existing\nkeep text\n"
 
 
 def test_sync_keep_notes_orders_commit_steps(
@@ -117,7 +126,7 @@ def test_sync_keep_notes_orders_commit_steps(
         pullTempNotes,
         "build_keep_sync_plan",
         lambda keep_arg: (
-            "\nkeep text",
+            "",
             [
                 pullTempNotes.KeepUrlAction(
                     note=note,
@@ -125,6 +134,7 @@ def test_sync_keep_notes_orders_commit_steps(
                     raw_text="https://example.com",
                     browser_urls=["https://example.com"],
                     phone_urls=["https://phone.example"],
+                    success_text="\nkeep text",
                 )
             ],
             [],
@@ -258,17 +268,17 @@ def test_sync_keep_notes_writes_raw_text_after_third_lineate_failure(
     pullTempNotes.sync_keep_notes(keep, str(temp_notes_path), str(tmp_path / "urls.md"))
     assert temp_notes_path.read_text() == "existing\n"
     assert retry_counts_path.read_text().strip() == '{\n  "keep-note-1": 1\n}'
-    assert events == ["sync"]
+    assert events == []
 
     pullTempNotes.sync_keep_notes(keep, str(temp_notes_path), str(tmp_path / "urls.md"))
     assert temp_notes_path.read_text() == "existing\n"
     assert retry_counts_path.read_text().strip() == '{\n  "keep-note-1": 2\n}'
-    assert events == ["sync", "sync"]
+    assert events == []
 
     pullTempNotes.sync_keep_notes(keep, str(temp_notes_path), str(tmp_path / "urls.md"))
     assert temp_notes_path.read_text() == "existing\n\nhttps://example.com\n"
     assert retry_counts_path.read_text().strip() == "{}"
-    assert events == ["sync", "sync", "trash", "sync"]
+    assert events == ["trash", "sync"]
 
 
 def test_save_notes_from_keep_sends_double_stop_url_only_notes_to_phone() -> None:

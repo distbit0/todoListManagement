@@ -2,9 +2,20 @@
 
 ## Keep note commit boundary
 
-- `pullTempNotes.py` now treats Google Keep ingestion as a single commit boundary: `run_lineate_for_urls` and `append_opened_urls` must both succeed before Keep text is written locally and the source notes are trashed/synced. This avoids duplicating Keep-derived temp-note content after partial failures.
-- Overlapping cron runs are prevented with a non-blocking file lock instead of early `keep.sync()`. That preserves the old "do not re-fetch while another run is still active" property without committing Keep state before the URL side effects finish.
+- Lineate-backed Keep URL notes keep an explicit commit boundary: `run_lineate_for_urls` and `append_opened_urls` must both succeed before those source notes are trashed/synced or their deferred temp-note text is written locally.
+- Overlapping cron runs are prevented with a non-blocking file lock instead of early `keep.sync()`. That preserves the old "do not re-fetch while another run is still active" property without committing URL-backed Keep state before its side effects finish.
 - Phone-routed Keep URL notes use a different boundary now: once `clipboardToPhone/send.py` has durably enqueued the URLs into its shared Lineate-backed queue, `pullTempNotes.py` can trash/sync the Keep note. Delivery/conversion retries after that point belong to the queue owner, not to Keep ingestion.
+
+## Keep staged temp-note writes
+
+- Plain Keep text now commits before any Lineate-backed URL conversion runs. The intent is to stop long or stuck Lineate jobs from blocking ordinary Keep notes from landing in `temp index.md`.
+- This intentionally narrows the old single commit boundary: non-Lineate Keep notes are written, trashed, and synced in an early batch, while URL-only Keep notes that depend on Lineate still keep their own later boundary around conversion plus opened-URL logging.
+- The trade-off is explicit: a later Lineate failure can no longer block earlier plain-note ingestion, but plain-note and URL-note commits from the same Keep sweep are no longer all-or-nothing together.
+
+## Cosimo Substack failure debugging
+
+- The April 18 Cosimo failures attributed to `pullTempNotes.py` were actually downstream Lineate extraction issues. The generated `lineate/data/summary_inputs/*cosimoresearch*` artifacts for the failed `open.substack.com` URLs contained only a markdown heading with the canonical URL, which means article extraction produced an empty shell before any summary/highlights call.
+- Because Lineate still passed that shell through title/highlights/summary generation, some pages failed later on malformed summary output while others "succeeded" and cached hallucinated missing-content boilerplate. The root bug is therefore in Lineate's extraction/validation path, not in `pullTempNotes.py`'s URL routing.
 
 ## Keep URL-only suffix routing
 
