@@ -586,6 +586,15 @@ def delete_processed_mp3s(processed_mp3s, mp3_folder_path):
         tryDeleteFile(os.path.join(mp3_folder_path, mp3File), fileText)
 
 
+def commit_processed_mp3_batch(
+    temp_file_path, text_to_add_to_file, processed_mp3s, mp3_folder_path
+):
+    # Keep the temp-note write and source-file trashing adjacent so the capture
+    # folder reflects only audio that has not landed in temp notes yet.
+    writeToFile(temp_file_path, text_to_add_to_file)
+    delete_processed_mp3s(processed_mp3s, mp3_folder_path)
+
+
 def main():
     lock_handle = acquire_script_lock()
     try:
@@ -599,10 +608,11 @@ def main():
         delete_duplicate_files(mp3FolderPath)
 
         textToAddToFile, processedMp3s = saveNotesFromMp3s()
-        writeToFile(tempFilePath, textToAddToFile)
+        commit_processed_mp3_batch(
+            tempFilePath, textToAddToFile, processedMp3s, mp3FolderPath
+        )
 
         sync_keep_notes(keep, tempFilePath, "/home/pimania/notes/opened_urls.md")
-        delete_processed_mp3s(processedMp3s, mp3FolderPath)
     except Exception as error:
         logger.exception(f"pullTempNotes.py failed: {error}")
         raise

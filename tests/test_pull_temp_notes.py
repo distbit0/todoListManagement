@@ -221,6 +221,57 @@ def test_sync_keep_notes_does_not_apply_keep_timeout_to_lineate(
     assert events == ["lineate", "append", "trash", "sync"]
 
 
+def test_main_commits_processed_mp3s_before_keep_url_sync(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    events: list[str] = []
+
+    class DummyLock:
+        def close(self) -> None:
+            events.append("lock_close")
+
+    monkeypatch.setattr(pullTempNotes, "acquire_script_lock", lambda: DummyLock())
+    monkeypatch.setattr(
+        pullTempNotes, "authenticate_keep", lambda: events.append("auth") or object()
+    )
+    monkeypatch.setattr(
+        pullTempNotes, "delete_duplicate_files", lambda path: events.append("dedupe")
+    )
+    monkeypatch.setattr(
+        pullTempNotes,
+        "saveNotesFromMp3s",
+        lambda: ("\n\ntranscribed note", {"note.mp3": {"transcription_successful": True}}),
+    )
+    monkeypatch.setattr(
+        pullTempNotes,
+        "commit_processed_mp3_batch",
+        lambda temp_path, text, processed, mp3_path: events.append("commit_mp3"),
+    )
+    monkeypatch.setattr(
+        pullTempNotes,
+        "sync_keep_notes",
+        lambda keep, temp_path, opened_urls_path: events.append("sync_keep_notes"),
+    )
+    monkeypatch.setattr(
+        pullTempNotes.general,
+        "getConfig",
+        lambda: {
+            "tempNotesPath": "/tmp/temp index.md",
+            "mp3CaptureFolder": "/tmp/mp3s",
+        },
+    )
+
+    pullTempNotes.main()
+
+    assert events == [
+        "auth",
+        "dedupe",
+        "commit_mp3",
+        "sync_keep_notes",
+        "lock_close",
+    ]
+
+
 def test_sync_keep_notes_writes_raw_text_after_third_lineate_failure(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:

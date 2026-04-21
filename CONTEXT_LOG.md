@@ -12,6 +12,11 @@
 - This intentionally narrows the old single commit boundary: non-Lineate Keep notes are written, trashed, and synced in an early batch, while URL-only Keep notes that depend on Lineate still keep their own later boundary around conversion plus opened-URL logging.
 - The trade-off is explicit: a later Lineate failure can no longer block earlier plain-note ingestion, but plain-note and URL-note commits from the same Keep sweep are no longer all-or-nothing together.
 
+## MP3 temp-note cleanup boundary
+
+- Processed audio files now commit on the same boundary as their temp-note text: once a transcription has been written to `temp index.md`, the source file is immediately renamed into the trash before any Keep URL/Lineate work starts.
+- The goal is operational, not cosmetic: the capture folder should reflect only audio that has not been written into temp notes yet, so it stays easy to map trashed audio files back to the notes that already landed.
+
 ## Cosimo Substack failure debugging
 
 - The April 18 Cosimo failures attributed to `pullTempNotes.py` were actually downstream Lineate extraction issues. The generated `lineate/data/summary_inputs/*cosimoresearch*` artifacts for the failed `open.substack.com` URLs contained only a markdown heading with the canonical URL, which means article extraction produced an empty shell before any summary/highlights call.
