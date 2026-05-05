@@ -1,7 +1,6 @@
 from pathlib import Path
 import subprocess
 import time
-from types import SimpleNamespace
 
 import pytest
 
@@ -75,8 +74,7 @@ def test_sync_keep_notes_commits_plain_keep_text_before_url_side_effects(
                     note=url_note,
                     note_title="",
                     raw_text="https://example.com",
-                    browser_urls=["https://example.com"],
-                    phone_urls=[],
+                    lineate_urls=["https://example.com"],
                 )
             ],
             [plain_keep_note],
@@ -85,12 +83,7 @@ def test_sync_keep_notes_commits_plain_keep_text_before_url_side_effects(
     monkeypatch.setattr(
         pullTempNotes,
         "run_lineate_for_urls",
-        lambda urls: events.append("lineate"),
-    )
-    monkeypatch.setattr(
-        pullTempNotes,
-        "send_urls_to_phone",
-        lambda urls: events.append("send"),
+        lambda urls, output_dest="browser": events.append("lineate"),
     )
 
     def fail_append(urls, file_path):
@@ -132,8 +125,7 @@ def test_sync_keep_notes_orders_commit_steps(
                     note=note,
                     note_title="",
                     raw_text="https://example.com",
-                    browser_urls=["https://example.com"],
-                    phone_urls=["https://phone.example"],
+                    lineate_urls=["https://example.com"],
                     success_text="\nkeep text",
                 )
             ],
@@ -143,19 +135,13 @@ def test_sync_keep_notes_orders_commit_steps(
     monkeypatch.setattr(
         pullTempNotes,
         "run_lineate_for_urls",
-        lambda urls: events.append("lineate"),
+        lambda urls, output_dest="browser": events.append("lineate"),
     )
     monkeypatch.setattr(
         pullTempNotes,
         "append_opened_urls",
         lambda urls, file_path: events.append("append"),
     )
-    monkeypatch.setattr(
-        pullTempNotes,
-        "send_urls_to_phone",
-        lambda urls: events.append("send"),
-    )
-
     original_write_to_file = pullTempNotes.writeToFile
 
     def track_write(file_path, text):
@@ -166,7 +152,7 @@ def test_sync_keep_notes_orders_commit_steps(
 
     pullTempNotes.sync_keep_notes(keep, str(temp_notes_path), str(tmp_path / "urls.md"))
 
-    assert events == ["lineate", "append", "send", "write", "trash", "sync"]
+    assert events == ["lineate", "append", "write", "trash", "sync"]
     assert temp_notes_path.read_text() == "existing\nkeep text\n"
 
 
@@ -190,15 +176,14 @@ def test_sync_keep_notes_does_not_apply_keep_timeout_to_lineate(
                     note=note,
                     note_title="",
                     raw_text="https://example.com",
-                    browser_urls=["https://example.com"],
-                    phone_urls=[],
+                    lineate_urls=["https://example.com"],
                 )
             ],
             [],
         ),
     )
 
-    def slow_lineate(urls):
+    def slow_lineate(urls, output_dest="browser"):
         time.sleep(0.1)
         events.append("lineate")
 
@@ -301,8 +286,7 @@ def test_sync_keep_notes_writes_raw_text_after_third_lineate_failure(
                     note=note,
                     note_title="",
                     raw_text="https://example.com",
-                    browser_urls=["https://example.com"],
-                    phone_urls=[],
+                    lineate_urls=["https://example.com"],
                 )
             ],
             [],
@@ -311,7 +295,7 @@ def test_sync_keep_notes_writes_raw_text_after_third_lineate_failure(
     monkeypatch.setattr(
         pullTempNotes,
         "run_lineate_for_urls",
-        lambda urls: (_ for _ in ()).throw(
+        lambda urls, output_dest="browser": (_ for _ in ()).throw(
             subprocess.CalledProcessError(1, ["lineate"])
         ),
     )
@@ -332,81 +316,117 @@ def test_sync_keep_notes_writes_raw_text_after_third_lineate_failure(
     assert events == ["trash", "sync"]
 
 
-def test_save_notes_from_keep_sends_double_stop_url_only_notes_to_phone() -> None:
+def test_build_keep_sync_plan_routes_double_stop_url_only_notes_to_infolio() -> None:
     note = FakeKeepNote("https://example.com\nhttps://slack.com/example ..")
     keep = type("Keep", (), {"find": lambda self, **kwargs: [note]})()
 
-    keep_text, browser_urls, phone_urls, notes_to_trash = pullTempNotes.saveNotesFromKeep(
-        keep
-    )
+    keep_text, url_actions, notes_to_trash = pullTempNotes.build_keep_sync_plan(keep)
 
     assert keep_text == ""
-    assert browser_urls == []
-    assert phone_urls == ["https://example.com", "https://slack.com/example"]
-    assert notes_to_trash == [note]
+    assert len(url_actions) == 1
+    assert url_actions[0].lineate_urls == [
+        "https://example.com",
+        "https://slack.com/example",
+    ]
+    assert url_actions[0].output_dest == "infolio"
+    assert notes_to_trash == []
 
 
-def test_save_notes_from_keep_keeps_mixed_double_stop_notes_in_markdown() -> None:
+def test_build_keep_sync_plan_keeps_mixed_double_stop_notes_in_markdown() -> None:
     note = FakeKeepNote("remember https://example.com..")
     keep = type("Keep", (), {"find": lambda self, **kwargs: [note]})()
 
-    keep_text, browser_urls, phone_urls, notes_to_trash = pullTempNotes.saveNotesFromKeep(
-        keep
-    )
+    keep_text, url_actions, notes_to_trash = pullTempNotes.build_keep_sync_plan(keep)
 
     assert "remember https://example.com.." in keep_text
-    assert browser_urls == []
-    assert phone_urls == []
+    assert url_actions == []
     assert notes_to_trash == [note]
 
 
-def test_save_notes_from_keep_skips_text_fragment_url_lines() -> None:
+def test_build_keep_sync_plan_skips_text_fragment_url_lines() -> None:
     note = FakeKeepNote(
         "https://example.com/page#:~:text=skip%20me\nkeep this line\nhttp://ok.example"
     )
     keep = type("Keep", (), {"find": lambda self, **kwargs: [note]})()
 
-    keep_text, browser_urls, phone_urls, notes_to_trash = pullTempNotes.saveNotesFromKeep(
-        keep
-    )
+    keep_text, url_actions, notes_to_trash = pullTempNotes.build_keep_sync_plan(keep)
 
     assert "#:~:text=" not in keep_text
     assert "keep this line" in keep_text
     assert "http://ok.example" in keep_text
-    assert browser_urls == []
-    assert phone_urls == []
+    assert url_actions == []
     assert notes_to_trash == [note]
 
 
-def test_send_urls_to_phone_uses_clipboard_queue_helper(
-    monkeypatch: pytest.MonkeyPatch,
+def test_sync_keep_notes_sends_infolio_actions_to_lineate_without_opened_url_log(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    helper_calls: list[tuple[object, list[str], bool]] = []
-    dummy_lineate = object()
+    events: list[tuple[str, object]] = []
+    note = FakeNote([])
+    keep = FakeKeep([])
+    temp_notes_path = tmp_path / "temp.md"
+    temp_notes_path.write_text("existing\n")
 
-    dummy_send_module = SimpleNamespace(
-        _configure_logging=lambda: None,
-        _load_lineate=lambda: dummy_lineate,
-        _enqueue_and_send_url_jobs=lambda lineate, urls, *, convert: helper_calls.append(
-            (lineate, urls, convert)
+    monkeypatch.setattr(
+        pullTempNotes,
+        "build_keep_sync_plan",
+        lambda keep_arg: (
+            "",
+            [
+                pullTempNotes.KeepUrlAction(
+                    note=note,
+                    note_title="",
+                    raw_text="https://example.com.",
+                    lineate_urls=["https://example.com"],
+                    output_dest="infolio",
+                )
+            ],
+            [],
         ),
     )
     monkeypatch.setattr(
-        pullTempNotes, "load_send_to_phone_module", lambda: dummy_send_module
+        pullTempNotes,
+        "run_lineate_for_urls",
+        lambda urls, output_dest="browser": events.append(
+            ("lineate", (urls, output_dest))
+        ),
+    )
+    monkeypatch.setattr(
+        pullTempNotes,
+        "append_opened_urls",
+        lambda urls, file_path: events.append(("append", urls)),
     )
 
-    pullTempNotes.send_urls_to_phone(
-        ["https://example.com/one", "https://example.com/two"]
-    )
+    pullTempNotes.sync_keep_notes(keep, str(temp_notes_path), str(tmp_path / "urls.md"))
 
-    assert helper_calls == [
+    assert events == [("lineate", (["https://example.com"], "infolio"))]
+
+
+def test_run_lineate_for_urls_passes_output_dest_to_lineate(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[list[str], bool, str]] = []
+
+    def track_subprocess_run(command, *, check, env):
+        calls.append((command, check, env["DISPLAY"]))
+
+    monkeypatch.setattr(pullTempNotes.subprocess, "run", track_subprocess_run)
+
+    pullTempNotes.run_lineate_for_urls(["https://example.com"], "infolio")
+
+    assert calls == [
         (
-            dummy_lineate,
             [
-                "https://example.com/one",
-                "https://example.com/two",
+                "/home/pimania/dev/misc/automation/uvrun.sh",
+                "/home/pimania/dev/lineate/src/lineate.py",
+                "--force-convert-all",
+                "--summarise",
+                "--output-dest",
+                "infolio",
+                "https://example.com",
             ],
             True,
+            ":0",
         )
     ]
 

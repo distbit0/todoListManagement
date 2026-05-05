@@ -2,9 +2,9 @@
 
 ## Keep note commit boundary
 
-- Lineate-backed Keep URL notes keep an explicit commit boundary: `run_lineate_for_urls` and `append_opened_urls` must both succeed before those source notes are trashed/synced or their deferred temp-note text is written locally.
+- Lineate-backed Keep URL notes keep an explicit commit boundary: `run_lineate_for_urls` must succeed before those source notes are trashed/synced or their deferred temp-note text is written locally. Browser-routed URL notes additionally require `append_opened_urls` to succeed before commit.
 - Overlapping cron runs are prevented with a non-blocking file lock instead of early `keep.sync()`. That preserves the old "do not re-fetch while another run is still active" property without committing URL-backed Keep state before its side effects finish.
-- Phone-routed Keep URL notes use a different boundary now: once `clipboardToPhone/send.py` has durably enqueued the URLs into its shared Lineate-backed queue, `pullTempNotes.py` can trash/sync the Keep note. Delivery/conversion retries after that point belong to the queue owner, not to Keep ingestion.
+- Infolio-routed Keep URL notes stay inside the Lineate commit boundary: `pullTempNotes.py` only trashes/syncs the source note after Lineate accepts the URL action with `--output-dest infolio`.
 
 ## Keep staged temp-note writes
 
@@ -24,10 +24,10 @@
 
 ## Keep URL-only suffix routing
 
-- A Keep note ending with `..` only diverts to `clipboardToPhone/send.py` when the note already qualifies as URL-only under the existing Keep ingestion rule. Mixed text + URL notes still go to `temp index.md`; the suffix is an extra routing signal, not a new broader URL extractor mode.
+- A Keep note ending with `..` only diverts to Lineate's `infolio` output destination when the note already qualifies as URL-only under the existing Keep ingestion rule. Mixed text + URL notes still go to `temp index.md`; the suffix is an extra routing signal, not a new broader URL extractor mode.
 - URL extraction now strips trailing sentence punctuation before routing. This is necessary because the `..` suffix marker often sits directly on the final URL, and sending the raw regex match would otherwise include those dots in the URL payload.
 - The `..` marker may also appear as whitespace-separated trailing content after the final URL, so the URL-only check must ignore a terminal run of periods before deciding whether the note contains only URLs.
-- The phone-send path now calls `clipboardToPhone/send.py`'s queue helper directly, so URL conversion, batching, queue claims, and ntfy delivery all stay under the same shared queue logic as normal clipboard sends.
+- This marker used to send URL-only notes through `clipboardToPhone/send.py`; that path was removed from `pullTempNotes.py` once the marker became an Infolio ingestion signal instead.
 
 ## Keep text-fragment URLs
 

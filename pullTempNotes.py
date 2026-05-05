@@ -1,5 +1,3 @@
-import importlib.util
-import sys
 import json
 from dataclasses import dataclass
 
@@ -25,7 +23,6 @@ load_dotenv()
 # Initialize the hash tracker
 HASH_FILE = os.path.join(os.path.dirname(__file__), "audio_hashes.json")
 processed_hashes = ProcessedHashes(HASH_FILE)
-SEND_TO_PHONE_SCRIPT_PATH = "/home/pimania/dev/clipboardToPhone/send.py"
 
 LOG_DIR = os.path.join(os.path.dirname(__file__), "logs")
 os.makedirs(LOG_DIR, exist_ok=True)
@@ -48,8 +45,8 @@ class KeepUrlAction:
     note: object
     note_title: str
     raw_text: str
-    browser_urls: list[str]
-    phone_urls: list[str]
+    lineate_urls: list[str]
+    output_dest: str = "browser"
     success_text: str = ""
 
 
@@ -211,10 +208,10 @@ def build_keep_sync_plan(keep):
             gnote.title.strip(),
         )
         trimmed_note_text = noteText.rstrip()
-        has_phone_send_marker = bool(re.search(r"\s*\.+$", trimmed_note_text))
+        has_infolio_marker = bool(re.search(r"\s*\.+$", trimmed_note_text))
         note_text_for_url_only_check = (
             trimmed_note_text.rstrip(" .").rstrip()
-            if has_phone_send_marker
+            if has_infolio_marker
             else trimmed_note_text
         )
         # The " ." suffix marker often sits directly on the final URL, so trim
@@ -228,15 +225,15 @@ def build_keep_sync_plan(keep):
         )
         slack_urls = [url for url in urls if "slack.com" in url]
         non_slack_urls = [url for url in urls if "slack.com" not in url]
-        should_send_urls_to_phone = is_url_only_note and has_phone_send_marker
-        if should_send_urls_to_phone:
+        should_add_urls_to_infolio = is_url_only_note and has_infolio_marker
+        if should_add_urls_to_infolio:
             url_actions.append(
                 KeepUrlAction(
                     note=gnote,
                     note_title=noteTitle,
                     raw_text=noteText,
-                    browser_urls=[],
-                    phone_urls=urls,
+                    lineate_urls=urls,
+                    output_dest="infolio",
                 )
             )
             continue
@@ -247,8 +244,7 @@ def build_keep_sync_plan(keep):
                         note=gnote,
                         note_title=noteTitle,
                         raw_text=noteText,
-                        browser_urls=non_slack_urls,
-                        phone_urls=[],
+                        lineate_urls=non_slack_urls,
                         success_text=(
                             ("\n\n" + "\n".join(slack_urls)) if slack_urls else ""
                         ),
@@ -274,63 +270,22 @@ def build_keep_sync_plan(keep):
     return textToAddToFile, url_actions, notes_to_trash
 
 
-def saveNotesFromKeep(keep):
-    textToAddToFile, url_actions, notes_to_trash = build_keep_sync_plan(keep)
-    urls_from_keep = []
-    phone_urls_from_keep = []
-
-    for url_action in url_actions:
-        urls_from_keep.extend(url_action.browser_urls)
-        phone_urls_from_keep.extend(url_action.phone_urls)
-        textToAddToFile += url_action.success_text
-        notes_to_trash.append(url_action.note)
-
-    return textToAddToFile, urls_from_keep, phone_urls_from_keep, notes_to_trash
-
-
-def load_send_to_phone_module():
-    module_name = "clipboard_to_phone_send"
-    module_spec = importlib.util.spec_from_file_location(
-        module_name, SEND_TO_PHONE_SCRIPT_PATH
-    )
-    if module_spec is None or module_spec.loader is None:
-        raise RuntimeError(f"Could not load send.py from {SEND_TO_PHONE_SCRIPT_PATH}")
-
-    clipboard_to_phone_dir = os.path.dirname(SEND_TO_PHONE_SCRIPT_PATH)
-    added_to_sys_path = clipboard_to_phone_dir not in sys.path
-    if added_to_sys_path:
-        sys.path.insert(0, clipboard_to_phone_dir)
-    try:
-        send_module = importlib.util.module_from_spec(module_spec)
-        module_spec.loader.exec_module(send_module)
-        return send_module
-    finally:
-        if added_to_sys_path:
-            sys.path.pop(0)
-
-
-def send_urls_to_phone(urls):
+def run_lineate_for_urls(urls, output_dest="browser"):
     if not urls:
         return
-    logger.info(f"Queueing {len(urls)} keep url(s) for phone delivery")
-    send_module = load_send_to_phone_module()
-    send_module._configure_logging()
-    lineate = send_module._load_lineate()
-    send_module._enqueue_and_send_url_jobs(lineate, urls, convert=True)
-
-
-def run_lineate_for_urls(urls):
-    if not urls:
-        return
+    if output_dest not in ("browser", "infolio"):
+        raise ValueError("Lineate output destination must be browser or infolio.")
     urls_text = " ".join(urls)
     command = [
         "/home/pimania/dev/misc/automation/uvrun.sh",
         "/home/pimania/dev/lineate/src/lineate.py",
         "--force-convert-all",
         "--summarise",
+        "--output-dest",
+        output_dest,
         urls_text,
     ]
-    logger.info(f"Running lineate for {len(urls)} urls")
+    logger.info(f"Running lineate for {len(urls)} urls with output dest {output_dest}")
     env = os.environ.copy()
     env["DISPLAY"] = ":0"
     subprocess.run(command, check=True, env=env)
@@ -538,9 +493,9 @@ def sync_keep_notes(keep, temp_file_path, opened_urls_path):
     deferred_notes_to_trash = []
 
     for url_action in keep_url_actions:
-        if url_action.browser_urls:
+        if url_action.lineate_urls:
             try:
-                run_lineate_for_urls(url_action.browser_urls)
+                run_lineate_for_urls(url_action.lineate_urls, url_action.output_dest)
             except subprocess.CalledProcessError:
                 failure_count, should_fallback_to_raw_text = (
                     record_keep_url_conversion_failure(
@@ -557,10 +512,8 @@ def sync_keep_notes(keep, temp_file_path, opened_urls_path):
                     )
                     deferred_notes_to_trash.append(url_action.note)
                 continue
-            append_opened_urls(url_action.browser_urls, opened_urls_path)
-
-        if url_action.phone_urls:
-            send_urls_to_phone(url_action.phone_urls)
+            if url_action.output_dest == "browser":
+                append_opened_urls(url_action.lineate_urls, opened_urls_path)
 
         clear_keep_url_retry_count(url_action, keep_url_retry_counts)
         deferred_keep_text += url_action.success_text
