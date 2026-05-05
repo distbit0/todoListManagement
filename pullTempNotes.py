@@ -566,7 +566,9 @@ def sync_keep_notes(keep, temp_file_path, opened_urls_path):
         deferred_keep_text += url_action.success_text
         deferred_notes_to_trash.append(url_action.note)
 
-    commit_keep_sync_batch(keep, temp_file_path, deferred_keep_text, deferred_notes_to_trash)
+    commit_keep_sync_batch(
+        keep, temp_file_path, deferred_keep_text, deferred_notes_to_trash
+    )
 
 
 def delete_processed_mp3s(processed_mp3s, mp3_folder_path):
